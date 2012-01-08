@@ -26,8 +26,8 @@ def dumper():
 def builder():
     return XmlTreeBuilder()
 
-def adapter(element, contentRoot = None):
-    return XmlItemAdapter(element, contentRoot)
+def adapter(element):
+    return XmlItemAdapter(element)
 
 
 
@@ -60,38 +60,19 @@ class XmlElementTreeDumper(IDumper):
 
 class XmlItemAdapter(INodeAdapter):
 
-    def __init__(self, element, contentRoot=None):
+    def __init__(self, element):
         INodeAdapter.__init__(self)
         
         self._element     = element
-        self._contentRoot = ""
-
-    def _initContentRoot(self):
-        for k,v in self.properties(): #FIXME: WTF?
-            if k == "content":
-                self._contentRoot = v
-                break
-        else: #FIXME: warn
-            self._contentRoot = ""
-            
-    def _containsSubElements(self, subElement, *keys):
-
-        if len(subElement.getchildren()) != len(keys):
-            return False
-        
-        for key in keys:
-            if subElement.find(key) is None:
-                return False
-            
-        return True
     
     
-    def _deserialize(self, element, contentRoot = None):
+    def _deserialize(self, element):
         
         if len(element.getchildren()): 
             value = {}
             for child in element.getchildren():
                 value[child.tag] = self._deserialize(child)
+            
             return value
         
         try:
@@ -100,6 +81,7 @@ class XmlItemAdapter(INodeAdapter):
             raise TypeError(element.text)
             
         return value
+       
        
     def typeName(self):
         return self._element.tag
@@ -110,16 +92,15 @@ class XmlItemAdapter(INodeAdapter):
         
         properties = {}
         for element in propertyElements:
-            properties[element.tag] = self._deserialize(element, self._contentRoot)
+            properties[element.tag] = self._deserialize(element)
                 
         return properties.items()
     
     
     def childItems(self):
         childrenRoot = self._element.find("children")
-        contentRoot  = self._contentRoot
         if childrenRoot is not None:
-            return [ XmlItemAdapter(child, contentRoot) for child in childrenRoot.getchildren() ]
+            return [ XmlItemAdapter(child) for child in childrenRoot.getchildren() ]
         else:
             return []
 
@@ -133,10 +114,9 @@ class XmlTreeBuilder(INodeTreeBuilder):
         
         self._root  = None
         self._stack = [] 
-        self._contentRoot = None
  
     
-    def _serialize(self, key, value, contentRoot = None):
+    def _serialize(self, key, value):
         element = xml.Element(key)
         
         if isinstance(value, dict):
@@ -179,10 +159,7 @@ class XmlTreeBuilder(INodeTreeBuilder):
     
     
     def addProperty(self, key, value):
-        if key == "content" and len(self._stack) == 1:
-            self._contentRoot = value
-            
-        self._current().properties.append(self._serialize(key, value, self._contentRoot))
+        self._current().properties.append(self._serialize(key, value))
     
     
     def closeNode(self):

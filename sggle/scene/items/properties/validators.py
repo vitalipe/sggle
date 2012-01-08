@@ -14,7 +14,7 @@ from PySide.QtGui  import QDoubleValidator
 from PySide.QtGui  import QRegExpValidator
 
 
-#FIXME: how about using TypeValidator with str(input) and then str(input[:-1])
+#FIXME: change to TypeValidator with str(input)
 class AcceptValidator(QValidator):
     
     def validate(self, input, pos):
@@ -57,7 +57,7 @@ class IntValadator(QIntValidator):
 class NameValidator(QRegExpValidator):
     
     def __init__(self):
-        QRegExpValidator.__init__(self, QRegExp("[a-z,_]+[a-z,0-9,_]*"), None)
+        QRegExpValidator.__init__(self, QRegExp("[a-z,A-Z,_]+[a-z,0-9,_]*"), None)
 
 
   

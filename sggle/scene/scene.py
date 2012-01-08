@@ -36,7 +36,7 @@ class LayeredGraphicsScene(QGraphicsScene):
         self.selectionChanged.connect(self._updateSelectionMaster)
 
     
-    def properties(self): #FIXME: 
+    def rootItem(self): 
         return self._rootItem    
                
     def layers(self):

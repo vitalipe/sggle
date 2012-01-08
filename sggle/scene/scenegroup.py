@@ -103,7 +103,7 @@ class SceneGroup(QObject):
         self._undoGroup.addStack(undoStack)
         self._sceneUndoStackMap[scene] = undoStack
         
-        self.sceneWasAdded.emit(self.index(scene), scene.properties().value("name"))
+        self.sceneWasAdded.emit(self.index(scene), scene.rootItem().value("name"))
         
         if self.activeScene() is None:
             self.setActiveScene(scene)

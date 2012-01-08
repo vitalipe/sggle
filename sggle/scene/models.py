@@ -59,7 +59,7 @@ class ItemPropertiesModel(QAbstractItemModel):
         funcs = [
                  self._sceneGroup.activeScene().selectionMaster,
                  self._sceneGroup.activeScene().activeLayer,
-                 self._sceneGroup.activeScene().properties 
+                 self._sceneGroup.activeScene().rootItem 
                  ]
         
         for f in funcs:

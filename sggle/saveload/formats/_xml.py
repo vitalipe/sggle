@@ -79,7 +79,7 @@ class XmlItemAdapter(INodeAdapter):
 
 
     def _initContentRoot(self):
-        for k,v in self.properties():
+        for k,v in self.properties(): #FIXME: WTF?
             if k == "content":
                 self._contentRoot = v
                 break
@@ -199,7 +199,7 @@ class XmlTreeBuilder(INodeTreeBuilder):
         
         element.append(eProperties)
         element.append(eChildren)
-        element.childern     = eChildren
+        element.childern   = eChildren
         element.properties = eProperties
         
         return element

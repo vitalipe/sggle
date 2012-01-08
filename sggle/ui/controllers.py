@@ -372,7 +372,7 @@ class ViewController(BaseController):
     
     def centerOnOrigin(self):
         assert self._view
-        originPoint = self._sceneGroup.activeScene().properties().value("origin")
+        originPoint = self._sceneGroup.activeScene().rootItem().value("origin")
         self._view.centerOn(originPoint)
     
     

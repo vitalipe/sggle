@@ -3,7 +3,7 @@ Created on Sep 30, 2011
 
 @author: vitali
 '''
-
+    
 
 from sys           import argv
 from PySide.QtGui  import QApplication

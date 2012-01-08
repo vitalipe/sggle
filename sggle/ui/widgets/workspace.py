@@ -27,7 +27,7 @@ def newWorkspace(sceneView, sceneGroup, fileController):
     
     setTabTitle = (lambda i,p: 
                    tabs.setCurrentTabTitle(i.value("name")) 
-                   if p == "name" and i == sceneGroup.activeScene().properties() else None) 
+                   if p == "name" and i == sceneGroup.activeScene().rootItem() else None) 
     sceneGroup.itemPropertyWasChanged.connect(setTabTitle)    
         
     return workspace

@@ -50,7 +50,7 @@ class SceneTreeBuilder(INodeTreeBuilder):
     def startNode(self, typeName):        
         if not self._scene:
             self._scene = scene.newEmptyGraphicsScene()
-            item        = self._scene.properties()
+            item        = self._scene.rootItem()
         
         else:    
             item = items.newItemFromTypeName(typeName)

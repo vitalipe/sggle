@@ -15,7 +15,7 @@ def writeScene(sceneObject, fileStream, formatName):
     builder  = format.builder()
     dumper   = format.dumper()
     
-    treeRoot = buildTree(formats.scene.ItemAdapter(sceneObject.rootItem()), builder)
+    treeRoot = buildTree(formats.scene.ItemNodeAdapter(sceneObject.rootItem()), builder)
     dumper.dump(treeRoot, fileStream)
     
     

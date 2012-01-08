@@ -53,7 +53,7 @@ class IntValadator(QIntValidator):
 
 
 
-#TODO: add flexup metod
+#TODO: add flexup method
 class NameValidator(QRegExpValidator):
     
     def __init__(self):

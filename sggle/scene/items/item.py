@@ -40,9 +40,8 @@ class SceneItem(object):
                                      QGraphicsItem.ItemOpacityHasChanged  : "opacity",
                                      ItemXFlipHasChanged                  : "flip_y",
                                      ItemYFlipHasChanged                  : "flip_y",            
-                                     
+                
                                   }
-    
     
     
     def __init__(self):
@@ -62,14 +61,17 @@ class SceneItem(object):
     def typeName(self):
         return self.__class__.__name__
    
+   
     def propertyIndex(self, property):
         key = property.name()
         return self._properties.keys().index(key)
+   
          
     def property(self, key):
         if isinstance(key, int):
             return self.property(self._properties.keys()[key]) 
         return self._properties.get(key)
+   
     
     def properties(self):
         properties = OrderedDict()
@@ -100,7 +102,7 @@ class SceneItem(object):
         self._properties.pop(key)
         self._cache.pop(key)
         
-    
+        
     def propertyCount(self):
         return len(self._properties.keys())
     
@@ -108,7 +110,20 @@ class SceneItem(object):
     def copy(self):
         raise NotImplementedError()
   
-         
+  
+    def serializeProperties(self):
+        properties = OrderedDict()
+        for key in self._properties.keys():
+            properties[key] = self.property(key).serializeValue()
+        
+        return properties.items()
+
+ 
+    def deserializeProperties(self, properties):
+        for k,v in properties:
+            self.value(k).deserializeValue(v)
+    
+    
     def notifyChildListChanges(self):
         if self.scene():
             self.scene().listOfItemsChanged.emit(self)

@@ -62,6 +62,14 @@ class Property(object):
         return AcceptValidator()
     
     
+    def serializeValue(self):
+        return self.value() #raise NotImplementedError()
+    
+    
+    def deserializeValue(self, value):
+        return self.setValue(value) #raise NotImplementedError()
+    
+    
     def __str__(self):
         return str(self.__dict__) 
     
@@ -98,18 +106,19 @@ class ComponentProperty(Property):
     def validator(self, *keys):
         assert len(keys) == 0 or set(keys).issubset(self.componentNames())
    
+      
+    def serializeValue(self):
+        components = {}
+        for k in self.componentNames():
+            components[k] = self.componentValue(k)
+        return components
 
-    def _validator(self):
-        return Property.validator(self)
-    
-    def _value(self):
-        return Property.value(self)
-    
-    
-    def _setValue(self, value):
-        return Property.setValue(self, value)
-    
-     
+
+    def deserializeValue(self, components):
+        for k,v in components.items():
+            self.setComponentValue(k, v)
+            
+       
     def componentValidator(self, key):
         raise NotImplementedError()
     
@@ -120,6 +129,20 @@ class ComponentProperty(Property):
     
     def setComponentValue(self, key, value):
         raise NotImplementedError()
+    
+    
+    def _validator(self):
+        return Property.validator(self)
+    
+    def _value(self):
+        return Property.value(self)
+    
+    
+    def _setValue(self, value):
+        return Property.setValue(self, value)
+ 
+    
+  
     
     
     

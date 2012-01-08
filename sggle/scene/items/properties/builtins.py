@@ -4,6 +4,9 @@ Created on Dec 29, 2011
 @author: vitali
 '''
 
+from os.path import join    as joinPath
+from os.path import relpath as relativePath
+
 from property import Property
 from property import PointProperty
 from property import RectProperty
@@ -158,7 +161,23 @@ class TextureProperty(Property):
         Property.setValue(self, value) # cache
 
 
+    def serializeValue(self):
+        path  = self.value().path()
+        scene = self._item.scene()
+        
+        if scene is None:
+            return path
+        
+        contentRoot = scene.rootItem().value("content")
+        return ":" + relativePath(path, contentRoot)
 
+
+    def deserializeValue(self, value):
+        value = value[1:]
+        contentRoot = self._item.scene().rootItem().value("content")
+        self.setValue(joinPath(contentRoot, value))
+        
+        
     
 class ParallaxProperty(PointProperty):
     

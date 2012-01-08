@@ -82,7 +82,7 @@ class TextureItem(SceneItem, QGraphicsPixmapItem):
         self._addProperty(newBuiltinProperty("texture"  , self),  None)
 
         
-    def setPixmap(self, pixmap): #FIXME: make it a property (origin)
+    def setPixmap(self, pixmap): 
         QGraphicsPixmapItem.setPixmap(self, pixmap) 
         self.setTransformOriginPoint(self.pixmap().width()/2 , self.pixmap().height()/2)   
 

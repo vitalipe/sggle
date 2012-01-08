@@ -13,7 +13,7 @@ import sggle.scene        as scene
 
 
 #FIXME: Do I need this class?
-class ItemAdapter(INodeAdapter):
+class ItemNodeAdapter(INodeAdapter):
     
     def __init__(self, item):
         INodeAdapter.__init__(self)
@@ -26,11 +26,11 @@ class ItemAdapter(INodeAdapter):
     
     
     def properties(self):
-        return self._item.properties()
+        return self._item.serializeProperties()
     
     
     def childItems(self):
-        return [ ItemAdapter(child) for child in self._item.childItems() ]
+        return [ ItemNodeAdapter(child) for child in self._item.childItems() ]
 
     
 
@@ -67,7 +67,7 @@ class SceneTreeBuilder(INodeTreeBuilder):
         
         if not item.hasProperty(key): # assume custom
             item.addCustomProperty(key)
-        item.setValue(key, value)
+        item.property(key).deserializeValue(value)
     
     
     def closeNode(self):

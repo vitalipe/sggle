@@ -5,13 +5,6 @@ Created on Dec 29, 2011
 '''
 
 
-from os.path import join    as joinPath
-from os.path import relpath as relativePath
-
-
-from PySide.QtCore import QPointF
-from PySide.QtCore import QRectF
-
 
 
 from .. interfaces import IParser 
@@ -21,7 +14,6 @@ from .. interfaces import INodeTreeBuilder
 
 from .. import errors
 
-import sggle.resources as resources
 import xml.etree.ElementTree as xml
 
 
@@ -68,15 +60,11 @@ class XmlElementTreeDumper(IDumper):
 
 class XmlItemAdapter(INodeAdapter):
 
-    def __init__(self, element, contentRoot = None):
+    def __init__(self, element, contentRoot=None):
         INodeAdapter.__init__(self)
         
         self._element     = element
-        self._contentRoot = contentRoot
-        
-        if contentRoot is None: # root item
-            self._initContentRoot()
-
+        self._contentRoot = ""
 
     def _initContentRoot(self):
         for k,v in self.properties(): #FIXME: WTF?
@@ -101,31 +89,15 @@ class XmlItemAdapter(INodeAdapter):
     def _deserialize(self, element, contentRoot = None):
         
         if len(element.getchildren()): 
-            # QRectF
-            if (self._containsSubElements(element, "x", "y","w", "h")):
-                x = self._deserialize(element.find("x"))
-                y = self._deserialize(element.find("y"))
-                w = self._deserialize(element.find("w"))
-                h = self._deserialize(element.find("h"))
-                return QRectF(x,y,w,h)
-            
-            # QPointF
-            elif (self._containsSubElements(element, "x", "y")):
-                x = self._deserialize(element.find("x"))
-                y = self._deserialize(element.find("y"))
-                return QPointF(x,y)
-             
-            else:   
-                raise TypeError(element)
+            value = {}
+            for child in element.getchildren():
+                value[child.tag] = self._deserialize(child)
+            return value
         
         try:
             value = eval(element.text)
         except SyntaxError:
             raise TypeError(element.text)
-        
-        if isinstance(value, (str,unicode)) and value[0] == ":":
-            path  = joinPath(contentRoot, value[1:])
-            value = resources.loader.pixmap.load(path) 
             
         return value
        
@@ -163,28 +135,20 @@ class XmlTreeBuilder(INodeTreeBuilder):
         self._stack = [] 
         self._contentRoot = None
  
-        
-    def _srerialize(self, key, value, contentRoot = None):
+    
+    def _serialize(self, key, value, contentRoot = None):
         element = xml.Element(key)
-  
-        if isinstance(value, QPointF):
-            for k,v in [ ("x",value.x()), ("y",value.y()) ]:
-                element.append(self._srerialize(k, v))
-                
-        elif isinstance(value, resources.resource.PixmapResource):
-            element.text = '"' + ":" + relativePath(value.path(),contentRoot) + '"'
-            
-        elif isinstance(value, QRectF):
-            for k,v in [ ("x",value.x()), ("y",value.y()), 
-                        ("w",value.width()), ("h", value.height()) ]:
-                element.append(self._srerialize(k, v))
-            
+        
+        if isinstance(value, dict):
+            for k,v in value.items():
+                element.append(self._serialize(k, v)) 
+            return element
+        
+        if isinstance(value, (str, unicode)): 
+            element.text = ('"' + value + '"')  # extra quotes for eval()
         else:
-            if isinstance(value, (str, unicode)): 
-                element.text = ('"' + value + '"')  # extra quotes for eval()
-            else:
-                element.text = str(value)
-                    
+            element.text = str(value)
+              
         return element
         
         
@@ -218,7 +182,7 @@ class XmlTreeBuilder(INodeTreeBuilder):
         if key == "content" and len(self._stack) == 1:
             self._contentRoot = value
             
-        self._current().properties.append(self._srerialize(key, value, self._contentRoot))
+        self._current().properties.append(self._serialize(key, value, self._contentRoot))
     
     
     def closeNode(self):

@@ -53,6 +53,11 @@ class NameProperty(Property):
         return NameValidator()
 
 
+    def setValue(self, value):
+        validator = self.validator()
+        value = validator.fixup(value)
+        Property.setValue(self, value)
+
 
 
 class ContentRootProperty(Property):

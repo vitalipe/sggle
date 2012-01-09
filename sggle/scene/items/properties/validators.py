@@ -28,7 +28,7 @@ class IRawValidator(object):
         
 class TypeCheckValidator(QValidator, IRawValidator):
     
-    def __init__(self, typeFactory=None):
+    def __init__(self, typeFactory=object): 
         QValidator.__init__(self)
         IRawValidator.__init__(self)        
         self._type = typeFactory
@@ -165,8 +165,7 @@ class NameValidator(QRegExpValidator, IRawValidator):
             input = "_" + input[1:]
             
         while regX.exactMatch(input) is False:
-                m = regX.matchedLength()
-                print m, len(input)
+                m     = regX.matchedLength()
                 input = input.replace(input[m], "")
 
         return input

@@ -93,19 +93,15 @@ class PropertiesDelegate(QItemDelegate):
     def setModelData (self, editor, model, index):
         
         if isinstance(editor, QLineEdit):
-            value     = editor.text()
             valueType = type(index.data(Qt.EditRole))
             validator = editor.validator()
-            
-            v = validator.validate(value, len(value))
-            try:
-                v = v[0]
-            except TypeError:
-                pass
-            
-            if v == validator.Acceptable:
+            value     = valueType(editor.text())
+
+            if validator.validateRawValue(value) == validator.Acceptable:
                 model.setData(index, valueType(value))
             
         else:
             QItemDelegate.setModelData(self, editor, model, index)
+            
+            
     

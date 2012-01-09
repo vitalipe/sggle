@@ -53,11 +53,24 @@ class IntValadator(QIntValidator):
 
 
 
-#TODO: add flexup method
 class NameValidator(QRegExpValidator):
     
     def __init__(self):
         QRegExpValidator.__init__(self, QRegExp("[a-z,A-Z,_]+[a-z,0-9,_]*"), None)
 
 
+    def fixup(self, input):
+        if len(input) == 0:
+            return input
+        regX = self.regExp()
+        if regX.exactMatch(input[0]) == False:
+            input = "_" + input[1:]
+            
+        while regX.exactMatch(input) is False:
+                m = regX.matchedLength()
+                print m, len(input)
+                input = input.replace(input[m], "")
+
+        return input
+    
   

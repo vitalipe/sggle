@@ -6,6 +6,7 @@ Created on Dec 29, 2011
 
 from .. interfaces import INodeAdapter
 from .. interfaces import INodeTreeBuilder
+from .. errors     import LoadError
 
 import sggle.scene.items  as items 
 import sggle.scene        as scene
@@ -67,7 +68,9 @@ class SceneTreeBuilder(INodeTreeBuilder):
         
         if not item.hasProperty(key): # assume custom
             item.addCustomProperty(key)
-        item.property(key).deserializeValue(value)
+
+        if item.property(key).deserializeValue(value) == False:
+            raise LoadError()
     
     
     def closeNode(self):

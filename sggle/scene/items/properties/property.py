@@ -63,11 +63,17 @@ class Property(object):
     
     
     def serializeValue(self):
-        return self.value() #raise NotImplementedError()
+        return self.value() 
     
     
     def deserializeValue(self, value):
-        return self.setValue(value) #raise NotImplementedError()
+        validator = self.validator()
+        value = validator.fixupRawValue(value)
+        if validator.validateRawValue(value) != validator.Acceptable:
+            return False
+
+        self.setValue(value)
+        return True
     
     
     def __str__(self):
@@ -115,7 +121,19 @@ class ComponentProperty(Property):
 
 
     def deserializeValue(self, components):
-        for k,v in components.items():
+        # validate & fixup:
+        for k in components.keys():
+            validator = self.componentValidator(k)
+            if validator is None:
+                return False
+            
+            v = validator.fixupRawValue(components[k])
+            if validator.validateRawValue(v) != validator.Acceptable:
+                return False
+            else:
+                components[k] = v
+        # store:
+        for k,v in components.items(): 
             self.setComponentValue(k, v)
             
        

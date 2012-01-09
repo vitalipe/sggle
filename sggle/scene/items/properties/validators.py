@@ -14,11 +14,25 @@ from PySide.QtGui  import QDoubleValidator
 from PySide.QtGui  import QRegExpValidator
 
 
-#FIXME: change to TypeValidator with str(input)
-class AcceptValidator(QValidator):
+class TypeCheckValidator(QValidator):
+    
+    def __init__(self, typeFactory=None):
+        QValidator.__init__(self)
+        
+        self._type = typeFactory
+        
     
     def validate(self, input, pos):
-        return QValidator.Acceptable
+        type = self._type
+        if type is None:
+            return  QValidator.Acceptable
+        
+        try:
+            self._type(input)
+            return QValidator.Acceptable
+
+        except TypeError:
+            return QValidator.Invalid
 
 
 

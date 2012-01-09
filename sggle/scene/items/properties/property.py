@@ -4,7 +4,7 @@ Created on Dec 29, 2011
 @author: vitali
 '''
 
-from validators import AcceptValidator
+from validators import TypeCheckValidator
 from validators import FloatValadator
 
 
@@ -59,7 +59,7 @@ class Property(object):
     
     
     def validator(self):
-        return AcceptValidator()
+        return TypeCheckValidator()
     
     
     def serializeValue(self):

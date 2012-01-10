@@ -8,7 +8,6 @@ from PySide.QtCore import QPointF
 from PySide.QtCore import QRectF
 from PySide.QtCore import QAbstractItemModel
 from PySide.QtCore import QAbstractListModel
-from PySide.QtCore import QAbstractTableModel
 from PySide.QtCore import QModelIndex
 from PySide.QtCore import Qt
 from PySide.QtGui import  QIcon
@@ -17,7 +16,6 @@ from PySide.QtGui import QItemSelectionModel
 from PySide.QtGui import QItemSelection
 
 
-import resources
 
 
 class ItemPropertiesModel(QAbstractItemModel):
@@ -127,8 +125,8 @@ class ItemPropertiesModel(QAbstractItemModel):
         if role == ItemPropertiesModel.ValidatorRole:
             if index.parent().isValid():
                 p = index.internalPointer()
-                key = p.componentNames()[index.row()]
-                return p.componentValidator(key)
+                p = p.componentList()[index.row()]
+                return p.validator()
             else:
                 return self._item.property(index.row()).validator()
 
@@ -139,11 +137,11 @@ class ItemPropertiesModel(QAbstractItemModel):
         col = index.column()
         if index.parent().isValid():
             property = index.internalPointer()
-            componentKey = property.componentNames()[row]
+            component = property.componentList()[row]
             if col == ItemPropertiesModel.NameColumn:
-                return componentKey
+                return component.name()
             if col == ItemPropertiesModel.ValueColumn:
-                return property.value(componentKey)
+                return component.value()
             if col == ItemPropertiesModel.SepColumn:
                 return ":"
         
@@ -184,8 +182,8 @@ class ItemPropertiesModel(QAbstractItemModel):
         
         if index.parent().isValid():
             property = index.internalPointer()
-            key = property.componentNames()[index.row()]
-            property.setComponentValue(key, value)
+            component = property.componentList()[index.row()]
+            component.setValue(value)
         else:
             property   = self._item.property(index.row())
             property.setValue(value)
@@ -207,8 +205,8 @@ class ItemPropertiesModel(QAbstractItemModel):
 
         if not index.parent().isValid(): # get number of components
             p = self._item.property(index.row())
-            if hasattr(p, "componentNames"):
-                return len(p.componentNames())
+            if hasattr(p, "componentList"):
+                return len(p.componentList())
             else:
                 return 0
         

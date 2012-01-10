@@ -11,6 +11,7 @@ from property import Property
 from property import PointProperty
 from property import RectProperty
 
+from validators import TypeCheckValidator
 from validators import DirPathValidator
 from validators import NameValidator
 from validators import FloatValadator
@@ -46,12 +47,9 @@ def newBuiltinProperty(propertyName, item):
 class NameProperty(Property):
     
     def __init__(self, item):
-        Property.__init__(self, "name", item, readOnly = False, builtin = True)
+        Property.__init__(self, "name", item, readOnly = False, builtin = True,
+                          validator = NameValidator())
         
-        
-    def validator(self):
-        return NameValidator()
-
 
     def setValue(self, value):
         validator = self.validator()
@@ -63,19 +61,16 @@ class NameProperty(Property):
 class ContentRootProperty(Property):
     
     def __init__(self, item):
-        Property.__init__(self, "content", item, readOnly = False, builtin = True)
-        
-        
-    def validator(self):
-        return DirPathValidator()
-
+        Property.__init__(self, "content", item, readOnly = False, builtin = True,
+                          validator = DirPathValidator())
         
 
 
 class ZOrderProperty(Property):
     
     def __init__(self, item):
-        Property.__init__(self, "z_order", item, readOnly = False, builtin = True)
+        Property.__init__(self, "z_order", item, readOnly = False, builtin = True,
+                          validator = FloatValadator(0, 100, 2, None))
 
 
     def setValue(self, value):
@@ -85,9 +80,6 @@ class ZOrderProperty(Property):
     def value(self):
         return self.item().zValue()
         
-        
-    def validator(self):
-        return FloatValadator(0, 100, 2, None)
 
         
         
@@ -99,11 +91,11 @@ class PositionProperty(PointProperty):
         PointProperty.__init__(self, "position", item, readOnly = False, builtin = True)
     
     
-    def _setValue(self, value):
+    def setValue(self, value):
         self.item().setPos(value)
         
     
-    def _value(self):
+    def value(self):
         return self.item().pos()
     
     
@@ -113,7 +105,8 @@ class ScaleProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "scale", item, readOnly = False, builtin = True)
+        Property.__init__(self, "scale", item, readOnly = False, builtin = True,
+                          validator = FloatValadator(0.1, 10.0, 2, None))
     
     
     def setValue(self, value):    
@@ -122,11 +115,6 @@ class ScaleProperty(Property):
     
     def value(self):
         return self.item().scale()
-    
-    
-    def validator(self):
-        return FloatValadator(0.1, 10.0, 2, None)
-
 
 
 
@@ -134,7 +122,8 @@ class RotationProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "rotation", item, readOnly = False, builtin = True)
+        Property.__init__(self, "rotation", item, readOnly = False, builtin = True,
+                          validator = IntValadator(0, 359, None))
     
     
     def setValue(self, value):    
@@ -143,10 +132,7 @@ class RotationProperty(Property):
     
     def value(self):
         return self.item().rotation()
-        
-        
-    def validator(self):
-        return IntValadator(0, 359, None)
+
         
         
         
@@ -191,8 +177,9 @@ class ParallaxProperty(PointProperty):
         PointProperty.__init__(self, "parallax", item, readOnly = False, builtin = True)
         
         
-    def componentValidator(self, key):
-        return FloatValadator(0.0, 100.0, 1, None)
+    def _syncValidator(self, validator, key=None):
+        if key is not None:
+            validator.setRange(0.0, 100.0, 1)
         
     
     
@@ -202,7 +189,8 @@ class FlipXProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "flip_x", item, readOnly = False, builtin = True)
+        Property.__init__(self, "flip_x", item, readOnly = False, builtin = True,
+                          validator = TypeCheckValidator(bool))
     
     
     def setValue(self, value):    
@@ -218,7 +206,8 @@ class FlipYProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "flip_y", item, readOnly = False, builtin = True)
+        Property.__init__(self, "flip_y", item, readOnly = False, builtin = True,
+                          validator = TypeCheckValidator(bool))
     
     
     def setValue(self, value):    
@@ -235,7 +224,8 @@ class OpacityProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "opacity", item, readOnly = False, builtin = True)
+        Property.__init__(self, "opacity", item, readOnly = False, builtin = True, 
+                          validator = FloatValadator(0.1, 1.0, 1, None))
     
     
     def setValue(self, value):
@@ -244,11 +234,7 @@ class OpacityProperty(Property):
     
     def value(self):
         return self.item().opacity()
-    
-    
-    def validator(self):
-        return FloatValadator(0.1, 1.0, 1, None)
-           
+   
             
            
 class OriginProperty(PointProperty):
@@ -258,11 +244,8 @@ class OriginProperty(PointProperty):
         PointProperty.__init__(self, "origin", item, readOnly = False, builtin = True)
         
         
-    def min(self, key=None):
-        return 0
-    
-    def max(self, key=None):
-        return 42
+    def _syncValidator(self, validator, name=None):
+        pass #FIXME:
     
     
 class BoundsProperty(RectProperty):

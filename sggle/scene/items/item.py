@@ -86,7 +86,13 @@ class SceneItem(object):
     
     
     def setValue(self,key,value=None, **kv):
-        self.property(key).setValue(value, **kv)
+        assert (value is None) != (len(kv) == 0) # value xor kv
+        p = self.property(key)
+        if value is not None:
+            p.setValue(value)
+        else:
+            for k,v in kv.items():
+                p.component(k).setValue(v)
     
     
     def addCustomProperty(self, key, value = None):

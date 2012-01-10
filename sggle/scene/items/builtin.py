@@ -87,18 +87,6 @@ class TextureItem(SceneItem, QGraphicsPixmapItem):
         self.setTransformOriginPoint(self.pixmap().width()/2 , self.pixmap().height()/2)   
 
 
-    def _createItemDefaults(self,item):
-        defaults = dict(self.properties())
-        for key,value in defaults.items():
-            if not item.hasProperty(key): # assume custom
-                item.addCustomProperty(key)
-            item.setValue(key, value)
-    
-    def copy(self):
-        item     = TextureItem()
-        self._createItemDefaults(item)
-        
-        return item
     
     
     

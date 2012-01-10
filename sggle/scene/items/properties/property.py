@@ -38,10 +38,22 @@ class Property(object):
     
     
     def value(self):
+        if self._item.scene():
+            try:
+                return self._customGetValue()
+            except NotImplementedError:
+                pass
+            
         return self.item()._getValueFromCache(self.name())
     
     
     def setValue(self,value):
+        if self._item.scene():
+            try:
+                return self._customSetValue(value)
+            except NotImplementedError:
+                pass
+        
         self.item()._setValueInCache(self.name(), value)
             
         
@@ -70,6 +82,14 @@ class Property(object):
 
         self.setValue(value)
         return True
+    
+    
+    def _customGetValue(self):
+        raise NotImplementedError()
+    
+    
+    def _customSetValue(self, value):
+        raise NotImplementedError()
     
     
     def __str__(self):

@@ -114,7 +114,13 @@ class SceneItem(object):
     
     
     def copy(self):
-        raise NotImplementedError()
+        item = type(self)()
+        for key,value in self.properties():
+            if not item.hasProperty(key): # assume custom
+                item.addCustomProperty(key)
+            item.setValue(key, value)
+            
+        return item
   
   
     def serializeProperties(self):
@@ -157,24 +163,34 @@ class SceneItem(object):
         
     def itemChange(self, changeType, newValue):
         
+        if changeType == QGraphicsItem.ItemSceneChange:
+            if self.scene() is not None:
+                self._syncToCache()
+            return newValue
+        
+        if changeType == QGraphicsItem.ItemSceneHasChanged:
+            if self.scene() is not None:
+                self._syncFromCache()
+            return newValue
+        
         # property has changed
         propertyName = SceneItem.itemHasChangedToPropertyMap.get(changeType)        
         if propertyName is not None:
-            self._setValueInCache(propertyName, newValue) # sync cache and notify scene 
+            self.notifyPropertyChanged(propertyName)
             
         # child list changed  
         elif (changeType == QGraphicsItem.ItemChildAddedChange or 
               changeType == QGraphicsItem.ItemChildRemovedChange):
             self.notifyChildListChanges()
             
-        # Only request property change
+        # send request 
         elif (not self._directEdit):
             propertyName = SceneItem.itemChangeToPropertyMap.get(changeType)        
             if propertyName is not None: # change we care about
                 self.notifyPropertyChangeRequest(propertyName, newValue)   
                 return  self.value(propertyName)
         
-        # change it
+        # change directly
         return newValue
     
     
@@ -220,11 +236,22 @@ class SceneItem(object):
                 
     def _setValueInCache(self, key, value):
         self._cache[key] = value
-        self.notifyPropertyChanged(key) 
+        #self.notifyPropertyChanged(key) 
 
-        
         
     def _getValueFromCache(self,key):
         return self._cache[key]
         
-    
+        
+    def _syncToCache(self):
+        for k,v in self.properties():
+            self._setValueInCache(k,v)
+        
+        
+    def _syncFromCache(self):
+        self.enableDirectEdit()
+        for p in self._properties.values():
+            v = self._getValueFromCache(p.name())
+            if v is not None:
+                p.setValue(v)
+        self.disableDirectEdit()

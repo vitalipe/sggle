@@ -73,11 +73,11 @@ class ZOrderProperty(Property):
                           validator = FloatValadator(0, 100, 2, None))
 
 
-    def setValue(self, value):
+    def _customSetValue(self, value):
         self.item().setZValue(value)
 
         
-    def value(self):
+    def _customGetValue(self):
         return self.item().zValue()
         
 
@@ -91,11 +91,11 @@ class PositionProperty(PointProperty):
         PointProperty.__init__(self, "position", item, readOnly = False, builtin = True)
     
     
-    def setValue(self, value):
+    def _customSetValue(self, value):
         self.item().setPos(value)
         
     
-    def value(self):
+    def _customGetValue(self):
         return self.item().pos()
     
     
@@ -109,11 +109,11 @@ class ScaleProperty(Property):
                           validator = FloatValadator(0.1, 10.0, 2, None))
     
     
-    def setValue(self, value):    
+    def _customSetValue(self, value):    
         self.item().setScale(value)
     
     
-    def value(self):
+    def _customGetValue(self):
         return self.item().scale()
 
 
@@ -126,11 +126,15 @@ class RotationProperty(Property):
                           validator = IntValadator(0, 359, None))
     
     
-    def setValue(self, value):    
-        self.item().setRotation(value % 360) #FIXME: remove this
+    def setValue(self, value):
+        Property.setValue(self, value % 360) #FIXME: remove this
     
     
-    def value(self):
+    def _customSetValue(self, value):    
+        self.item().setRotation(value)
+    
+    
+    def _customGetValue(self):
         return self.item().rotation()
 
         
@@ -149,7 +153,7 @@ class TextureProperty(Property):
             value = resources.loader.pixmap.load(value) #FIXME: this API is ugly!!   
              
         self.item().setPixmap(value) 
-        Property.setValue(self, value) # cache
+        Property.setValue(self, value) 
 
 
     def serializeValue(self):
@@ -193,11 +197,11 @@ class FlipXProperty(Property):
                           validator = TypeCheckValidator(bool))
     
     
-    def setValue(self, value):    
+    def _customSetValue(self, value):    
         self.item().flipX(value)
     
     
-    def value(self):
+    def _customGetValue(self):
         return self.item().xFlipped()
     
         
@@ -210,11 +214,11 @@ class FlipYProperty(Property):
                           validator = TypeCheckValidator(bool))
     
     
-    def setValue(self, value):    
+    def _customSetValue(self, value):    
         self.item().flipY(value)
     
     
-    def value(self):
+    def _customGetValue(self):
         return self.item().yFlipped()
         
         
@@ -228,11 +232,11 @@ class OpacityProperty(Property):
                           validator = FloatValadator(0.1, 1.0, 1, None))
     
     
-    def setValue(self, value):
+    def _customSetValue(self, value):
         self.item().setOpacity(value)
     
     
-    def value(self):
+    def _customGetValue(self):
         return self.item().opacity()
    
             

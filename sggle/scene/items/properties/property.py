@@ -25,13 +25,14 @@ class Property(object):
     
 
     def __init__(self, name, item, readOnly = False , builtin = True, 
-                 validator = TypeCheckValidator()):
+                 validator = TypeCheckValidator(), value = None):
                 
         self._name      = name
         self._item      = item 
         self._validator = validator
         self._readOnly  = readOnly
         self._builtin   = builtin
+        self._value     = None
         
         
     def name(self):
@@ -49,12 +50,12 @@ class Property(object):
             except NotImplementedError:
                 pass
             
-        return self.item()._getValueFromCache(self.name())
+        return self._value
     
     
     def setValue(self,value):
         item  = self.item()
-        scene = item.scene
+        scene = item.scene()
         if scene:
             try:
                 self._customSetValue(value)
@@ -65,11 +66,11 @@ class Property(object):
                 if not item._directEdit:
                     item.notifyPropertyChangeRequest(self.name(), value)
                 else:
-                    item._setValueInCache(self.name(), value)
+                    self._value = value
                     item.notifyPropertyChanged(self.name())
         
         else: # not in scene, always use cache
-            self.item()._setValueInCache(self.name(), value)
+            self._value = value
                 
         
     def readOnly(self):

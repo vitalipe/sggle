@@ -21,7 +21,7 @@ class SceneItem(object):
     ItemYFlipChange     = 102
     ItemYFlipHasChanged = 103
     
-    itemChangeToPropertyMap =    {        
+    itemChangeToPropertyMap =    { #FIXME: refactor  
                                      QGraphicsItem.ItemPositionChange     : "position", 
                                      QGraphicsItem.ItemRotationChange     : "rotation",
                                      QGraphicsItem.ItemScaleChange        : "scale",
@@ -31,7 +31,7 @@ class SceneItem(object):
                                      ItemYFlipChange                      : "flip_y",                                    
                                   }
     
-    itemHasChangedToPropertyMap = {        
+    itemHasChangedToPropertyMap = {  #FIXME: safe to remove      
                                      
                                      QGraphicsItem.ItemPositionHasChanged : "position",
                                      QGraphicsItem.ItemRotationHasChanged : "rotation",
@@ -48,7 +48,6 @@ class SceneItem(object):
         object.__init__(self)
         
         self._properties = OrderedDict()
-        self._cache      = {}
         self._directEdit = False
         
         self._createBuiltinProperties()
@@ -119,7 +118,7 @@ class SceneItem(object):
             if not item.hasProperty(key): # assume custom
                 item.addCustomProperty(key)
             item.setValue(key, value)
-            
+
         return item
   
   
@@ -223,30 +222,19 @@ class SceneItem(object):
         return False if self.transform().m22() > 0 else True
     
     
-    def _addProperty(self, property, value = None): #FIXME default value not working
+    def _addProperty(self, property): #FIXME default value not working
         key = property.name()
         self._properties[key] = property
-        self._cache[key]      = value
     
-                
-    def _setValueInCache(self, key, value):
-        self._cache[key] = value
-        #self.notifyPropertyChanged(key) 
-
-        
-    def _getValueFromCache(self,key):
-        return self._cache[key]
-        
         
     def _syncToCache(self):
-        for k,v in self.properties():
-            self._setValueInCache(k,v)
+        for p in self._properties.values():
+            p._value = p.value()
         
         
     def _syncFromCache(self):
         self.enableDirectEdit()
         for p in self._properties.values():
-            v = self._getValueFromCache(p.name())
-            if v is not None:
-                p.setValue(v)
+            if p._value is not None:
+                p.setValue(p._value)
         self.disableDirectEdit()

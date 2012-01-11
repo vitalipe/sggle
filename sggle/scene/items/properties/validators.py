@@ -55,10 +55,7 @@ class TypeCheckValidator(QValidator, IRawValidator):
         
         
     def fixupRawValue(self, value):
-        try:
-            return self._type(input)
-        except:
-            return value
+        return value # Don't be tempted to convert type. It will break booleans
         
 
 

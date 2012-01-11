@@ -26,10 +26,10 @@ class SceneRootItem(SceneItem, QGraphicsPixmapItem):
         
         
     def _createBuiltinProperties(self):
-        self._addProperty(newBuiltinProperty("name", self), "scene")
-        self._addProperty(newBuiltinProperty("content", self), QDir.homePath()) 
-        self._addProperty(newBuiltinProperty("bounds", self), QRectF(0,0,0,0)) 
-        self._addProperty(newBuiltinProperty("origin", self), QPointF(0,0)) 
+        self._addProperty(newBuiltinProperty("name", self, "scene"))
+        self._addProperty(newBuiltinProperty("content", self, QDir.homePath())) 
+        self._addProperty(newBuiltinProperty("bounds", self, QRectF(0,0,0,0))) 
+        self._addProperty(newBuiltinProperty("origin", self, QPointF(0,0)) )
 
 
     def bounds(self):
@@ -55,9 +55,9 @@ class Layer(SceneItem, QGraphicsPixmapItem):
         SceneItem.__init__(self)
     
     def _createBuiltinProperties(self):
-        self._addProperty(newBuiltinProperty("name", self),     "layer") 
-        self._addProperty(newBuiltinProperty("z_order" , self), 0.0)
-        self._addProperty(newBuiltinProperty("parallax", self), QPointF(100,100))
+        self._addProperty(newBuiltinProperty("name", self,     "layer"))
+        self._addProperty(newBuiltinProperty("z_order" , self, 0.0))
+        self._addProperty(newBuiltinProperty("parallax", self, QPointF(100,100)))
 
         
         
@@ -71,15 +71,15 @@ class TextureItem(SceneItem, QGraphicsPixmapItem):
 
     
     def _createBuiltinProperties(self):
-        self._addProperty(newBuiltinProperty("name"     , self), "item") 
-        self._addProperty(newBuiltinProperty("position" , self), QPointF(0,0))
-        self._addProperty(newBuiltinProperty("z_order"  , self),  0.0)
-        self._addProperty(newBuiltinProperty("rotation" , self),  0)
-        self._addProperty(newBuiltinProperty("scale"    , self),  1.0)
-        self._addProperty(newBuiltinProperty("flip_x"   , self),  False)
-        self._addProperty(newBuiltinProperty("flip_y"   , self),  False)
-        self._addProperty(newBuiltinProperty("opacity"  , self),  1.0)
-        self._addProperty(newBuiltinProperty("texture"  , self),  None)
+        self._addProperty(newBuiltinProperty("name"     , self, "item"))
+        self._addProperty(newBuiltinProperty("position" , self, QPointF(0,0)))
+        self._addProperty(newBuiltinProperty("z_order"  , self,  0.0))
+        self._addProperty(newBuiltinProperty("rotation" , self,  0))
+        self._addProperty(newBuiltinProperty("scale"    , self,  1.0))
+        self._addProperty(newBuiltinProperty("flip_x"   , self,  False))
+        self._addProperty(newBuiltinProperty("flip_y"   , self,  False))
+        self._addProperty(newBuiltinProperty("opacity"  , self,  1.0))
+        self._addProperty(newBuiltinProperty("texture"  , self,  None))
 
         
     def setPixmap(self, pixmap): 

@@ -20,7 +20,7 @@ from validators import IntValadator
 import sggle.resources as resources
 
 
-def newBuiltinProperty(propertyName, item):
+def newBuiltinProperty(propertyName, item, value=None):
     factories =  {
                    "name"         : NameProperty,
                    "z_order"      : ZOrderProperty,
@@ -39,8 +39,13 @@ def newBuiltinProperty(propertyName, item):
                  }
                  
     factory = factories.get(propertyName)
-    return factory(item) if factory else None
-
+    if factory is None:
+        return None
+    
+    p = factory(item)
+    if value is not None:
+        p.setValue(value)
+    return p
 
 
 

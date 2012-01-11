@@ -21,7 +21,7 @@ class SceneItem(object):
     ItemYFlipChange     = 102
     ItemYFlipHasChanged = 103
     
-    itemChangeToPropertyMap =    { #FIXME: refactor  
+    itemChangeToPropertyMap =    { 
                                      QGraphicsItem.ItemPositionChange     : "position", 
                                      QGraphicsItem.ItemRotationChange     : "rotation",
                                      QGraphicsItem.ItemScaleChange        : "scale",
@@ -29,18 +29,6 @@ class SceneItem(object):
                                      QGraphicsItem.ItemOpacityChange      : "opacity",
                                      ItemXFlipChange                      : "flip_x",
                                      ItemYFlipChange                      : "flip_y",                                    
-                                  }
-    
-    itemHasChangedToPropertyMap = {  #FIXME: safe to remove      
-                                     
-                                     QGraphicsItem.ItemPositionHasChanged : "position",
-                                     QGraphicsItem.ItemRotationHasChanged : "rotation",
-                                     QGraphicsItem.ItemScaleHasChanged    : "scale",
-                                     QGraphicsItem.ItemZValueHasChanged   : "z_order",
-                                     QGraphicsItem.ItemOpacityHasChanged  : "opacity",
-                                     ItemXFlipHasChanged                  : "flip_y",
-                                     ItemYFlipHasChanged                  : "flip_y",            
-                
                                   }
     
     
@@ -222,7 +210,7 @@ class SceneItem(object):
         return False if self.transform().m22() > 0 else True
     
     
-    def _addProperty(self, property): #FIXME default value not working
+    def _addProperty(self, property):
         key = property.name()
         self._properties[key] = property
     

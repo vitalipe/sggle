@@ -14,37 +14,29 @@ import properties
 
 
 
+    
+ 
+    
+    
+
+
 class SceneItem(object):
   
-    ItemXFlipChange     = 100
-    ItemXFlipHasChanged = 101
-    ItemYFlipChange     = 102
-    ItemYFlipHasChanged = 103
-    
-    itemChangeToPropertyMap =    { 
-                                     QGraphicsItem.ItemPositionChange     : "position", 
-                                     QGraphicsItem.ItemRotationChange     : "rotation",
-                                     QGraphicsItem.ItemScaleChange        : "scale",
-                                     QGraphicsItem.ItemZValueChange       : "z_order",
-                                     QGraphicsItem.ItemOpacityChange      : "opacity",
-                                     ItemXFlipChange                      : "flip_x",
-                                     ItemYFlipChange                      : "flip_y",                                    
-                                  }
-    
-    
+
     def __init__(self):
         object.__init__(self)
         
-        self._properties = OrderedDict()
-        self._directEdit = False
+        self._properties              = OrderedDict()
+        self._itemChangeToPropertyMap = {}
+        self._directEdit              = False
         
         self._createBuiltinProperties()
         
          
     def _createBuiltinProperties(self):
         raise NotImplementedError()
-           
-           
+    
+    
     def typeName(self):
         return self.__class__.__name__
    
@@ -167,7 +159,7 @@ class SceneItem(object):
             
         # send request 
         elif (not self._directEdit):
-            propertyName = SceneItem.itemChangeToPropertyMap.get(changeType)        
+            propertyName = self._propertyFromCahngeTypeLookup(changeType)      
             if propertyName is not None: # change we care about
                 self.notifyPropertyChangeRequest(propertyName, newValue)   
                 return  self.value(propertyName)
@@ -175,44 +167,20 @@ class SceneItem(object):
         # apply change directly
         return newValue
     
-    
-    def flipX(self, flip):
-        flip    = self.itemChange(SceneItem.ItemXFlipChange, flip)
-        if flip == self.xFlipped():
-            return
-        
-        x,y   = self.transformOriginPoint().toTuple()
-        xFlip = -1 if flip else 1
-        yFlip = -1 if self.yFlipped() else 1 
-        self.setTransform(QTransform().translate(x, y).scale(xFlip,yFlip).translate(-x, -y))
-        
-        self.itemChange(SceneItem.ItemXFlipHasChanged, flip)
-    
-    
-    def flipY(self, flip):
-        flip    = self.itemChange(SceneItem.ItemYFlipChange, flip)
-        if flip == self.yFlipped():
-            return
               
-        x,y   = self.transformOriginPoint().toTuple()
-        xFlip = -1 if self.xFlipped() else 1
-        yFlip = -1 if flip else 1
-        self.setTransform(QTransform().translate(x, y).scale(xFlip,yFlip).translate(-x, -y))
-        
-        self.itemChange(SceneItem.ItemYFlipHasChanged, flip)
-
-    
-    def xFlipped(self):
-        return False if self.transform().m11() > 0 else True
+    def _registerPropertyUpdate(self, propertyName, changeType):
+        self._itemChangeToPropertyMap[changeType] = propertyName
     
     
-    def yFlipped(self):
-        return False if self.transform().m22() > 0 else True
-    
-    
-    def _addProperty(self, property):
+    def _propertyFromCahngeTypeLookup(self,changeType):
+        return self._itemChangeToPropertyMap.get(changeType)
+ 
+ 
+    def _addProperty(self, property, changeTypeId=None):
         key = property.name()
         self._properties[key] = property
+        if changeTypeId is not None:
+            self._registerPropertyUpdate(key, changeTypeId)
     
         
     def _syncToCache(self):

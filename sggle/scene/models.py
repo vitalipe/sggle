@@ -42,8 +42,8 @@ class ItemPropertiesModel(QAbstractItemModel):
         self._updateItem()
         
         
-    def _notifyPropertyChanged(self, propertyName):
-        row       = self._item._properties.keys().index(propertyName)
+    def _notifyPropertyChanged(self, propertyName): 
+        row       = self._item.propertyIndex(propertyName)
         indexFrom = self.createIndex(row,ItemPropertiesModel.ValueColumn)
         indexTo   = self.createIndex(row+1,ItemPropertiesModel.ValueColumn)
 
@@ -108,7 +108,7 @@ class ItemPropertiesModel(QAbstractItemModel):
 
         else:# value component
             parentProperty = index.internalPointer()
-            row = self._item.propertyIndex(parentProperty)
+            row = self._item.propertyIndex(parentProperty.name())
             return self.createIndex(row, 0)
             
             

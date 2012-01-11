@@ -62,9 +62,8 @@ class SceneItem(object):
         return self.__class__.__name__
    
    
-    def propertyIndex(self, property):
-        key = property.name()
-        return self._properties.keys().index(key)
+    def propertyIndex(self, propertyName):
+        return self._properties.keys().index(propertyName)
    
          
     def property(self, key):
@@ -88,6 +87,7 @@ class SceneItem(object):
     def setValue(self,key,value=None, **kv):
         assert (value is None) != (len(kv) == 0) # value xor kv
         p = self.property(key)
+            
         if value is not None:
             p.setValue(value)
         else:
@@ -173,11 +173,6 @@ class SceneItem(object):
                 self._syncFromCache()
             return newValue
         
-        # property has changed
-        propertyName = SceneItem.itemHasChangedToPropertyMap.get(changeType)        
-        if propertyName is not None:
-            self.notifyPropertyChanged(propertyName)
-            
         # child list changed  
         elif (changeType == QGraphicsItem.ItemChildAddedChange or 
               changeType == QGraphicsItem.ItemChildRemovedChange):
@@ -190,7 +185,7 @@ class SceneItem(object):
                 self.notifyPropertyChangeRequest(propertyName, newValue)   
                 return  self.value(propertyName)
         
-        # change directly
+        # apply change directly
         return newValue
     
     

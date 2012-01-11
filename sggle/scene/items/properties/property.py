@@ -4,6 +4,11 @@ Created on Dec 29, 2011
 @author: vitali
 '''
 
+from collections import OrderedDict
+
+from PySide.QtCore import QPointF
+from PySide.QtCore import QRectF
+
 from validators import TypeCheckValidator
 from validators import FloatValadator
 
@@ -48,14 +53,24 @@ class Property(object):
     
     
     def setValue(self,value):
-        if self._item.scene():
+        item  = self.item()
+        scene = item.scene
+        if scene:
             try:
-                return self._customSetValue(value)
-            except NotImplementedError:
-                pass
+                self._customSetValue(value)
+                if item._directEdit:
+                    item.notifyPropertyChanged(self.name())
+                    
+            except NotImplementedError:  # no custom setter      
+                if not item._directEdit:
+                    item.notifyPropertyChangeRequest(self.name(), value)
+                else:
+                    item._setValueInCache(self.name(), value)
+                    item.notifyPropertyChanged(self.name())
         
-        self.item()._setValueInCache(self.name(), value)
-            
+        else: # not in scene, always use cache
+            self.item()._setValueInCache(self.name(), value)
+                
         
     def readOnly(self):
         return self._readOnly
@@ -135,7 +150,7 @@ class ComplexProperty(Property):
     def __init__(self, *args):
         Property.__init__(self, *args)
         
-        self._components = {}
+        self._components = OrderedDict()
         self._createComponents()
     
     
@@ -196,7 +211,7 @@ class PointProperty(ComplexProperty):
     
     
     def setX(self, value):
-        v =  self.value()
+        v =  QPointF(self.value())
         v.setX(value)
         self.setValue(v)
     
@@ -206,7 +221,7 @@ class PointProperty(ComplexProperty):
     
     
     def setY(self, value):
-        v =  self.value()
+        v =  QPointF(self.value())
         v.setY(value)
         self.setValue(v)
     
@@ -232,7 +247,7 @@ class RectProperty(ComplexProperty):
     
     
     def setLeft(self, value):
-        v =  self.value()
+        v =  QRectF(self.value())
         v.setLeft(value)
         self.setValue(v)
     
@@ -243,7 +258,7 @@ class RectProperty(ComplexProperty):
         
         
     def setTop(self, value):
-        v =  self.value()
+        v =  QRectF(self.value())
         v.setTop(value)
         self.setValue(v)
     
@@ -254,7 +269,7 @@ class RectProperty(ComplexProperty):
     
     
     def setRight(self, value):
-        v =  self.value()
+        v =  QRectF(self.value())
         v.setRight(value)
         self.setValue(v)
     
@@ -264,7 +279,7 @@ class RectProperty(ComplexProperty):
     
     
     def setBottom(self, value):
-        v =  self.value()
+        v =  QRectF(self.value())
         v.setBottom(value)
         self.setValue(v)
     

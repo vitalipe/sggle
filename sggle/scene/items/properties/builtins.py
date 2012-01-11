@@ -155,10 +155,13 @@ class TextureProperty(Property):
     
     def setValue(self, value):
         if not isinstance(value, resources.resource.PixmapResource): 
-            value = resources.loader.pixmap.load(value) #FIXME: this API is ugly!!   
-             
-        self.item().setPixmap(value) 
+            value   = resources.loader.pixmap.load(value) #FIXME: this API is ugly!!   
+        self._value = value     
         Property.setValue(self, value) 
+
+
+    def _customSetValue(self, value):
+        self.item().setPixmap(value) 
 
 
     def serializeValue(self):
@@ -175,7 +178,7 @@ class TextureProperty(Property):
     def deserializeValue(self, value):
         value = value[1:]
         contentRoot = self._item.scene().rootItem().value("content")
-        self.setValue(joinPath(contentRoot, value))
+        self.setValueDirectly(joinPath(contentRoot, value))
         
         
     

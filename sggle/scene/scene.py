@@ -86,10 +86,8 @@ class LayeredGraphicsScene(QGraphicsScene):
         
         item.setParentItem(layer)
         
-        item.enableDirectEdit()
-        item.setValue("position", x=aX, y=aY)
-        item.setValue("z_order", z)
-        item.disableDirectEdit()
+        item.setValueDirectly("position", x=aX, y=aY)
+        item.setValueDirectly("z_order", z)
         
         if layer is self.activeLayer():
             self._activateItem(item)

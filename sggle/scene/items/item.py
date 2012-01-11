@@ -102,7 +102,7 @@ class SceneItem(object):
         return item
   
   
-    def serializeProperties(self):
+    def serializeProperties(self): # FIXME: remove
         properties = OrderedDict()
         for key in self._properties.keys():
             properties[key] = self.property(key).serializeValue()
@@ -110,7 +110,7 @@ class SceneItem(object):
         return properties.items()
 
  
-    def deserializeProperties(self, properties):
+    def deserializeProperties(self, properties): # FIXME: remove
         for k,v in properties:
             self.value(k).deserializeValue(v)
     
@@ -128,15 +128,11 @@ class SceneItem(object):
     def notifyPropertyChangeRequest(self, property, value):
         if self.scene():
             self.scene().itemPropertyChangeRequest.emit(self, property, value)
-             
- 
-    def enableDirectEdit(self):
-        assert self._directEdit is False
-        self._directEdit = True
         
-    
-    def disableDirectEdit(self):
-        assert self._directEdit is True
+             
+    def setValueDirectly(self, key, value=None, **kv):
+        self._directEdit = True
+        self.setValue(key, value, **kv)
         self._directEdit = False
         
         
@@ -189,8 +185,6 @@ class SceneItem(object):
         
         
     def _syncFromCache(self):
-        self.enableDirectEdit()
         for p in self._properties.values():
             if p._value is not None:
-                p.setValue(p._value)
-        self.disableDirectEdit()
+                p.setValueDirectly(p._value)

@@ -71,7 +71,13 @@ class Property(object):
         
         else: # not in scene, always use cache
             self._value = value
+        
                 
+    def setValueDirectly(self,value):
+        self._item._directEdit = True
+        self.setValue(value)
+        self._item._directEdit = False
+        
         
     def readOnly(self):
         return self._readOnly
@@ -91,12 +97,14 @@ class Property(object):
     
     
     def deserializeValue(self, value):
+                
         validator = self.validator()
-        value = validator.fixupRawValue(value)
+        value     = validator.fixupRawValue(value)
         if validator.validateRawValue(value) != validator.Acceptable:
             return False
-
-        self.setValue(value)
+        
+        self.setValueDirectly(value)# this is important because we don't want to generate 
+                                    # tons of signals when we load from a file. 
         return True
     
     

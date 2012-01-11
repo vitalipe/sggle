@@ -59,9 +59,7 @@ class ItemPropertyEditCommand(QUndoCommand):
      
         
     def  _setValue(self, value):
-        self._item.enableDirectEdit()
-        self._item.setValue(self._propertyName, value)
-        self._item.disableDirectEdit()
+        self._item.setValueDirectly(self._propertyName, value)
 
         
     def redo(self):

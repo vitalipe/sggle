@@ -58,7 +58,6 @@ class SceneTreeBuilder(INodeTreeBuilder):
                 self._scene.addItem(item)
             else:
                 self._scene.addLayer(item)             
-        item.enableDirectEdit() #FIXME: I don't like this!
         self._stack.append(item)
     
     
@@ -73,7 +72,6 @@ class SceneTreeBuilder(INodeTreeBuilder):
     
     
     def closeNode(self):
-        self._current().disableDirectEdit()
         self._stack.pop(-1)
     
     

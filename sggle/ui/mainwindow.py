@@ -21,8 +21,6 @@ import widgets
 import controllers
 
 import sggle.scene as scene
-import sggle.resources.assets as assets
-
 
 
 # FIXME: Move to config 

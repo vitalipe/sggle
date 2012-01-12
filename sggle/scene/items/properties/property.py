@@ -45,10 +45,7 @@ class Property(object):
     
     def value(self):
         if self._item.scene():
-            try:
-                return self._customGetValue()
-            except NotImplementedError:
-                pass
+            return self._customGetValue()
             
         return self._value
     
@@ -57,17 +54,9 @@ class Property(object):
         item  = self.item()
         scene = item.scene()
         if scene:
-            try:
-                self._customSetValue(value)
-                if item._directEdit:
-                    item.notifyPropertyChanged(self.name())
-                    
-            except NotImplementedError:  # no custom setter      
-                if not item._directEdit:
-                    item.notifyPropertyChangeRequest(self.name(), value)
-                else:
-                    self._value = value
-                    item.notifyPropertyChanged(self.name())
+            self._customSetValue(value)
+            if item._directEdit:
+                item.notifyPropertyChanged(self.name())
         
         else: # not in scene, always use cache
             self._value = value
@@ -109,11 +98,16 @@ class Property(object):
     
     
     def _customGetValue(self):
-        raise NotImplementedError()
+        return self._value
     
     
     def _customSetValue(self, value):
-        raise NotImplementedError()
+        item = self.item()
+        
+        if item._directEdit:
+            self._value = value
+        else:
+            item.notifyPropertyChangeRequest(self.name(), value)
     
     
     def __str__(self):

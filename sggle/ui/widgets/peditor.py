@@ -32,6 +32,7 @@ def newPropertiesEditor(model, dock=None):
     
     dock.setWindowTitle(" Properties ")
     dock.setWidget(editor)
+    dock.setMinimumWidth(250)
     dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
  
     return dock

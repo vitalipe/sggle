@@ -137,6 +137,7 @@ class TabButtonPanel(QWidget):
         layout.addWidget(self._addDirTreeButton)
 
         self.setLayout(layout)
+        self.setMinimumHeight(38)
 
     def openDirTree(self):
         parentPath =  QFileDialog.getExistingDirectory(self, "Select Root Directory", self._dirRoot,

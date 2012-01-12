@@ -22,6 +22,7 @@ def newLayerList(model, dock=None):
     
     dock.setWindowTitle(" Layers ")
     dock.setWidget(layerList)
+    dock.setMinimumWidth(150)
     dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
 
     return dock
@@ -41,6 +42,7 @@ def newItemTree(model, dock=None):
     
     dock.setWindowTitle(" Items ")
     dock.setWidget(itemTree)
+    dock.setMinimumWidth(150)
     dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
     
     return dock

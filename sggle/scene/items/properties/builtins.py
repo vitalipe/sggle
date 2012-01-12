@@ -193,7 +193,17 @@ class ParallaxProperty(PointProperty):
         if key is not None:
             validator.setRange(0.0, 100.0, 1)
         
-    
+        
+    def _customSetValue(self, value):
+        PointProperty._customSetValue(self, value)
+        views = self.item().scene().views()
+        if len(views) == 0:
+            return
+        
+        x,y = views[0].center().toTuple()
+        self.item()._adjustParallax(x,y)
+        
+            
     
 
         

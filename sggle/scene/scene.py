@@ -4,10 +4,15 @@ Created on Dec 30, 2011
 @author: vitali
 '''
 
+from math import floor
+from math import ceil
+
 from PySide.QtCore import Signal
 from PySide.QtCore import Qt
 
-
+from PySide.QtCore  import QLine
+from PySide.QtGui  import QPen
+from PySide.QtGui  import QColor
 from PySide.QtGui  import QGraphicsScene 
 from PySide.QtGui  import QGraphicsItem
 
@@ -32,8 +37,15 @@ class LayeredGraphicsScene(QGraphicsScene):
         self._activeLayer     = None
         self._selectionMaster = None
         
+        #FIXME: use QSettings
+        self._bgColor   = Qt.gray   
+        self._showGrid  = True
+        self._gridSize  = 100
+        self._gridColor = Qt.black
+        
         QGraphicsScene.addItem(self, self._rootItem)
         self.selectionChanged.connect(self._updateSelectionMaster)
+        self.sceneRectChanged.connect(lambda r: self._buildGridLines(r))
 
     
     def rootItem(self): 
@@ -150,9 +162,42 @@ class LayeredGraphicsScene(QGraphicsScene):
             self._selectionMaster = item
             self.selectionMasterChanged.emit(item)
 
-            
+
+    def drawBackground(self, painter, rect):
+        QGraphicsScene.drawBackground(self, painter, rect)
+        painter.fillRect(rect, self._bgColor) 
+        if self._showGrid:
+            self._drawGrid(painter, rect)
+    
+    
         # << Helper methods >> #
 
+    def _drawGrid(self, painter, rect):
+        color    = self._gridColor
+
+        painter.setPen(QPen(color, 0.0)) 
+        painter.drawLines(self._gridLines)
+
+
+    def _buildGridLines(self, rect):
+        gridSize   = self._gridSize
+        realLeft   = int(floor(rect.left()))
+        realRight  = int(ceil(rect.right()))
+        realTop    = int(floor(rect.top()))
+        realBottom = int(ceil(rect.bottom()))
+        
+        lines = []
+        firstLeft = realLeft - (realLeft % gridSize) 
+        firstTop  = realTop - (realTop % gridSize)   
+
+        for x in range(firstLeft, realRight, gridSize):
+            lines.append(QLine(x, realTop, x, realBottom))
+            
+        for y in range(firstTop, realBottom, gridSize):
+            lines.append(QLine(realLeft, y, realRight, y))
+        
+        self._gridLines = lines
+        
         
     def _activateLayerItems(self, layer):
         

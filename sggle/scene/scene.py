@@ -128,7 +128,13 @@ class LayeredGraphicsScene(QGraphicsScene):
             self.setSelectionMaster(None) 
             self.activeLayerChanged.emit(newActiveLayer)
 
-       
+
+    def adjustParallax(self, center):
+        x,y = center.toTuple()
+        for layer in self.layers():
+            layer._adjustParallax(x,y)
+
+        
     def selectionMaster(self):
         return self._selectionMaster
    

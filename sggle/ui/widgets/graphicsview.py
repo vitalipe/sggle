@@ -26,8 +26,13 @@ class GraphicsSceneView(QGraphicsView):
         
         self.setMouseTracking(True) # Send mouse events to scene
         self.setRenderHint(QPainter.SmoothPixmapTransform)
-        
+
         self._zoom = 100
+        
+        
+    def scrollContentsBy(self, dx, dy):
+        QGraphicsView.scrollContentsBy(self, dx, dy)
+        self.scene().adjustParallax(self.center())
         
         
     def zoomPercentage(self):

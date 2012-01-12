@@ -55,10 +55,21 @@ class Layer(SceneItem, QGraphicsPixmapItem):
         QGraphicsPixmapItem.__init__(self)
         SceneItem.__init__(self)
     
+    
     def _createBuiltinProperties(self):
         self._addProperty(newBuiltinProperty("name", self,     "layer"))
         self._addProperty(newBuiltinProperty("z_order" , self, 0.0))
         self._addProperty(newBuiltinProperty("parallax", self, QPointF(100,100)))
+        
+        
+    def _adjustParallax(self, x, y):
+        pX, pY = self.value("parallax").toTuple()
+        
+        x -= x * (pX/100)
+        y -= y * (pY/100)
+        
+        self.setPos(int(x),int(y))
+        
 
         
         

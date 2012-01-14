@@ -265,4 +265,17 @@ class OriginProperty(PointProperty):
         
         
     def _syncValidator(self, validator, name=None):
-        pass #FIXME:
+        sceneRect = self.item().scene().sceneRect()
+        
+        if name == "x":
+            minValue = sceneRect.x()
+            maxValue = sceneRect.right()
+            validator.setRange(minValue,maxValue)
+            
+        if name == "y":
+            minValue = sceneRect.x()
+            maxValue = sceneRect.right()
+            validator.setRange(minValue,maxValue)
+                
+                
+                

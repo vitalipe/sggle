@@ -84,6 +84,7 @@ class DeleteItemCommand(QUndoCommand):
         self._scene = scene
         self._item  = item
         self._xy    = item.value("position")
+        self._z     = item.zValue()
         self._layer = scene.activeLayer()
         
     def redo(self):
@@ -91,7 +92,9 @@ class DeleteItemCommand(QUndoCommand):
     
     
     def undo(self):
-        self._scene.addItem(self._item, self._layer, self._xy.x(), self._xy.y())
+        self._scene.addItem(self._item, self._layer)
+        self._item.setValueDirectly("z_order", self._z)
+        self._item.setValueDirectly("position", self._xy)
     
     
     
@@ -142,6 +145,7 @@ class DeleteLayerCommand(QUndoCommand):
         
         self._scene = scene
         self._layer = layer
+        self._z     = layer.zValue()
         self._deleteItemsBatch = newCommandBatch()
         
         for item in layer.childItems():
@@ -155,6 +159,7 @@ class DeleteLayerCommand(QUndoCommand):
 
     def undo(self):
         self._scene.addLayer(self._layer)
+        self._layer.setValueDirectly("z_order", self._z)
         self._deleteItemsBatch.undo()
         
                 

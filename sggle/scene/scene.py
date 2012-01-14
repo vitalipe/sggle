@@ -57,6 +57,13 @@ class LayeredGraphicsScene(QGraphicsScene):
 
     def addLayer(self, layer):
         assert layer not in self.layers()
+        
+        layers = self.layers()
+        if len(layers) > 0:   
+            z = layers[-1].value("z_order") + 1
+        else:
+            z = 0
+        layer.setValueDirectly("z_order", z)
                 
         layer.setParentItem(self._rootItem)
         self.listOfLayersChanged.emit(self.layers())
@@ -87,8 +94,6 @@ class LayeredGraphicsScene(QGraphicsScene):
         
         layer = layer if layer else self.activeLayer()
   
-        
-        
         # Z
         layerItems = layer.childItems()
         if layerItems:   

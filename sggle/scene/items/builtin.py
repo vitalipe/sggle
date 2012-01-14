@@ -29,7 +29,6 @@ class SceneRootItem(SceneItem, QGraphicsPixmapItem):
     def _createBuiltinProperties(self):
         self._addProperty(newBuiltinProperty("name", self, "scene"))
         self._addProperty(newBuiltinProperty("content", self, QDir.homePath())) 
-        self._addProperty(newBuiltinProperty("bounds", self, QRectF(0,0,0,0))) 
         self._addProperty(newBuiltinProperty("origin", self, QPointF(0,0)) )
 
 

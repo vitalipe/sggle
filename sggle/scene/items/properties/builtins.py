@@ -9,7 +9,6 @@ from os.path import relpath as relativePath
 
 from property import Property
 from property import PointProperty
-from property import RectProperty
 
 from validators import TypeCheckValidator
 from validators import DirPathValidator
@@ -34,7 +33,6 @@ def newBuiltinProperty(propertyName, item, value=None):
                    "opacity"      : OpacityProperty,
                    "tint"         : None,
                    "content"      : ContentRootProperty,
-                   "bounds"       : BoundsProperty,
                    "origin"       : OriginProperty,
                  }
                  
@@ -268,11 +266,3 @@ class OriginProperty(PointProperty):
         
     def _syncValidator(self, validator, name=None):
         pass #FIXME:
-    
-    
-class BoundsProperty(RectProperty):
-    
-        
-    def __init__(self, item):
-        RectProperty.__init__(self, "bounds", item, readOnly = False, builtin = True)
-        

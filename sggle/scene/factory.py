@@ -21,7 +21,8 @@ def newWelcomeScreenScene():
 
 def newEmptyGraphicsScene():
     scene = EditableScene()
-    scene.setSceneRect(-5000,-5000,10000,10000) 
+    scene.setSceneRect(-50000,-50000,100000,100000) # Huge hard-coded size until I have good 
+                                                # enough reason to change this.
     return scene
 
 

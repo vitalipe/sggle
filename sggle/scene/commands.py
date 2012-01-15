@@ -159,7 +159,7 @@ class DeleteLayerCommand(QUndoCommand):
 
     def undo(self):
         self._scene.addLayer(self._layer)
-        self._layer.setValueDirectly("z_order", self._z)
+        self._layer.setZValue(self._z)
         self._deleteItemsBatch.undo()
         
                 

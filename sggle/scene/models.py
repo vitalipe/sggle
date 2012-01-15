@@ -388,6 +388,8 @@ class LayerListModel(QAbstractListModel):
         
         sceneGroup.activeSceneChanged.connect(self.reset)
         sceneGroup.listOfLayersChanged.connect(self.reset)
+        sceneGroup.listOfItemsChanged.connect(self.reset)
+
         sceneGroup.itemPropertyWasChanged.connect(self._handleItemPropertyWasChanged)
      
     def _handleItemPropertyWasChanged(self, item, property):
@@ -395,7 +397,7 @@ class LayerListModel(QAbstractListModel):
             self.reset()
             self.selectionModel().updateFromScene()
      
-        
+ 
     def _layers(self):
         scene = self._sceneGroup.activeScene()
         if scene:

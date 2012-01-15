@@ -121,6 +121,39 @@ class MainWindow(QMainWindow):
         self.actions["deleteLayer"] = deleteLayerAction
         
         
+        
+        moveUpLayerAction = QAction("Move Up Layer", self)
+        moveUpLayerAction.triggered.connect(itemsController.moveLayerUp)
+        moveUpLayerAction.setDisabled(True)
+        callback = lambda n: moveUpLayerAction.setEnabled(True if n  else False)
+        sceneGroup.activeLayerChanged.connect(callback)
+        self.actions["moveUpLayer"] =  moveUpLayerAction
+        
+        
+        moveDownLayerAction = QAction("Move Down Layer", self)
+        moveDownLayerAction.triggered.connect(itemsController.moveLayerDown)
+        moveDownLayerAction.setDisabled(True)
+        callback = lambda n: moveDownLayerAction.setEnabled(True if n  else False)
+        sceneGroup.activeLayerChanged.connect(callback)
+        self.actions["moveDownLayer"] =  moveDownLayerAction
+        
+        
+        moveLayerToTopAction = QAction("Move Layer To Top", self)
+        moveLayerToTopAction.triggered.connect(itemsController.moveLayerToTop)
+        moveLayerToTopAction.setDisabled(True)
+        callback = lambda n: moveLayerToTopAction.setEnabled(True if n  else False)
+        sceneGroup.activeLayerChanged.connect(callback)
+        self.actions["moveLayerToTop"] =  moveLayerToTopAction
+        
+
+        moveLayerToBottomAction = QAction("Move Layer To Bottom", self)
+        moveLayerToBottomAction.triggered.connect(itemsController.moveLayerToBottom)
+        moveLayerToBottomAction.setDisabled(True)
+        callback = lambda n: moveLayerToBottomAction.setEnabled(True if n  else False)
+        sceneGroup.activeLayerChanged.connect(callback)
+        self.actions["moveLayerToBottom"] =  moveLayerToBottomAction
+        
+        
         # Delete Selected Items
         deleteSelectionAction = QAction("Delete &Selection", self)
         deleteSelectionAction.triggered.connect(editController.deleteSelectedItems)
@@ -128,6 +161,39 @@ class MainWindow(QMainWindow):
         callback = lambda : deleteSelectionAction.setEnabled(True if self._scene().selectedItems()  else False)
         sceneGroup.selectionChanged.connect(callback)
         self.actions["deleteSelection"] =  deleteSelectionAction
+        
+        
+        moveUpSelectionAction = QAction("Move Up Selection", self)
+        moveUpSelectionAction.triggered.connect(itemsController.moveItemSelectionUp)
+        moveUpSelectionAction.setDisabled(True) 
+        callback = lambda : moveUpSelectionAction.setEnabled(True if self._scene().selectedItems()  else False)
+        sceneGroup.selectionChanged.connect(callback)
+        self.actions["moveUpSelection"] =   moveUpSelectionAction
+        
+        
+        moveDownSelectionAction = QAction("Move Down Selection", self)
+        moveDownSelectionAction.triggered.connect(itemsController.moveItemSelectionDown)
+        moveDownSelectionAction.setDisabled(True) 
+        callback = lambda : moveDownSelectionAction.setEnabled(True if self._scene().selectedItems()  else False)
+        sceneGroup.selectionChanged.connect(callback)
+        self.actions["moveDownSelection"] =   moveDownSelectionAction
+        
+        
+        moveSelectionToTopAction = QAction("Move Selection To Top", self)
+        moveSelectionToTopAction.triggered.connect(itemsController.moveItemSelectionToTop)
+        moveSelectionToTopAction.setDisabled(True) 
+        callback = lambda : moveSelectionToTopAction.setEnabled(True if self._scene().selectedItems()  else False)
+        sceneGroup.selectionChanged.connect(callback)
+        self.actions["moveSelectionToTop"] =   moveSelectionToTopAction
+        
+        
+        moveSelectionToBottomAction = QAction("Move Selection To Bottom", self)
+        moveSelectionToBottomAction.triggered.connect(itemsController.moveItemSelectionToBottom)
+        moveSelectionToBottomAction.setDisabled(True) 
+        callback = lambda : moveSelectionToBottomAction.setEnabled(True if self._scene().selectedItems()  else False)
+        sceneGroup.selectionChanged.connect(callback)
+        self.actions["moveSelectionToBottom"] =   moveSelectionToBottomAction
+        
         
         
         # Redo 
@@ -200,14 +266,7 @@ class MainWindow(QMainWindow):
         sceneGroup.activeSceneChanged.connect(lambda n: centerOriginAction.setEnabled(True if n else False))
         self.actions["centerOrigin"] =  centerOriginAction
 
-
-
-
-
-
- 
- 
- 
+  
         # New
         newAction = QAction("&New", self)
         newAction.triggered.connect(fileController.new)
@@ -300,7 +359,18 @@ class MainWindow(QMainWindow):
         editMenu = QMenu("&Edit", self) 
         editMenu.addAction(actions["newLayer"])
         editMenu.addAction(actions["deleteLayer"])
+        editMenu.addAction(actions["moveUpLayer"])
+        editMenu.addAction(actions["moveDownLayer"])
+        editMenu.addAction(actions["moveLayerToTop"])
+        editMenu.addAction(actions["moveLayerToBottom"])
         editMenu.addAction(actions["deleteSelection"])
+        editMenu.addAction(actions["moveUpSelection"])
+        editMenu.addAction(actions["moveDownSelection"])
+        editMenu.addAction(actions["moveSelectionToTop"])
+        editMenu.addAction(actions["moveSelectionToBottom"])
+
+
+        
         editMenu.addAction(actions["redo"])
         editMenu.addAction(actions["undo"])
         editMenu.addAction(actions["copy"])

@@ -264,12 +264,11 @@ class ItemTreeModel(QAbstractItemModel):
     
     def _root(self):
         return self._layer
-        
+
         
     def _handleItemPropertyWasChanged(self, item, name):
         if item.parentItem() is self._root() and name == "name":
             self.reset()
-            self.selectionModel().updateFromScene()
         
         
     def _handleActiveLayerOrSceneChanged(self):
@@ -280,6 +279,10 @@ class ItemTreeModel(QAbstractItemModel):
             
         self._layer = newLayer
         self.reset()
+
+
+    def reset(self):
+        QAbstractItemModel.reset(self)
         self.selectionModel().updateFromScene()
 
 

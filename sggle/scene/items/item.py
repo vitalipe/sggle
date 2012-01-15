@@ -152,6 +152,11 @@ class SceneItem(object):
         elif (changeType == QGraphicsItem.ItemChildAddedChange or 
               changeType == QGraphicsItem.ItemChildRemovedChange):
             self.notifyChildListChanges()
+        
+        elif changeType == QGraphicsItem.ItemZValueHasChanged:
+            p = self.parentItem()
+            if p:
+                p.notifyChildListChanges() 
             
         # send request 
         elif (not self._directEdit):

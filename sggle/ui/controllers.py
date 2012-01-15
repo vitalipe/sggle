@@ -198,6 +198,11 @@ class FileController(BaseController):
 
 class ItemsController(BaseController):
     
+#    canMoveItemsUpChanged   = Signal(bool)
+#    canMoveItemsDownChanged = Signal(bool)
+#    canMoveLayerUpChanged   = Signal(bool)
+#    canMoveLayerDownChanged = Signal(bool)
+#    
     
     def __init__(self, sceneGroup):
         BaseController.__init__(self)
@@ -233,15 +238,49 @@ class ItemsController(BaseController):
         if self._commandBatch:
             cmd.redo()
         else:
-            self._pushCommand(cmd)
+            self._pushCommand(cmd)        
+    
+    
+    def moveItemSelectionUp(self):
+        self._moveItemSelectionZOrder(self._scene().activeLayer(), self._scene().selectedItems(), +1)
             
+       
+    def moveItemSelectionDown(self):          
+        self._moveItemSelectionZOrder(self._scene().activeLayer(), self._scene().selectedItems(), -1)
+ 
     
-    def moveSelectionUp(self):
-        pass
+    def moveItemSelectionToTop(self):
+        items         = self._scene().activeLayer().childItems()
+        selectedItems = self._sortByZOrder(self._scene().selectedItems())
+    
+        self._moveToTop(selectedItems, items)
+
+        
+    def moveItemSelectionToBottom(self):
+        items         = self._scene().activeLayer().childItems()
+        selectedItems = self._sortByZOrder(self._scene().selectedItems())
+        
+        self._moveToBottom(selectedItems, items)
     
     
-    def moveSelectionDown(self):
-        pass
+    def moveLayerUp(self):
+        scene = self._scene()
+        self._moveItemSelectionZOrder(scene.rootItem(), [scene.activeLayer()], +1)
+    
+    
+    def moveLayerDown(self):
+        scene = self._scene()
+        self._moveItemSelectionZOrder(scene.rootItem(), [scene.activeLayer()], -1)
+    
+    
+    def moveLayerToTop(self):
+        scene = self._scene()
+        self._moveToTop([scene.activeLayer()], scene.rootItem().childItems())
+    
+    
+    def moveLayerToBottom(self):
+        scene = self._scene()
+        self._moveToBottom([scene.activeLayer()], scene.rootItem().childItems())
     
     
     def alignSelectionVertical(self):
@@ -273,6 +312,50 @@ class ItemsController(BaseController):
         if batch.childCount() > 1:
             self._pushCommand(batch)
 
+           
+    def _sortByZOrder(self, items):
+        cmpZ     = lambda x,y: ( 1 if x.zValue()  > y.zValue() else 
+                                -1 if  x.zValue() < y.zValue() else 0)
+        items.sort(cmp=cmpZ)
+        return items
+    
+    
+    def _moveItemSelectionZOrder(self, parentItem, items, offset):
+        assert offset == -1 or offset == 1
+            
+        self._sortByZOrder(items)
+        if offset > 0:
+            items.reverse()
+        
+        for item in items:
+            z     = item.zValue()
+            items = parentItem.childItems() # update on each iteration
+            index = int(z) + offset
+            if -1 < index < len(items):
+                other = items[index] # sorted by zValue
+                # swap:
+                other.setZValue(z)
+                item.setZValue(index)
+            
+            
+    def _moveToBottom(self, selectedItems, items):
+        for z,item in enumerate(selectedItems):
+            item.setZValue(z)
+            
+        for z, item in enumerate(items, z+1):
+            if item not in selectedItems:
+                item.setZValue(z)
+    
+        
+    def _moveToTop(self, selectedItems, items):
+        z = 0
+        for item in items:
+            if item not in selectedItems:
+                item.setZValue(z)
+                z += 1
+        
+        for z,item in enumerate(selectedItems,z):
+            item.setZValue(z)
         
         
         

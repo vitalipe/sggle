@@ -93,7 +93,7 @@ class DeleteItemCommand(QUndoCommand):
     
     def undo(self):
         self._scene.addItem(self._item, self._layer)
-        self._item.setValueDirectly("z_order", self._z)
+        self._item.setZValue(self._z)
         self._item.setValueDirectly("position", self._xy)
     
     

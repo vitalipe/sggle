@@ -22,7 +22,6 @@ import sggle.resources as resources
 def newBuiltinProperty(propertyName, item, value=None):
     factories =  {
                    "name"         : NameProperty,
-                   "z_order"      : ZOrderProperty,
                    "position"     : PositionProperty,
                    "scale"        : ScaleProperty,
                    "rotation"     : RotationProperty,
@@ -69,24 +68,7 @@ class ContentRootProperty(Property):
         
 
 
-class ZOrderProperty(Property):
-    
-    def __init__(self, item):
-        Property.__init__(self, "z_order", item, readOnly = False, builtin = True,
-                          validator = FloatValadator(0, 100, 2, None))
 
-
-    def _customSetValue(self, value):
-        self.item().setZValue(value)
-
-        
-    def _customGetValue(self):
-        return self.item().zValue()
-        
-
-        
-        
-        
 class PositionProperty(PointProperty):
     
         

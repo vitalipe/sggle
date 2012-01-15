@@ -75,7 +75,7 @@ class SceneItem(object):
     
     
     def addCustomProperty(self, key, value = None):
-        property = properties.newCustomProperty(key)
+        property = properties.newCustomProperty(self, key)
         self._addProperty(property)
     
     

@@ -60,10 +60,10 @@ class LayeredGraphicsScene(QGraphicsScene):
         
         layers = self.layers()
         if len(layers) > 0:   
-            z = layers[-1].value("z_order") + 1
+            z = layers[-1].zValue() + 1
         else:
             z = 0
-        layer.setValueDirectly("z_order", z)
+        layer.setZValue(z)
                 
         layer.setParentItem(self._rootItem)
         self.listOfLayersChanged.emit(self.layers())
@@ -97,14 +97,14 @@ class LayeredGraphicsScene(QGraphicsScene):
         # Z
         layerItems = layer.childItems()
         if layerItems:   
-            z = layerItems[-1].value("z_order") + 1
+            z = layerItems[-1].zValue() + 1
         else:
             z = 0
         
         item.setParentItem(layer)
         
         item.setValueDirectly("position", x=aX, y=aY)
-        item.setValueDirectly("z_order", z)
+        item.setZValue(z)
         
         if layer is self.activeLayer():
             self._activateItem(item)

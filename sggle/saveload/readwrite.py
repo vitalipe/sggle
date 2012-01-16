@@ -22,7 +22,7 @@ def writeScene(sceneObject, fileStream, formatName):
 
 def readScene(aFile, formatName):
     assert isinstance(aFile, file)
-    assert isinstance(formatName, str)
+    assert isinstance(formatName, (str, unicode))
 
     format = formats.fromName(formatName)
 

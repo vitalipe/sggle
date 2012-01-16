@@ -4,10 +4,12 @@ Created on Nov 8, 2011
 @author: vitali
 '''
 
+from os.path import splitext
 
 from PySide.QtCore import QObject
 from PySide.QtCore import Signal
 from PySide.QtCore import QPointF
+from PySide.QtGui  import QFileDialog
 
 
 import sggle.scene.commands as commands
@@ -139,6 +141,8 @@ class SceneEditController(BaseController):
     
 class FileController(BaseController):
     
+    sceneSaveStateChanged = Signal(object, bool) # scane, 
+    
     
     def __init__(self, sceneGroup):
         BaseController.__init__(self)
@@ -148,40 +152,75 @@ class FileController(BaseController):
         self._sceneSaveStateMap   = {}
 
 
-    def new(self):
-        print "new"
+    def _addScene(self, scene, filePath):
+        self._sceneToFilePathMap[scene] = filePath
+        self._sceneSaveStateMap[scene]  = False if filePath is None else True
+        self._sceneGroup.addScene(scene)
+
+
+    def _removeScene(self, scene):
+        self._sceneToFilePathMap.pop(scene)
+        self._sceneSaveStateMap.pop(scene)
+        self._sceneGroup.removeScene(scene)
         
+   
+    def _writeScene(self, scene, filePath):
+        fileType   = splitext(filePath)[1].strip(".")
+
+        fileStream = open(filePath, "w") # FIXME: add error check
+        saveload.writeScene(scene, fileStream, fileType)
+        fileStream.close()
+        
+        self._sceneToFilePathMap[scene] = filePath
+        self._sceneSaveStateMap[scene]  = False
+
+        
+    def new(self):        
         newScene = scene.newEmptyGraphicsScene()
-        self._sceneGroup.addScene(newScene)
-        
-        self._sceneToFilePathMap[newScene] = None
-        self._sceneSaveStateMap[newScene]  = False
+        self._addScene(newScene, None)
     
     
     def openScene(self): 
-        fileName   = "/tmp/test.xml" #FIXME: create file dialog
-        fileType   = "xml"
+        filters  = " ".join([ "*." + f for f in saveload.formats.knowFileFormats()])
+        result   = QFileDialog.getOpenFileName(None, "Open Scene", None, filters)
+        fileName = result[0]
+        fileType = splitext(fileName)[1].strip(".")
         
-        fileStream = open(fileName, "r")
-        newScene = saveload.readScene( fileStream, fileType)
+        if not fileName: # canceled by user
+            return
         
-        self._sceneGroup.addScene(newScene)
-        print "opend"
+        fileStream = open(fileName, "r") #FIXME: Error check
         
-    
-    
+        newScene = saveload.readScene( fileStream, fileType) #FIXME: pass scene ref
+        
+        fileStream.close()
+        self._addScene(newScene, fileName)
+        
+        
+    def saveScene(self, scene):
+        filePath = self._sceneToFilePathMap.get(scene)
+        if not filePath:
+            self.saveSceneAs(scene)
+        else:
+            self._writeScene(scene, filePath)
+        
+        
     def saveActiveScene(self):
-        scene      = self._sceneGroup.activeScene()
-        fileName   = "/tmp/test.xml"
-        fileType   = "xml"
-        
-        fileStream = open(fileName, "w")
-        saveload.writeScene(scene, fileStream, fileType)
-        print "saved"
+        self.saveScene(self._sceneGroup.activeScene())
     
     
     def saveActiveSceneAs(self):
-        pass
+        self.saveSceneAs(self._sceneGroup.activeScene())
+        
+        
+    def saveSceneAs(self, scene):
+        filters  = ";;".join([ f + " (*." + f + ")" for f in saveload.formats.knowFileFormats()])
+        result   = QFileDialog.getSaveFileName(None, "Save Scene As", None, filters)
+        if not result[0]:
+            return
+        
+        fileName = result[0] + "." + (result[1].split())[0]
+        self._writeScene(scene, fileName)
     
     
     def closeActiveScene(self):
@@ -189,7 +228,7 @@ class FileController(BaseController):
     
     
     def closeScene(self, sceneIndex):
-        self._sceneGroup.removeScene(self._sceneGroup.scene(sceneIndex))
+        self._removeScene(self._sceneGroup.scene(sceneIndex)) #FIXME:Ugly API
     
     
     def exit(self):
@@ -248,8 +287,9 @@ class ItemsController(BaseController):
     def _updateSignals(self):
         scene       = self._scene()
         layers      = scene.layers()
+        selection   = scene.selectedItems()
         activeLayer = scene.activeLayer()
-        items = activeLayer.childItems()       
+        items       = activeLayer.childItems() if activeLayer else []  
 
         if len(layers):
             self.canMoveLayerUpChanged.emit(True if   activeLayer is not layers[-1] else False)
@@ -258,12 +298,12 @@ class ItemsController(BaseController):
             self.canMoveLayerUpChanged.emit(False)
             self.canMoveLayerDownChanged.emit(False)
             
-        if len(scene.selectedItems()):
+        if len(selection):
             self.canMoveSelectionDownChanged.emit(not items[0].isSelected())
             self.canMoveSelectionUpChanged.emit(not items[-1].isSelected())
         else:
-            self.canMoveSelectionDownChanged.emit(not items[0].isSelected())
-            self.canMoveSelectionUpChanged.emit(not items[-1].isSelected())
+            self.canMoveSelectionDownChanged.emit(False)
+            self.canMoveSelectionUpChanged.emit(False)
         
         
         
@@ -379,8 +419,7 @@ class ItemsController(BaseController):
         self._sortByZOrder(selectedItems)
         if offset > 0:  
             selectedItems.reverse()
-        
-        
+          
         for item in selectedItems:
             z     = item.zValue()
             index = int(z) + offset

@@ -271,6 +271,12 @@ class MainWindow(QMainWindow):
         saveAction.triggered.connect(fileController.saveActiveScene)
         self.actions["save"] = saveAction
         
+        # Save As
+        saveAction = QAction("&Save As", self)
+        saveAction.setIcon(QIcon(":/icons/saveas"))
+        saveAction.triggered.connect(fileController.saveActiveSceneAs)
+        self.actions["saveAs"] = saveAction
+        
         # Open
         openAction = QAction("&Open", self)
         openAction.setIcon(QIcon(":/icons/open"))
@@ -341,6 +347,7 @@ class MainWindow(QMainWindow):
         fileMenu =  QMenu("&File", self)
         fileMenu.addAction(actions["new"])
         fileMenu.addAction(actions["save"])
+        fileMenu.addAction(actions["saveAs"])
         fileMenu.addAction(actions["open"])
         fileMenu.addAction(actions["exit"])
         menuBar.addMenu(fileMenu)

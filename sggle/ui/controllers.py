@@ -198,11 +198,11 @@ class FileController(BaseController):
 
 class ItemsController(BaseController):
     
-#    canMoveItemsUpChanged   = Signal(bool)
-#    canMoveItemsDownChanged = Signal(bool)
-#    canMoveLayerUpChanged   = Signal(bool)
-#    canMoveLayerDownChanged = Signal(bool)
-#    
+    canMoveSelectionUpChanged   = Signal(bool)
+    canMoveSelectionDownChanged = Signal(bool)
+    canMoveLayerUpChanged       = Signal(bool)
+    canMoveLayerDownChanged     = Signal(bool)
+    
     
     def __init__(self, sceneGroup):
         BaseController.__init__(self)
@@ -213,6 +213,10 @@ class ItemsController(BaseController):
         sceneGroup.itemPropertyChangeRequest.connect(self._handleItemPropertyChangeRequest)
         sceneGroup.editModeChanged.connect(self._handleSceneEditModeChanged)
         
+        sceneGroup.listOfItemsChanged.connect(self._updateSignals)
+        sceneGroup.selectionChanged.connect(self._updateSignals)
+
+        
                
     def _scene(self):
         return self._sceneGroup.activeScene()
@@ -222,7 +226,7 @@ class ItemsController(BaseController):
         self._sceneGroup.undoGroup().activeStack().push(cmd)
         
         
-    def _handleSceneEditModeChanged(self, editMode, oldEditMode):
+    def _handleSceneEditModeChanged(self, editMode, oldEditMode): #FIXME: move to scene
         if self._commandBatch and self._commandBatch.childCount() > 0:
             self._pushCommand(self._commandBatch)
         
@@ -232,7 +236,7 @@ class ItemsController(BaseController):
             self._commandBatch = None
                 
         
-    def _handleItemPropertyChangeRequest(self, item, property, value):
+    def _handleItemPropertyChangeRequest(self, item, property, value): #FIXME: move to scene
         cmd = commands.newEditItemPropertyCommand(item, property, value, self._commandBatch) 
         
         if self._commandBatch:
@@ -241,47 +245,95 @@ class ItemsController(BaseController):
             self._pushCommand(cmd)        
     
     
-    def moveItemSelectionUp(self):
-        self._moveItemSelectionZOrder(self._scene().activeLayer(), self._scene().selectedItems(), +1)
+    def _updateSignals(self):
+        scene       = self._scene()
+        layers      = scene.layers()
+        activeLayer = scene.activeLayer()
+        items = activeLayer.childItems()       
+
+        if len(layers):
+            self.canMoveLayerUpChanged.emit(True if   activeLayer is not layers[-1] else False)
+            self.canMoveLayerDownChanged.emit(True if activeLayer is not layers[0] else False)
+        else:
+            self.canMoveLayerUpChanged.emit(False)
+            self.canMoveLayerDownChanged.emit(False)
             
+        if len(scene.selectedItems()):
+            self.canMoveSelectionDownChanged.emit(not items[0].isSelected())
+            self.canMoveSelectionUpChanged.emit(not items[-1].isSelected())
+        else:
+            self.canMoveSelectionDownChanged.emit(not items[0].isSelected())
+            self.canMoveSelectionUpChanged.emit(not items[-1].isSelected())
+        
+        
+        
+    def moveItemSelectionUp(self):
+        cmdBatch = commands.newCommandBatch()
+        self._moveItemSelectionZOrder(self._scene().activeLayer(), 
+                                      self._scene().selectedItems(), +1, cmdBatch)
+        
+        self._pushCommand(cmdBatch)
+
        
-    def moveItemSelectionDown(self):          
-        self._moveItemSelectionZOrder(self._scene().activeLayer(), self._scene().selectedItems(), -1)
- 
+    def moveItemSelectionDown(self): 
+        cmdBatch = commands.newCommandBatch() 
+        self._moveItemSelectionZOrder(self._scene().activeLayer(), 
+                                      self._scene().selectedItems(), -1, cmdBatch)
+       
+        self._pushCommand(cmdBatch)
+
     
     def moveItemSelectionToTop(self):
+        cmdBatch      = commands.newCommandBatch()
         items         = self._scene().activeLayer().childItems()
         selectedItems = self._sortByZOrder(self._scene().selectedItems())
     
-        self._moveToTop(selectedItems, items)
+        self._moveToTop(selectedItems, items,cmdBatch)
+        self._pushCommand(cmdBatch)
+                
 
         
     def moveItemSelectionToBottom(self):
+        cmdBatch      = commands.newCommandBatch()
         items         = self._scene().activeLayer().childItems()
         selectedItems = self._sortByZOrder(self._scene().selectedItems())
         
-        self._moveToBottom(selectedItems, items)
-    
+        self._moveToBottom(selectedItems, items, cmdBatch)
+        self._pushCommand(cmdBatch)
+
     
     def moveLayerUp(self):
-        scene = self._scene()
-        self._moveItemSelectionZOrder(scene.rootItem(), [scene.activeLayer()], +1)
+        cmdBatch = commands.newCommandBatch()
+        scene    = self._scene()
+        self._moveItemSelectionZOrder(scene.rootItem(), [scene.activeLayer()], +1, cmdBatch)
+        
+        self._pushCommand(cmdBatch)
     
     
     def moveLayerDown(self):
-        scene = self._scene()
-        self._moveItemSelectionZOrder(scene.rootItem(), [scene.activeLayer()], -1)
-    
+        cmdBatch = commands.newCommandBatch()
+        scene    = self._scene()
+        
+        self._moveItemSelectionZOrder(scene.rootItem(), 
+                                      [scene.activeLayer()], -1, cmdBatch)
+        self._pushCommand(cmdBatch)
+
     
     def moveLayerToTop(self):
+        cmdBatch = commands.newCommandBatch()
         scene = self._scene()
-        self._moveToTop([scene.activeLayer()], scene.rootItem().childItems())
-    
+        
+        self._moveToTop([scene.activeLayer()], scene.rootItem().childItems(), cmdBatch)
+        self._pushCommand(cmdBatch)
+
     
     def moveLayerToBottom(self):
-        scene = self._scene()
-        self._moveToBottom([scene.activeLayer()], scene.rootItem().childItems())
-    
+        scene    = self._scene()
+        cmdBatch = commands.newCommandBatch()
+
+        self._moveToBottom([scene.activeLayer()], scene.rootItem().childItems(), cmdBatch)
+        self._pushCommand(cmdBatch)
+
     
     def alignSelectionVertical(self):
         selection = self._scene().selectedItems()
@@ -320,42 +372,49 @@ class ItemsController(BaseController):
         return items
     
     
-    def _moveItemSelectionZOrder(self, parentItem, items, offset):
+    def _moveItemSelectionZOrder(self, parentItem, selectedItems, offset, commandBatch):
         assert offset == -1 or offset == 1
             
-        self._sortByZOrder(items)
-        if offset > 0:
-            items.reverse()
+        items = parentItem.childItems() # sorted by zValue
+        self._sortByZOrder(selectedItems)
+        if offset > 0:  
+            selectedItems.reverse()
         
-        for item in items:
+        
+        for item in selectedItems:
             z     = item.zValue()
-            items = parentItem.childItems() # update on each iteration
             index = int(z) + offset
             if -1 < index < len(items):
-                other = items[index] # sorted by zValue
-                # swap:
-                other.setZValue(z)
-                item.setZValue(index)
+                other = items[index] 
+                # swap to keep items z sorted:
+                items[index]  = items
+                items[int(z)] = other
+                
+                commands.newChangeZValueCommand(other, z, commandBatch)
+                commands.newChangeZValueCommand(item, index, commandBatch)
             
             
-    def _moveToBottom(self, selectedItems, items):
+    def _moveToBottom(self, selectedItems, items, commandBatch):
         for z,item in enumerate(selectedItems):
-            item.setZValue(z)
+            if item.zValue() != z:
+                commands.newChangeZValueCommand(item, z, commandBatch)
             
         for z, item in enumerate(items, z+1):
-            if item not in selectedItems:
-                item.setZValue(z)
+            if item not in selectedItems and item.zValue() != z:
+                    commands.newChangeZValueCommand(item, z, commandBatch)
     
         
-    def _moveToTop(self, selectedItems, items):
+    def _moveToTop(self, selectedItems, items, commandBatch):
         z = 0
         for item in items:
-            if item not in selectedItems:
-                item.setZValue(z)
+            if item not in selectedItems and item.zValue() != z:
+                commands.newChangeZValueCommand(item, z, commandBatch)
                 z += 1
         
         for z,item in enumerate(selectedItems,z):
-            item.setZValue(z)
+            if item.zValue() != z:
+                commands.newChangeZValueCommand(item, z, commandBatch)
+
         
         
         
@@ -377,7 +436,7 @@ class ViewController(BaseController):
         self._zoomByScene   = []
         self._centerByScene = [] 
         
-        self._maxZoom   = 100 * 10
+        self._maxZoom   = 100 * 10 #FIXME: move to config
         self._minZoom   = 100 / 10
         self._zoomStep  = 10
     

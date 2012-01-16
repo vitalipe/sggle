@@ -125,32 +125,28 @@ class MainWindow(QMainWindow):
         moveUpLayerAction = QAction("Move Up Layer", self)
         moveUpLayerAction.triggered.connect(itemsController.moveLayerUp)
         moveUpLayerAction.setDisabled(True)
-        callback = lambda n: moveUpLayerAction.setEnabled(True if n  else False)
-        sceneGroup.activeLayerChanged.connect(callback)
+        itemsController.canMoveLayerUpChanged.connect(moveUpLayerAction.setEnabled)
         self.actions["moveUpLayer"] =  moveUpLayerAction
         
         
         moveDownLayerAction = QAction("Move Down Layer", self)
         moveDownLayerAction.triggered.connect(itemsController.moveLayerDown)
         moveDownLayerAction.setDisabled(True)
-        callback = lambda n: moveDownLayerAction.setEnabled(True if n  else False)
-        sceneGroup.activeLayerChanged.connect(callback)
+        itemsController.canMoveLayerDownChanged.connect(moveDownLayerAction.setEnabled)
         self.actions["moveDownLayer"] =  moveDownLayerAction
         
         
         moveLayerToTopAction = QAction("Move Layer To Top", self)
         moveLayerToTopAction.triggered.connect(itemsController.moveLayerToTop)
         moveLayerToTopAction.setDisabled(True)
-        callback = lambda n: moveLayerToTopAction.setEnabled(True if n  else False)
-        sceneGroup.activeLayerChanged.connect(callback)
+        itemsController.canMoveLayerUpChanged.connect(moveLayerToTopAction.setEnabled)
         self.actions["moveLayerToTop"] =  moveLayerToTopAction
         
 
         moveLayerToBottomAction = QAction("Move Layer To Bottom", self)
         moveLayerToBottomAction.triggered.connect(itemsController.moveLayerToBottom)
         moveLayerToBottomAction.setDisabled(True)
-        callback = lambda n: moveLayerToBottomAction.setEnabled(True if n  else False)
-        sceneGroup.activeLayerChanged.connect(callback)
+        itemsController.canMoveLayerDownChanged.connect(moveLayerToBottomAction.setEnabled)
         self.actions["moveLayerToBottom"] =  moveLayerToBottomAction
         
         
@@ -166,32 +162,28 @@ class MainWindow(QMainWindow):
         moveUpSelectionAction = QAction("Move Up Selection", self)
         moveUpSelectionAction.triggered.connect(itemsController.moveItemSelectionUp)
         moveUpSelectionAction.setDisabled(True) 
-        callback = lambda : moveUpSelectionAction.setEnabled(True if self._scene().selectedItems()  else False)
-        sceneGroup.selectionChanged.connect(callback)
+        itemsController.canMoveSelectionUpChanged.connect(moveUpSelectionAction.setEnabled)
         self.actions["moveUpSelection"] =   moveUpSelectionAction
         
         
         moveDownSelectionAction = QAction("Move Down Selection", self)
         moveDownSelectionAction.triggered.connect(itemsController.moveItemSelectionDown)
         moveDownSelectionAction.setDisabled(True) 
-        callback = lambda : moveDownSelectionAction.setEnabled(True if self._scene().selectedItems()  else False)
-        sceneGroup.selectionChanged.connect(callback)
+        itemsController.canMoveSelectionDownChanged.connect(moveDownSelectionAction.setEnabled)
         self.actions["moveDownSelection"] =   moveDownSelectionAction
         
         
         moveSelectionToTopAction = QAction("Move Selection To Top", self)
         moveSelectionToTopAction.triggered.connect(itemsController.moveItemSelectionToTop)
         moveSelectionToTopAction.setDisabled(True) 
-        callback = lambda : moveSelectionToTopAction.setEnabled(True if self._scene().selectedItems()  else False)
-        sceneGroup.selectionChanged.connect(callback)
+        itemsController.canMoveSelectionUpChanged.connect(moveSelectionToTopAction.setEnabled)
         self.actions["moveSelectionToTop"] =   moveSelectionToTopAction
         
         
         moveSelectionToBottomAction = QAction("Move Selection To Bottom", self)
         moveSelectionToBottomAction.triggered.connect(itemsController.moveItemSelectionToBottom)
         moveSelectionToBottomAction.setDisabled(True) 
-        callback = lambda : moveSelectionToBottomAction.setEnabled(True if self._scene().selectedItems()  else False)
-        sceneGroup.selectionChanged.connect(callback)
+        itemsController.canMoveSelectionDownChanged.connect(moveSelectionToBottomAction.setEnabled)
         self.actions["moveSelectionToBottom"] =   moveSelectionToBottomAction
         
         

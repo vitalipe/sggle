@@ -36,7 +36,11 @@ def newEditItemPropertyCommand(item, property, value, commandBatch = None):
     return ItemPropertyEditCommand(item, property, value, commandBatch)
 
 
-def newChangeItemLayerCommand(scene, item, layer):
+def newChangeZValueCommand(item, newZValue, batch =  None): # FIXME: Remove
+    return ItemChangeZValueCommand(item, newZValue, batch)
+
+
+def newChangeItemLayerCommand(scene, item, layer): # FIXME: Remove
     return ChangeItemLayerCommand(scene, item, layer)
 
 
@@ -45,7 +49,36 @@ def newCommandBatch():
 
 
 
+
+class ItemChangeZValueCommand(QUndoCommand):
     
+    
+    def __init__(self, item, newZValue, parent = None):
+        QUndoCommand.__init__(self, parent)
+        
+        self._item         = item
+        self._oldValue     = item.zValue()
+        self._newValue     = newZValue
+     
+        
+    def  _setValue(self, value):
+        self._item.setZValue(value)
+
+        
+    def redo(self):
+        self._setValue(self._newValue)
+        
+                
+    def undo(self):
+        self._setValue(self._oldValue)
+        
+           
+    def mergeWith(self, other): #FIXME: implement this method
+        return False
+        
+        
+
+
 class ItemPropertyEditCommand(QUndoCommand):
     
     
@@ -165,7 +198,7 @@ class DeleteLayerCommand(QUndoCommand):
                 
 
   
-class ChangeItemLayerCommand(QUndoCommand):
+class ChangeItemLayerCommand(QUndoCommand): # FIXME: Remove
 
     def __init__(self,scene, item, layer, parentCommand):
         QUndoCommand.__init__(self, parentCommand)

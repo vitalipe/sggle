@@ -5,6 +5,8 @@ Created on Nov 8, 2011
 '''
 
 from os.path import splitext
+from os.path import expanduser
+
 
 from PySide.QtCore import QObject
 from PySide.QtCore import Signal
@@ -151,6 +153,8 @@ class FileController(BaseController):
         self._sceneGroup          = sceneGroup
         self._sceneToFilePathMap  = {}
         self._sceneSaveStateMap   = {}
+        
+        self._lastLocation = expanduser("~")
 
 
     def _addScene(self, scene, filePath):
@@ -193,13 +197,15 @@ class FileController(BaseController):
     
     def openScene(self): 
         filters  = " ".join([ "*." + f for f in saveload.formats.knowFileFormats()])
-        result   = QFileDialog.getOpenFileName(None, "Open Scene", None, filters)
+        result   = QFileDialog.getOpenFileName(None, "Open Scene", self._lastLocation, filters)
         fileName = result[0]
         fileType = splitext(fileName)[1].strip(".")
         
         if not fileName: # canceled by user
             return
-
+        else:
+            self._lastLocation = fileName
+        
         try:
             fileStream = open(fileName, "r") 
         except IOError as e:
@@ -235,11 +241,14 @@ class FileController(BaseController):
         
     def saveSceneAs(self, scene):
         filters  = ";;".join([ f + " (*." + f + ")" for f in saveload.formats.knowFileFormats()])
-        result   = QFileDialog.getSaveFileName(None, "Save Scene As", None, filters)
-        if not result[0]:
+        result   = QFileDialog.getSaveFileName(None, "Save Scene As", self._lastLocation, filters)
+        
+        if not result[0]: # canceled by user
             return
         
-        fileName = result[0] + "." + (result[1].split())[0]
+        fileName = result[0] + "." + (result[1].split())[0]    
+        self._lastLocation = fileName
+        
         self._writeScene(scene, fileName)
     
     

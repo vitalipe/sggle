@@ -10,6 +10,7 @@ from PySide.QtCore import QObject
 from PySide.QtCore import Signal
 from PySide.QtCore import QPointF
 from PySide.QtGui  import QFileDialog
+from PySide.QtGui  import QMessageBox
 
 
 import sggle.scene.commands as commands
@@ -166,14 +167,24 @@ class FileController(BaseController):
    
     def _writeScene(self, scene, filePath):
         fileType   = splitext(filePath)[1].strip(".")
-
-        fileStream = open(filePath, "w") # FIXME: add error check
-        saveload.writeScene(scene, fileStream, fileType)
-        fileStream.close()
         
-        self._sceneToFilePathMap[scene] = filePath
-        self._sceneSaveStateMap[scene]  = False
-
+        try:
+            fileStream = open(filePath, "w") 
+        except IOError as e:
+            QMessageBox.critical(None, type(e).__name__, str(e))
+            return
+        
+        try:
+            saveload.writeScene(scene, fileStream, fileType)
+        except Exception as e:
+                QMessageBox.critical(None, "Unable to save Scene" + " [" + 
+                                 type(e).__name__ + "]", str(e))
+        else:
+            self._sceneToFilePathMap[scene] = filePath
+            self._sceneSaveStateMap[scene]  = False
+        finally:
+            fileStream.close()
+        
         
     def new(self):        
         newScene = scene.newEmptyGraphicsScene()
@@ -188,13 +199,22 @@ class FileController(BaseController):
         
         if not fileName: # canceled by user
             return
-        
-        fileStream = open(fileName, "r") #FIXME: Error check
-        
-        newScene = saveload.readScene( fileStream, fileType) #FIXME: pass scene ref
-        
-        fileStream.close()
-        self._addScene(newScene, fileName)
+
+        try:
+            fileStream = open(fileName, "r") 
+        except IOError as e:
+            QMessageBox.critical(None, type(e).__name__, str(e))
+            return
+
+        try:
+            newScene = saveload.readScene( fileStream, fileType) #FIXME: pass scene ref
+        except Exception as e: 
+            QMessageBox.critical(None, "Unable to load Scene" + " [" + 
+                                 type(e).__name__ + "]", str(e))
+        else:
+            self._addScene(newScene, fileName)
+        finally:
+            fileStream.close()        
         
         
     def saveScene(self, scene):

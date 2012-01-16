@@ -68,7 +68,7 @@ class SceneTreeBuilder(INodeTreeBuilder):
             item.addCustomProperty(key)
 
         if item.property(key).deserializeValue(value) == False:
-            raise ValueError()
+            raise ValueError("""Deserialization Failed. Bad value: %s """ % (str(value))) 
     
     
     def closeNode(self):

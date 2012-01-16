@@ -12,7 +12,6 @@ from .. interfaces import IDumper
 from .. interfaces import INodeAdapter
 from .. interfaces import INodeTreeBuilder
 
-from .. import errors
 
 import xml.etree.ElementTree as xml
 
@@ -41,7 +40,7 @@ class XmlElementTreeParser(IParser):
         try:
             xmlTree = xml.parse(stream)
         except xml.ParseError:
-            raise errors.LoadError()
+            raise xml.ParseError("Does not appear to be valid XML")
         
         return xmlTree.getroot()
  
@@ -77,8 +76,8 @@ class XmlItemAdapter(INodeAdapter):
         
         try:
             value = eval(element.text)
-        except SyntaxError:
-            raise TypeError(element.text)
+        except:
+            value = element.text
             
         return value
        

@@ -154,18 +154,20 @@ class NameValidator(QRegExpValidator, IRawValidator):
         IRawValidator.__init__(self)
 
 
-    def fixup(self, input):
-        if len(input) == 0:
-            return input
+    def fixup(self, inputStr):
+        inputStr = inputStr.strip()
+        if len(inputStr) == 0:
+            return inputStr
+        
         regX = self.regExp()
-        if regX.exactMatch(input[0]) == False:
-            input = "_" + input[1:]
+        if regX.exactMatch(inputStr[0]) == False:
+            inputStr = "_" + inputStr[1:]
             
-        while regX.exactMatch(input) is False:
+        while regX.exactMatch(inputStr) is False:
                 m     = regX.matchedLength()
-                input = input.replace(input[m], "")
+                inputStr = inputStr.replace(inputStr[m], "")
 
-        return input
+        return inputStr
     
     
     def validateRawValue(self, value):

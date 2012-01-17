@@ -287,8 +287,26 @@ class FileController(BaseController): # Rename: SceneConteroller
     
     def closeScene(self, sceneIndex):
         scene = self._sceneList[sceneIndex]
-        self._removeScene(scene) 
-    
+        name  = scene.rootItem().value("name")
+        
+        if not scene.undoStack().isClean():
+            result = QMessageBox.question(None, "Close " + name,
+                                          "Save changes before closing?", 
+                                            QMessageBox.Discard | 
+                                            QMessageBox.Save    |
+                                            QMessageBox.Cancel,
+                                            QMessageBox.Cancel)
+            if result == QMessageBox.Save:
+                self.saveScene(scene)
+                self.closeScene(sceneIndex)  
+                return
+                  
+            if result == QMessageBox.Discard:
+                self._removeScene(scene) 
+                
+        else:
+            self._removeScene(scene) 
+
     
     def setActiveScene(self, sceneIndex):
         self._sceneGroup.setActiveScene(self._sceneList[sceneIndex])
@@ -506,7 +524,7 @@ class ItemsController(BaseController):
         
         
         
-class ViewController(BaseController):
+class ViewController(BaseController): # Should go into ui/workspace 
     
     
     canZoomInChanged  = Signal(bool)

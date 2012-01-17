@@ -52,7 +52,8 @@ class BaseController(QObject):
     
 
 
-class SceneEditController(BaseController):
+class SceneEditController(BaseController):  # refactor _handleItemCreationRequest to scene
+                                            # and merge with ItemController
     
     clipboardDataAvailableChanged = Signal(bool)
     
@@ -73,7 +74,7 @@ class SceneEditController(BaseController):
         self._sceneGroup.undoGroup().activeStack().push(cmd)
         
        
-    def _handleItemCreationRequest(self, item, x, y):
+    def _handleItemCreationRequest(self, item, x, y): #FIXME: Move To Scene
 
         cmd = commands.newAddItemCommand(self._scene(), item, x, y)
         self._pushCommand(cmd)
@@ -142,28 +143,51 @@ class SceneEditController(BaseController):
             
     
     
-class FileController(BaseController):
+class FileController(BaseController): # Rename: SceneConteroller  
     
-    sceneSaveStateChanged = Signal(object, bool) # scane, 
+    cleanStateChanged   = Signal(bool) 
     
+    sceneAdded             = Signal(str) # @param str: name 
+    sceneRemoved           = Signal(int) # @param int: index
+    activeSceneNameChanged = Signal(str) # @param int: index, @param str: name 
+
     
     def __init__(self, sceneGroup):
         BaseController.__init__(self)
         
         self._sceneGroup          = sceneGroup
         self._sceneToFilePathMap  = {}
+        self._sceneList           = []
         
         self._lastLocation = expanduser("~")
 
+        sceneGroup.itemPropertyWasChanged.connect(self._forwardActiveSceneNameChanges)
+        sceneGroup.undoGroup().cleanChanged.connect(self.cleanStateChanged.emit)
 
+
+
+    def _forwardActiveSceneNameChanges(self, item, key):
+        if key == "name" and item is self._sceneGroup.activeScene().rootItem():                
+            self.activeSceneNameChanged.emit(item.value("name"))
+        
+        
     def _addScene(self, scene, filePath):
         self._sceneToFilePathMap[scene] = filePath
         self._sceneGroup.addScene(scene)
+        self._sceneList.append(scene)
+        
+        self.sceneAdded.emit(scene.rootItem().value("name"))
 
 
     def _removeScene(self, scene):
         self._sceneToFilePathMap.pop(scene)
         self._sceneGroup.removeScene(scene)
+        
+        index = self._sceneList.index(scene)
+        self._sceneList.pop(index)
+        
+        self.sceneRemoved.emit(index)
+
         
    
     def _writeScene(self, scene, filePath):
@@ -186,7 +210,7 @@ class FileController(BaseController):
         finally:
             fileStream.close()
         
-        
+    
     def new(self):        
         newScene = scene.newEmptyGraphicsScene()
         self._addScene(newScene, None)
@@ -257,12 +281,27 @@ class FileController(BaseController):
         self.closeScene(self._sceneGroup.index(self._sceneGroup.activeScene()))
     
     
-    def closeScene(self, sceneIndex):
-        self._removeScene(self._sceneGroup.scene(sceneIndex)) #FIXME:Ugly API
-    
-    
     def exit(self):
         pass
+    
+    
+    def closeScene(self, sceneIndex):
+        scene = self._sceneList[sceneIndex]
+        self._removeScene(scene) 
+    
+    
+    def setActiveScene(self, sceneIndex):
+        self._sceneGroup.setActiveScene(self._sceneList[sceneIndex])
+        
+        
+    def swapSceneIndexOrder(self, fromIndex, toIndex):
+        sceneList = self._sceneList
+        tmp       = sceneList[toIndex]
+        sceneList[toIndex]   = sceneList[fromIndex]
+        sceneList[fromIndex] = tmp
+    
+    
+
         
 
 class ItemsController(BaseController):

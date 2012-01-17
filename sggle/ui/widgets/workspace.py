@@ -11,38 +11,38 @@ from PySide.QtGui  import QVBoxLayout
 
 
 
-def newWorkspace(sceneView, sceneGroup, fileController):
+def newWorkspace(sceneView, fileController):
     tabs      = MainTabBar()
     workspace = Workspace(tabs, sceneView)
 
-    #FIXME: move all this into a controller
-    tabs.currentChanged.connect(lambda i: sceneGroup.setActiveScene(sceneGroup.scene(i)))
-    sceneGroup.activeSceneChanged.connect(lambda s: tabs.setCurrentIndex(sceneGroup.index(s)) if s else -1)
-    tabs.tabMoved.connect(sceneGroup.swapIndexs)
-    
-    sceneGroup.sceneWasAdded.connect(lambda i, name: tabs.addTab(name))
-    sceneGroup.sceneWasRemoved.connect(tabs.removeTab)
         
+    tabs.currentChanged.connect(fileController.setActiveScene)
     tabs.tabCloseRequested.connect(fileController.closeScene)
+    tabs.tabMoved.connect(fileController.swapSceneIndexOrder)
     
-    setTabTitle = (lambda i,p: 
-                   tabs.setCurrentTabTitle(i.value("name")) 
-                   if p == "name" and i == sceneGroup.activeScene().rootItem() else None) 
-    sceneGroup.itemPropertyWasChanged.connect(setTabTitle)    
+    fileController.sceneAdded.connect(tabs.addTab)
+    fileController.sceneRemoved.connect(tabs.removeTab)
+    fileController.activeSceneNameChanged.connect(tabs.setCurrentTabTitle)
+    
+    fileController.cleanStateChanged.connect(tabs.setCleanState)
+    
+    
         
     return workspace
 
 
 class Workspace(QWidget):
+
     
     def __init__(self, tabs, sceneView):
         QWidget.__init__(self)
         
         self._tabs      = tabs
         self._sceneView = sceneView
+        self
         
         self._setupLayout()
-        
+    
         
     def _setupLayout(self):
         layout    = QVBoxLayout()
@@ -61,6 +61,8 @@ class MainTabBar(QTabBar):
         QTabBar.__init__(self)
         self._setDefaults()
         
+        self._clean       = False
+        
         
     def _setDefaults(self): 
         self.setMovable(True)
@@ -75,11 +77,22 @@ class MainTabBar(QTabBar):
     def tabInserted(self, index):
         if self.count() > 1:
             self.show()
-    
-    #FIXME: workspace should provide this interface
+            
+
     def setCurrentTabTitle(self, text):
         i = self.currentIndex()
-        self.setTabText(i, text)
+        self.setTabText(i, text if self._clean else text + " *")
+    
+        
+    def currentTabTitle(self):
+        return  self.tabText(self.currentIndex())
+    
+    
+    def setCleanState(self, clean):
+        self._clean = clean
+        self.setCurrentTabTitle(self.currentTabTitle().strip(" *"))
+
+         
 
 
     

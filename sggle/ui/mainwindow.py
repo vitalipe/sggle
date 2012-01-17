@@ -313,7 +313,7 @@ class MainWindow(QMainWindow):
         sceneGroup  = self.sceneGroup
         
         self._sceneView      = widgets.newGraphicsView()
-        self._workspace      = widgets.newWorkspace(self._sceneView, sceneGroup, self.fileController)
+        self._workspace      = widgets.newWorkspace(self._sceneView, self.fileController)
  
         self.viewController.setView(self._sceneView)
         self.setCentralWidget(self._workspace)

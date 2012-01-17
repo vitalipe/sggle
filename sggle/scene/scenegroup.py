@@ -20,7 +20,6 @@ class SceneGroup(QObject):
     sceneWasRemoved            =  Signal(int)
     
     # Scene Signals
-    activeSceneChanged         =  Signal(object, object)
     selectionChanged           =  Signal()
     activeLayerChanged         =  Signal(object)
     selectionMasterChanged     =  Signal(object)
@@ -38,7 +37,6 @@ class SceneGroup(QObject):
         self._undoGroup         = undoGroup
         self._activeScene       = None
         self._sceneList         = []
-        self._sceneUndoStackMap = {}
         
         self._layerModel      = models.LayerListModel(self)
         self._itemsModel      = models.ItemTreeModel(self)

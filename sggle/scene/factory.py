@@ -7,28 +7,28 @@ Created on Dec 30, 2011
 from scenegroup import SceneGroup
 from scene      import EditableScene 
 
-from PySide.QtGui  import QGraphicsScene
+from PySide.QtGui   import QGraphicsScene
 from PySide.QtGui   import QUndoGroup
+from PySide.QtGui   import QUndoStack
+
+# TODO: merge this module with scene and scenegroup
 
 
-
-
-def newWelcomeScreenScene():
+def newWelcomeScreenScene(): #FIXME: WTF?! this should go to ui/widgets
     scene = QGraphicsScene()
-    scene.addText("Welcome :)")
+    scene.addText("Welcome ;-)")
     return scene
 
 
 def newEmptyGraphicsScene():
-    scene = EditableScene()
+    scene = EditableScene(QUndoStack())
     scene.setSceneRect(-50000,-50000,100000,100000) # Huge hard-coded size until I have good 
                                                     # enough reason to change this.
     return scene
 
 
 def newSceneGroup(parent):
-    undoGroup = QUndoGroup()
-    sceneGroup = SceneGroup(undoGroup)
+    sceneGroup = SceneGroup(QUndoGroup())
     sceneGroup.setParent(parent)
     
     return sceneGroup

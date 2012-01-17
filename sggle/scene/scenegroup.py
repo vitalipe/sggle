@@ -24,7 +24,6 @@ class SceneGroup(QObject):
     selectionChanged           =  Signal()
     activeLayerChanged         =  Signal(object)
     selectionMasterChanged     =  Signal(object)
-    itemPropertyChangeRequest  =  Signal(object, str, object)
     itemPropertyWasChanged     =  Signal(object, str)
     itemCreationRequest        =  Signal(object, float, float)
     editModeChanged            =  Signal(int, int)
@@ -83,25 +82,18 @@ class SceneGroup(QObject):
         
         oldActiveScene     = self._activeScene
         self._activeScene = scene
-        
-        if scene:
-            self._undoGroup.setActiveStack(self._sceneUndoStackMap[scene])
-        else:
-            self._undoGroup.setActiveStack(None)
+        self._undoGroup.setActiveStack(scene.undoStack() if scene else None)
+ 
             
         
         self.activeSceneChanged.emit(scene, oldActiveScene)
         
     
     def addScene(self, scene):
-        #assert isinstance(scene, LayeredGraphicsScene)
         assert scene not in self.sceneList()
         
         self._sceneList.append(scene)
-        # create undoStack
-        undoStack = QUndoStack()
-        self._undoGroup.addStack(undoStack)
-        self._sceneUndoStackMap[scene] = undoStack
+        self._undoGroup.addStack(scene.undoStack())
         
         self.sceneWasAdded.emit(self.index(scene), scene.rootItem().value("name"))
         
@@ -122,7 +114,7 @@ class SceneGroup(QObject):
         
         index = self.sceneList().index(scene)
         self._sceneList.pop(index)
-        self._undoGroup.removeStack(self._sceneUndoStackMap.pop(scene))
+        self._undoGroup.removeStack(scene.undoStack())
         
         self.sceneWasRemoved.emit(index)
         
@@ -155,7 +147,6 @@ class SceneGroup(QObject):
         scene.selectionChanged.connect(self.selectionChanged.emit)
         scene.activeLayerChanged.connect(self.activeLayerChanged.emit)
         scene.selectionMasterChanged.connect(self.selectionMasterChanged.emit)
-        scene.itemPropertyChangeRequest.connect(self.itemPropertyChangeRequest.emit)
         scene.itemCreationRequest.connect(self.itemCreationRequest.emit)
         scene.editModeChanged.connect(self.editModeChanged.emit)
         scene.listOfLayersChanged.connect(self.listOfLayersChanged.emit)
@@ -168,7 +159,6 @@ class SceneGroup(QObject):
         scene.selectionChanged.disconnect(self.selectionChanged.emit)
         scene.activeLayerChanged.disconnect(self.activeLayerChanged.emit)
         scene.selectionMasterChanged.disconnect(self.selectionMasterChanged.emit)
-        scene.itemPropertyChangeRequest.disconnect(self.itemPropertyChangeRequest.emit)
         scene.itemCreationRequest.disconnect(self.itemCreationRequest.emit)
         scene.editModeChanged.disconnect(self.editModeChanged.emit)
         scene.listOfLayersChanged.disconnect(self.listOfLayersChanged.emit)

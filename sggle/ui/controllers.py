@@ -282,8 +282,6 @@ class ItemsController(BaseController):
         self._sceneGroup   = sceneGroup
         self._commandBatch = None
         
-        sceneGroup.itemPropertyChangeRequest.connect(self._handleItemPropertyChangeRequest)
-        sceneGroup.editModeChanged.connect(self._handleSceneEditModeChanged)
         
         sceneGroup.listOfItemsChanged.connect(self._updateSignals)
         sceneGroup.selectionChanged.connect(self._updateSignals)
@@ -295,26 +293,7 @@ class ItemsController(BaseController):
         
            
     def _pushCommand(self, cmd):
-        self._sceneGroup.undoGroup().activeStack().push(cmd)
-        
-        
-    def _handleSceneEditModeChanged(self, editMode, oldEditMode): #FIXME: move to scene
-        if self._commandBatch and self._commandBatch.childCount() > 0:
-            self._pushCommand(self._commandBatch)
-        
-        if editMode:
-            self._commandBatch = commands.newCommandBatch()
-        else:
-            self._commandBatch = None
-                
-        
-    def _handleItemPropertyChangeRequest(self, item, property, value): #FIXME: move to scene
-        cmd = commands.newEditItemPropertyCommand(item, property, value, self._commandBatch) 
-        
-        if self._commandBatch:
-            cmd.redo()
-        else:
-            self._pushCommand(cmd)        
+        self._sceneGroup.undoGroup().activeStack().push(cmd)  
     
     
     def _updateSignals(self):

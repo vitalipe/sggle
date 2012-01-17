@@ -18,6 +18,7 @@ from PySide.QtGui  import QGraphicsItem
 
 
 import items.builtin
+import commands
 from sggle.resources import loader
 
 
@@ -254,20 +255,21 @@ class EditableScene(LayeredGraphicsScene):
     ElipseDrawMod   = 7
     
        
-    itemPropertyChangeRequest  = Signal(items.builtin.SceneItem, str, object)
     itemPropertyWasChanged     = Signal(object, str)
     itemCreationRequest        = Signal(object, float, float)
     editModeChanged            = Signal(int, int)
     
         
-    def __init__(self,):
+    def __init__(self, undoStack):
         LayeredGraphicsScene.__init__(self)
         
         self._editMode             = EditableScene.NoEditMode
-        self._editModeCommandBatch = None
-        self._editModeData         = None
-        self._mousePos             = None
-   
+        self._editModeCmdBatch = None
+        self._editModeData     = None
+        self._mousePos         = None
+        
+        self._undoStack        = undoStack
+        
         
     def mousePosition(self):
         return self._mousePos
@@ -281,9 +283,16 @@ class EditableScene(LayeredGraphicsScene):
         assert type(mode) is int 
         assert self.editMode() == self.NoEditMode or mode == self.NoEditMode
         
+        batch = self._editModeCmdBatch
+        if batch is not None and batch.childCount() > 0:
+                self._undoStack.push(self._editModeCmdBatch)
+        
         # clear data
         if mode == self.NoEditMode:
-            self._editModeData = None
+            self._editModeData     = None
+            self._editModeCmdBatch = None
+        else:
+            self._editModeCmdBatch = commands.newCommandBatch()
         
         # set mode
         oldMode        = self.editMode()
@@ -295,7 +304,6 @@ class EditableScene(LayeredGraphicsScene):
         self.enterEditMode(self.NoEditMode) 
 
         
-     
     def mousePressEvent(self, mouseEvent):
         QGraphicsScene.mousePressEvent(self, mouseEvent) # Handle selection first
         
@@ -397,6 +405,22 @@ class EditableScene(LayeredGraphicsScene):
             
         QGraphicsScene.drawForeground(self, painter, rect)
         
+        
+    def notifyItemPropertyChangeRequest(self, item, propertyName, value):
+        batch = self._editModeCmdBatch
+        cmd = commands.newEditItemPropertyCommand(item, propertyName, value, batch)
+        
+        if batch is not None:
+            cmd.redo()
+        else:
+            self._undoStack.push(cmd)
+            
+            
+    def undoStack(self):
+        return self._undoStack
+
+            
+                
             
         
             

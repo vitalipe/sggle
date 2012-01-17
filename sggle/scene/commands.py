@@ -32,8 +32,8 @@ def newDeleteLayerCommand(scene, layer):
     return DeleteLayerCommand(scene, layer)
 
 
-def newEditItemPropertyCommand(item, property, value, commandBatch = None):
-    return ItemPropertyEditCommand(item, property, value, commandBatch)
+def newEditItemPropertyCommand(item, propertyName, value, commandBatch = None):
+    return ItemPropertyEditCommand(item, propertyName, value, commandBatch)
 
 
 def newChangeZValueCommand(item, newZValue, batch =  None): # FIXME: Remove

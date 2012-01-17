@@ -120,14 +120,14 @@ class SceneItem(object):
             self.scene().listOfItemsChanged.emit(self)
     
     
-    def notifyPropertyChanged(self, property):
+    def notifyPropertyChanged(self, propertyName):
         if self.scene():
-            self.scene().itemPropertyWasChanged.emit(self, property) 
+            self.scene().itemPropertyWasChanged.emit(self, propertyName) 
     
     
-    def notifyPropertyChangeRequest(self, property, value):
+    def notifyPropertyChangeRequest(self, propertyName, value):
         if self.scene():
-            self.scene().itemPropertyChangeRequest.emit(self, property, value)
+            self.scene().notifyItemPropertyChangeRequest(self, propertyName, value)
         
              
     def setValueDirectly(self, key, value=None, **kv):

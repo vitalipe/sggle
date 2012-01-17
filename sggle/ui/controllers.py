@@ -152,20 +152,17 @@ class FileController(BaseController):
         
         self._sceneGroup          = sceneGroup
         self._sceneToFilePathMap  = {}
-        self._sceneSaveStateMap   = {}
         
         self._lastLocation = expanduser("~")
 
 
     def _addScene(self, scene, filePath):
         self._sceneToFilePathMap[scene] = filePath
-        self._sceneSaveStateMap[scene]  = False if filePath is None else True
         self._sceneGroup.addScene(scene)
 
 
     def _removeScene(self, scene):
         self._sceneToFilePathMap.pop(scene)
-        self._sceneSaveStateMap.pop(scene)
         self._sceneGroup.removeScene(scene)
         
    
@@ -185,7 +182,7 @@ class FileController(BaseController):
                                  type(e).__name__ + "]", str(e))
         else:
             self._sceneToFilePathMap[scene] = filePath
-            self._sceneSaveStateMap[scene]  = False
+            scene.undoStack().setClean()
         finally:
             fileStream.close()
         

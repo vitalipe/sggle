@@ -240,15 +240,19 @@ class FileController(BaseController):
         
         
     def saveSceneAs(self, scene):
-        filters  = ";;".join([ f + " (*." + f + ")" for f in saveload.formats.knowFileFormats()])
-        result   = QFileDialog.getSaveFileName(None, "Save Scene As", self._lastLocation, filters)
+        fileTypes = saveload.formats.knowFileFormats()
+        filters   = ";;".join([ f + " (*." + f + ")" for f in fileTypes])
+        result    = QFileDialog.getSaveFileName(None, "Save Scene As", self._lastLocation, filters)
         
         if not result[0]: # canceled by user
             return
         
-        fileName = result[0] + "." + (result[1].split())[0]    
+        if splitext(result[0])[1].strip(".") in fileTypes: # append extension only if necessary   
+            fileName = result[0]
+        else:
+            fileName = result[0] + "." + (result[1].split())[0] 
+               
         self._lastLocation = fileName
-        
         self._writeScene(scene, fileName)
     
     

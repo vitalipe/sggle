@@ -20,7 +20,6 @@ from PySide.QtGui  import QPixmap
 from PySide.QtGui  import QPushButton
 from PySide.QtGui  import QFileDialog
 from PySide.QtGui  import QTabWidget
-from PySide.QtGui  import QMessageBox
 
 
 from PySide.QtGui import QListView
@@ -39,16 +38,29 @@ def newResourceBrowser(dock=None):
     if dock is None:
         return rBrowser
     
-    #TODO: implement docking
-    dock.setTitleBarWidget(QWidget()) # disable docking  
     dock.setAllowedAreas(Qt.BottomDockWidgetArea)
-    dock.setWindowTitle("Resource Browser")
+    dock.setWindowTitle("Resources")
     dock.setWidget(rBrowser)
     
-    #dock.dockLocationChanged.connect(rBrowser.setLayoutFromDockArea)
+    _setupDynamicDockFeatures(dock)
     
     return dock
 
+
+def _setupDynamicDockFeatures(dock):
+    dockedFeatures   = (dock.DockWidgetVerticalTitleBar | 
+                        dock.DockWidgetFloatable        |
+                        dock.DockWidgetMovable          | 
+                        dock.DockWidgetClosable)
+    
+    floatingFeatures = (dock.DockWidgetFloatable |
+                        dock.DockWidgetMovable   |
+                        dock.DockWidgetClosable)
+    
+    configDockFeatures = lambda f: dock.setFeatures(floatingFeatures if f else dockedFeatures)
+    configDockFeatures(False)
+    
+    dock.topLevelChanged.connect(configDockFeatures)
 
 
 class ResourceBrowser(QWidget):

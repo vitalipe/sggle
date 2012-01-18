@@ -214,7 +214,7 @@ class FileController(BaseController): # Rename: SceneConteroller
     def new(self):        
         newScene = scene.newEmptyGraphicsScene()
         self._addScene(newScene, None)
-    
+
     
     def openScene(self): 
         filters  = " ".join([ "*." + f for f in saveload.formats.knowFileFormats()])
@@ -280,11 +280,7 @@ class FileController(BaseController): # Rename: SceneConteroller
     def closeActiveScene(self):
         self.closeScene(self._sceneGroup.index(self._sceneGroup.activeScene()))
     
-    
-    def exit(self):
-        pass
-    
-    
+ 
     def closeScene(self, sceneIndex):
         scene = self._sceneList[sceneIndex]
         name  = scene.rootItem().value("name")

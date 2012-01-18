@@ -3,15 +3,16 @@ Created on Nov 8, 2011
 
 @author: vitali
 '''
-
+from sys import exit
 from PySide.QtCore import Qt
+
 
 from PySide.QtGui import QMainWindow
 from PySide.QtGui import QDockWidget
 from PySide.QtGui import QAction
 from PySide.QtGui import QMenu
 from PySide.QtGui import QKeySequence
-from PySide.QtGui import QWidget
+from PySide.QtGui import QMessageBox
 from PySide.QtGui import QToolBar
 from PySide.QtGui import QIcon
 
@@ -65,9 +66,7 @@ class MainWindow(QMainWindow):
         self._createActions()
         self._createWidgets()
         self._createMenuBars()
-        self._createToolBars()
-        
-        self.readSettings()
+        self._createToolBars()        
  
     def _createToolBars(self):
         
@@ -285,10 +284,10 @@ class MainWindow(QMainWindow):
         
         
         
-        # Exit
-        exitAction = QAction("&Exit", self)
-        exitAction.triggered.connect(fileController.exit)
-        self.actions["exit"] = exitAction
+        # Quit
+        quitAction = QAction("&Quit", self)
+        quitAction.triggered.connect(self.close)
+        self.actions["quit"] = quitAction
  
  
  
@@ -349,7 +348,7 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(actions["save"])
         fileMenu.addAction(actions["saveAs"])
         fileMenu.addAction(actions["open"])
-        fileMenu.addAction(actions["exit"])
+        fileMenu.addAction(actions["quit"])
         menuBar.addMenu(fileMenu)
 
 
@@ -390,16 +389,34 @@ class MainWindow(QMainWindow):
         menuBar.addMenu(viewMenu)
         
         
-    def readSettings(self):
-        pass
+    def _unsavedScenes(self):
+        dirtyScenes = []
+        for s in  self.sceneGroup.sceneList():
+            if not s.undoStack().isClean():
+                dirtyScenes.append(s)
+        return dirtyScenes
         
-        
-    def writeSettings(self):
-        pass
-        
-        
-        
-        
+    
+    def closeEvent(self, event):
+        dirtyCount = len(self._unsavedScenes())  
+        if dirtyCount:
+            msgText = [ 
+                       "There",
+                       "are" if dirtyCount > 1 else "is ",
+                       str(dirtyCount),
+                       "unsaved",
+                       "scenes." if dirtyCount > 1 else "scene.",
+                       "Quit anyway?"
+                       ]
+            
+            result = QMessageBox.question(self, "Quit SGGLE", " ".join(msgText),
+                                            QMessageBox.Discard | QMessageBox.Cancel, 
+                                            QMessageBox.Cancel)
+            
+            if result != QMessageBox.Discard:
+                event.ignore()
+        else:
+            event.accept()
 
 
 

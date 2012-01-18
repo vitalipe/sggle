@@ -32,8 +32,8 @@ import sggle.resources as resources
 
    
 def newResourceBrowser(dock=None):
-    rBrowser = ResourceBrowser(ResourceTabWidget(), TabButtonPanel(), TextureFolderViewer)
-    rBrowser.openTab(expanduser("~"))
+    rBrowser = ResourceBrowser(ResourceTabWidget(), OpenTabButton(), TextureFolderViewer)
+    rBrowser.openNewTab(expanduser("~"))
     
     if dock is None:
         return rBrowser
@@ -65,32 +65,46 @@ def _setupDynamicDockFeatures(dock):
 
 class ResourceBrowser(QWidget):
     
-    def __init__(self, tabWidget, buttonPanel, folderViewFactory):
+    def __init__(self, tabWidget, openTabButton, folderViewFactory):
         QWidget.__init__(self)
         
-        self._tabWidget         = tabWidget
-        self._buttonPanel       = buttonPanel
-        self._folderViewFactory = folderViewFactory
-        
+        self._tabWidget          = tabWidget
+        self._openTabButton      = openTabButton
+        self._folderViewFactory  = folderViewFactory
+        self._dirRoot            = QDir.home().path()
+
         self._connectSignals()
         self._setLayout()    
 
 
-    def openTab(self, path):
+    def openNewTab(self, path):
         self._tabWidget.addTab(self._folderViewFactory(path), path)
-        
-        
+    
+    
+    def displayFileDialog(self):
+    
+        path =  QFileDialog.getExistingDirectory(self, "Select Directory", self._dirRoot,
+                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+    
+        if path:
+            self.openNewTab(path)          
+            # remember directory 
+            parent = QDir(path)
+            parent.cdUp()
+            self._dirRoot = parent.absolutePath()                                       
+
+
     def _setLayout(self):      
         topLayout = QHBoxLayout()
         topLayout.addWidget(self._tabWidget)
-        self._tabWidget.setCornerWidget(self._buttonPanel)
+        self._tabWidget.setCornerWidget(self._openTabButton)
 
         self.setLayout(topLayout)
         
         
     def _connectSignals(self):
-        self._buttonPanel.tabOpenRequested.connect(self.openTab)
         self._tabWidget.tabCloseRequested.connect(self._handleTabCloseRequested)
+        self._openTabButton.clicked.connect(self.displayFileDialog)
 
     
     def _handleTabCloseRequested(self, index):
@@ -110,53 +124,17 @@ class ResourceTabWidget(QTabWidget):
         self.setTabsClosable(True)
         
 
-
-
-class TabButtonPanel(QWidget):
+class OpenTabButton(QPushButton):
     
-    tabOpenRequested = Signal(object)
-    
-    
-    def __init__(self):
-        QWidget.__init__(self)
+    def __init__(self, parent=None):
+        QPushButton.__init__(self, "", parent)
         
-        self._addDirButton = None
-        self._dirRoot      = QDir.home().path()
+        iconPixmap = QPixmap(":/icons/add-tab")
         
-        self._createButtons()
-        self._setupLayout()
-                
-        
-    def _createButtons(self):
-        addDirIcon      = QPixmap(":/icons/open")
-        
-        self._addDirButton = QPushButton(addDirIcon,"", self)
-        self._addDirButton.setMaximumSize((addDirIcon.size()))
-        self._addDirButton.setFlat(True)
-        
-        self._addDirButton.clicked.connect(self.openDir)
-        
-        
-    def _setupLayout(self):
-        layout = QHBoxLayout()
-        
-        layout.addWidget(self._addDirButton)
+        self.setIcon(iconPixmap)
+        self.setMaximumSize((iconPixmap.size()))        
+        self.setFlat(True)
 
-        self.setLayout(layout)
-        self.setMinimumHeight(38)
-
-
-    def openDir(self):
-        
-        path =  QFileDialog.getExistingDirectory(self, "Select Directory", self._dirRoot,
-                            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
-        
-        if path:
-            self.tabOpenRequested.emit(path)          
-            # remember directory 
-            parent = QDir(path)
-            parent.cdUp()
-            self._dirRoot = parent.absolutePath()                                       
 
 
 

@@ -32,7 +32,8 @@ class GraphicsSceneView(QGraphicsView):
         
     def scrollContentsBy(self, dx, dy):
         QGraphicsView.scrollContentsBy(self, dx, dy)
-        self.scene().adjustParallax(self.center())
+        if hasattr(self.scene(), "adjustParallax"):
+            self.scene().adjustParallax(self.center())
         
         
     def zoomPercentage(self):

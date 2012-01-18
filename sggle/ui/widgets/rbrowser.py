@@ -20,6 +20,8 @@ from PySide.QtGui  import QPixmap
 from PySide.QtGui  import QPushButton
 from PySide.QtGui  import QFileDialog
 from PySide.QtGui  import QTabWidget
+from PySide.QtGui  import QMessageBox
+
 
 from PySide.QtGui import QListView
 from PySide.QtGui import QFileSystemModel
@@ -115,48 +117,23 @@ class TabButtonPanel(QWidget):
         
     def _createButtons(self):
         addDirIcon      = QPixmap(":/icons/open")
-        addDirTreeIcon  = QPixmap(":/icons/open")
         
         self._addDirButton = QPushButton(addDirIcon,"", self)
         self._addDirButton.setMaximumSize((addDirIcon.size()))
         self._addDirButton.setFlat(True)
         
-        self._addDirTreeButton = QPushButton(addDirTreeIcon,"", self)
-        self._addDirTreeButton.setMaximumSize((addDirTreeIcon.size()))
-        self._addDirTreeButton.setFlat(True)
-
-        
         self._addDirButton.clicked.connect(self.openDir)
-        self._addDirTreeButton.clicked.connect(self.openDirTree)
         
         
     def _setupLayout(self):
         layout = QHBoxLayout()
         
         layout.addWidget(self._addDirButton)
-        layout.addWidget(self._addDirTreeButton)
 
         self.setLayout(layout)
         self.setMinimumHeight(38)
 
-    def openDirTree(self):
-        parentPath =  QFileDialog.getExistingDirectory(self, "Select Root Directory", self._dirRoot,
-                             QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
-        
-        if not parentPath: # canceled  by user
-            return
-        
-        parent = QDir(parentPath)
-        parent.setFilter(QDir.Dirs | QDir.NoDotDot | QDir.NoDot)
-        
-        for path in [ parent.absoluteFilePath(d) for d in parent.entryList()]:
-            self.tabOpenRequested.emit(path)                                         
-            
-        # remember directory 
-        parent.cdUp()
-        self._dirRoot = parent.absolutePath()
-    
-        
+
     def openDir(self):
         
         path =  QFileDialog.getExistingDirectory(self, "Select Directory", self._dirRoot,

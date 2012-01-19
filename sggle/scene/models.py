@@ -31,7 +31,10 @@ class ItemPropertiesModel(QAbstractItemModel):
         
         self._item           = None
         self._sceneGroup     = sceneGroup
-        self._decorationIcon = QIcon(":/icons/open") #FIXME: different icon
+        self._propertyIcon    = QIcon(":/icons/property/builtin") 
+        self._subPropertyIcon = QIcon(":/icons/property/component")
+        self._sepIcon         = QIcon(":/icons/property/separator")
+
         
         sceneGroup.activeSceneChanged.connect(self._updateItem)
         sceneGroup.activeLayerChanged.connect(self._updateItem)
@@ -118,9 +121,16 @@ class ItemPropertiesModel(QAbstractItemModel):
         if not index.isValid():
             return None
         
-        #FIXME: Decoration place holder
-        if role == Qt.DecorationRole and index.column() == ItemPropertiesModel.NameColumn:
-            return self._decorationIcon
+        if role == Qt.DecorationRole:
+            if index.column() == ItemPropertiesModel.NameColumn:
+                if index.parent().isValid():
+                    return self._subPropertyIcon
+                else:
+                    return self._propertyIcon
+            if index.column() == ItemPropertiesModel.SepColumn:
+                return self._sepIcon
+                
+                
         
         if role == ItemPropertiesModel.ValidatorRole:
             if index.parent().isValid():
@@ -142,8 +152,6 @@ class ItemPropertiesModel(QAbstractItemModel):
                 return component.name()
             if col == ItemPropertiesModel.ValueColumn:
                 return component.value()
-            if col == ItemPropertiesModel.SepColumn:
-                return ":"
         
         if index.parent().isValid() == False:
             return self._propertyData(index, role) 
@@ -160,7 +168,7 @@ class ItemPropertiesModel(QAbstractItemModel):
         if col == ItemPropertiesModel.ValueColumn:
             cell = property.value()
         if col == ItemPropertiesModel.SepColumn:
-            cell = ":"
+            return None
     
         if role == Qt.EditRole:
             return cell

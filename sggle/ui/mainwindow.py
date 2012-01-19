@@ -72,9 +72,9 @@ class MainWindow(QMainWindow):
         
         toolBar = QToolBar("tools", self)
         toolBar.setFloatable(False)
-        toolBar.addAction(self.actions["new"])
-        toolBar.addAction(self.actions["save"])
-        toolBar.addAction(self.actions["open"])
+        toolBar.addAction(self.actions["scene-new"])
+        toolBar.addAction(self.actions["scene-save"])
+        toolBar.addAction(self.actions["scene-open"])
         
         self.addToolBar(toolBar)
         
@@ -92,6 +92,16 @@ class MainWindow(QMainWindow):
         return self.sceneGroup.activeScene()
     
     
+    def addAction(self, name, callback, trigger, displayName = None, disabled = True):
+        displayName = displayName if displayName else name
+        
+        action = QAction(displayName, self)
+        action.setDisabled(disabled)
+        if callback: action.triggered.connect(callback)
+        if trigger:  trigger.connect(action.setEnabled)
+        self.actions[name] = action
+        
+    
     def _createActions(self):
        
         sceneGroup      = self.sceneGroup
@@ -101,210 +111,185 @@ class MainWindow(QMainWindow):
         viewController  = self.viewController
 
        
-       
-        # New Layer
-        addLayerAction = QAction("&Add New Layer", self)
-        addLayerAction.triggered.connect(editController.addNewLayer)
-        addLayerAction.setDisabled(True)
-        callback = lambda n,o: addLayerAction.setEnabled(True if n  else False)
-        sceneGroup.activeSceneChanged.connect(callback)
-        self.actions["newLayer"] = addLayerAction
+        self.addAction("layer-new", 
+                       editController.addNewLayer, 
+                       editController.canAddNewLayerChanged, # check for scene
+                       "&Add New Layer", 
+                       disabled = True)
+             
+             
+        self.addAction("layer-delete", 
+                       editController.deleteActiveLayer, 
+                       editController.canDeleteActiveLayerChanged, 
+                       "&Delete Active Layer", 
+                       disabled = True)
         
         
-        # Delete Layer
-        deleteLayerAction = QAction("&Delete Active Layer", self)
-        deleteLayerAction.triggered.connect(editController.deleteActiveLayer)
-        deleteLayerAction.setDisabled(True)
-        callback = lambda n: deleteLayerAction.setEnabled(True if n  else False)
-        sceneGroup.activeLayerChanged.connect(callback)
-        self.actions["deleteLayer"] = deleteLayerAction
+        self.addAction("layer-move-up", 
+                       itemsController.moveLayerUp,
+                       itemsController.canMoveLayerUpChanged,
+                       "Move Up Layer", 
+                       disabled = True)
         
         
-        
-        moveUpLayerAction = QAction("Move Up Layer", self)
-        moveUpLayerAction.triggered.connect(itemsController.moveLayerUp)
-        moveUpLayerAction.setDisabled(True)
-        itemsController.canMoveLayerUpChanged.connect(moveUpLayerAction.setEnabled)
-        self.actions["moveUpLayer"] =  moveUpLayerAction
-        
-        
-        moveDownLayerAction = QAction("Move Down Layer", self)
-        moveDownLayerAction.triggered.connect(itemsController.moveLayerDown)
-        moveDownLayerAction.setDisabled(True)
-        itemsController.canMoveLayerDownChanged.connect(moveDownLayerAction.setEnabled)
-        self.actions["moveDownLayer"] =  moveDownLayerAction
+        self.addAction("layer-move-down", 
+                       itemsController.moveLayerDown,
+                       itemsController.canMoveLayerDownChanged,
+                       "Move Down Layer", 
+                       disabled = True)
         
         
-        moveLayerToTopAction = QAction("Move Layer To Top", self)
-        moveLayerToTopAction.triggered.connect(itemsController.moveLayerToTop)
-        moveLayerToTopAction.setDisabled(True)
-        itemsController.canMoveLayerUpChanged.connect(moveLayerToTopAction.setEnabled)
-        self.actions["moveLayerToTop"] =  moveLayerToTopAction
+        self.addAction("layer-move-top", 
+                       itemsController.moveLayerToTop,
+                       itemsController.canMoveLayerUpChanged,
+                       "Move Layer To Top", 
+                       disabled = True)
         
+        
+        self.addAction("layer-move-bottom", 
+                       itemsController.moveLayerToBottom,
+                       itemsController.canMoveLayerDownChanged,
+                       "Move Layer To Bottom", 
+                       disabled = True)
+        
+        
+        self.addAction("selection-delete", 
+                       editController.deleteSelectedItems,
+                       editController.canDeleteItemSelectionChanged,
+                       "Delete &Selection", 
+                       disabled = True)
+        
+        
+        self.addAction("selection-move-up", 
+                       itemsController.moveItemSelectionUp,
+                       itemsController.canMoveSelectionUpChanged,
+                       "Move Up Selection", 
+                       disabled = True)
+        
+        
+        self.addAction("selection-move-down", 
+                       itemsController.moveItemSelectionDown,
+                       itemsController.canMoveSelectionDownChanged,
+                       "Move Down Selection", 
+                       disabled = True)
 
-        moveLayerToBottomAction = QAction("Move Layer To Bottom", self)
-        moveLayerToBottomAction.triggered.connect(itemsController.moveLayerToBottom)
-        moveLayerToBottomAction.setDisabled(True)
-        itemsController.canMoveLayerDownChanged.connect(moveLayerToBottomAction.setEnabled)
-        self.actions["moveLayerToBottom"] =  moveLayerToBottomAction
         
-        
-        # Delete Selected Items
-        deleteSelectionAction = QAction("Delete &Selection", self)
-        deleteSelectionAction.triggered.connect(editController.deleteSelectedItems)
-        deleteSelectionAction.setDisabled(True)
-        callback = lambda : deleteSelectionAction.setEnabled(True if self._scene().selectedItems()  else False)
-        sceneGroup.selectionChanged.connect(callback)
-        self.actions["deleteSelection"] =  deleteSelectionAction
-        
-        
-        moveUpSelectionAction = QAction("Move Up Selection", self)
-        moveUpSelectionAction.triggered.connect(itemsController.moveItemSelectionUp)
-        moveUpSelectionAction.setDisabled(True) 
-        itemsController.canMoveSelectionUpChanged.connect(moveUpSelectionAction.setEnabled)
-        self.actions["moveUpSelection"] =   moveUpSelectionAction
-        
-        
-        moveDownSelectionAction = QAction("Move Down Selection", self)
-        moveDownSelectionAction.triggered.connect(itemsController.moveItemSelectionDown)
-        moveDownSelectionAction.setDisabled(True) 
-        itemsController.canMoveSelectionDownChanged.connect(moveDownSelectionAction.setEnabled)
-        self.actions["moveDownSelection"] =   moveDownSelectionAction
-        
-        
-        moveSelectionToTopAction = QAction("Move Selection To Top", self)
-        moveSelectionToTopAction.triggered.connect(itemsController.moveItemSelectionToTop)
-        moveSelectionToTopAction.setDisabled(True) 
-        itemsController.canMoveSelectionUpChanged.connect(moveSelectionToTopAction.setEnabled)
-        self.actions["moveSelectionToTop"] =   moveSelectionToTopAction
-        
-        
-        moveSelectionToBottomAction = QAction("Move Selection To Bottom", self)
-        moveSelectionToBottomAction.triggered.connect(itemsController.moveItemSelectionToBottom)
-        moveSelectionToBottomAction.setDisabled(True) 
-        itemsController.canMoveSelectionDownChanged.connect(moveSelectionToBottomAction.setEnabled)
-        self.actions["moveSelectionToBottom"] =   moveSelectionToBottomAction
-        
-        
-        
-        # Redo 
-        redoAction = sceneGroup.undoGroup().createRedoAction(self)
-        self.actions["redo"] =  redoAction
-        
-        
-        # Undo
-        undoAction = sceneGroup.undoGroup().createUndoAction(self)
-        self.actions["undo"] =  undoAction
- 
- 
-        # copy
-        copyAction = QAction("&Copy", self)
-        copyAction.triggered.connect(editController.copySelectionToClipboard)
-        copyAction.setDisabled(True)
-        callback = lambda : copyAction.setEnabled(True if self._scene().selectedItems()  else False)
-        sceneGroup.selectionChanged.connect(callback)
-        self.actions["copy"] =  copyAction
-        
-        # cut
-        cutAction = QAction("&Cut", self)
-        cutAction.triggered.connect(editController.cutSelectionToClipboard)
-        cutAction.setDisabled(True)
-        callback = lambda : cutAction.setEnabled(True if self._scene().selectedItems()  else False)
-        sceneGroup.selectionChanged.connect(callback)
-        self.actions["cut"] =  cutAction        
-        
-        # paste
-        pasteAction = QAction("&Paste", self)
-        pasteAction.triggered.connect(editController.pasteFromClipboard)
-        pasteAction.setDisabled(True)
-        editController.clipboardDataAvailableChanged.connect(pasteAction.setEnabled)
-        self.actions["paste"] =  pasteAction
+        self.addAction("selection-move-top", 
+                       itemsController.moveItemSelectionToTop,
+                       itemsController.canMoveSelectionUpChanged,
+                       "Move Selection To Top", 
+                       disabled = True)
 
-        # ZoomIn
-        zoomInAction = QAction("Zoom &In", self)
-        zoomInAction.triggered.connect(viewController.zoomIn)
-        zoomInAction.setDisabled(True)
-        viewController.canZoomInChanged.connect(zoomInAction.setEnabled)
-        self.actions["zoomIn"] =  zoomInAction
-        
-        # ZoomOut
-        zoomOutAction = QAction("Zoom &Out", self)
-        zoomOutAction.triggered.connect(viewController.zoomOut)
-        zoomOutAction.setDisabled(True)
-        viewController.canZoomOutChanged.connect(zoomOutAction.setEnabled)
-        self.actions["zoomOut"] =  zoomOutAction
 
-        # Reset Zoom
-        resetZoomAction = QAction("&Reset Zoom", self)
-        resetZoomAction.triggered.connect(viewController.resetZoom)
-        resetZoomAction.setDisabled(True)
-        viewController.zoomChanged.connect(lambda z: resetZoomAction.setEnabled(True if z != 100 else False))
-        self.actions["resetZoom"] =  resetZoomAction
+        self.addAction("selection-move-bottom", 
+                       itemsController.moveItemSelectionToBottom,
+                       itemsController.canMoveSelectionDownChanged,
+                       "Move Selection To Bottom", 
+                       disabled = True)
         
         
-        # Center On Selection
-        centerSelecetionAction = QAction("Center On Selection", self)
-        centerSelecetionAction.triggered.connect(viewController.centerOnSelectionMaster)
-        centerSelecetionAction.setDisabled(True)
-        callback = lambda: centerSelecetionAction.setEnabled(True if self._scene().selectedItems()  else False)
-        sceneGroup.selectionChanged.connect(callback)
-        self.actions["centerSelecetion"] =  centerSelecetionAction
+        self.addAction("edit-undo", 
+                       sceneGroup.undoGroup().undo,
+                       sceneGroup.undoGroup().canUndoChanged,
+                       "Undo", 
+                       disabled = True)
         
-        # Center on Origin
-        centerOriginAction = QAction("Center On Origin", self)
-        centerOriginAction.triggered.connect(viewController.centerOnOrigin)
-        centerOriginAction.setDisabled(True)
-        sceneGroup.activeSceneChanged.connect(lambda n: centerOriginAction.setEnabled(True if n else False))
-        self.actions["centerOrigin"] =  centerOriginAction
+        
+        self.addAction("edit-redo", 
+                       sceneGroup.undoGroup().redo,
+                       sceneGroup.undoGroup().canRedoChanged,
+                       "Redo", 
+                       disabled = True)
+        
+        
+        self.addAction("edit-copy", 
+                       editController.copySelectionToClipboard, # FIXME: also layer
+                       editController.canCopyChanged,
+                       "&Copy", 
+                       disabled = True)
+        
+        
+        self.addAction("edit-cut", 
+                       editController.cutSelectionToClipboard, # FIXME: also layer
+                       editController.canCopyChanged,
+                       "Cut", 
+                       disabled = True)
+        
+        
+        self.addAction("edit-paste", 
+                       editController.cutSelectionToClipboard, # FIXME: also layer
+                       editController.canPasteChanged,
+                       "&Paste", 
+                       disabled = True)
+     
+     
+        self.addAction("view-zoom-in", 
+                       viewController.zoomIn,
+                       viewController.canZoomInChanged,
+                       "Zoom &In", 
+                       disabled = True)
+        
+        self.addAction("view-zoom-out", 
+                       viewController.zoomOut,
+                       viewController.canZoomOutChanged,
+                       "Zoom &Out", 
+                       disabled = True)
+                
+                
+        self.addAction("view-zoom-reset", 
+                       viewController.resetZoom,
+                       viewController.canResetZoomChanged,
+                       "&Reset Zoom", 
+                       disabled = True)
+        
+        
+        self.addAction("view-center-selection", 
+                       viewController.centerOnSelectionMaster,
+                       None, #FIXME:
+                       "Center On Selection", 
+                       disabled = True)
+        
+        
+        self.addAction("view-center-origin", 
+                       viewController.centerOnOrigin,
+                       None, #FIXME:
+                       "Center On Origin", 
+                       disabled = True)
 
-  
-        # New
-        newAction = QAction("&New", self)
-        newAction.triggered.connect(fileController.new)
-        newAction.setIcon(QIcon(":/icons/new"))
-        self.actions["new"] = newAction
-        
-        # Save
-        saveAction = QAction("&Save", self)
-        saveAction.setIcon(QIcon(":/icons/save"))
-        saveAction.triggered.connect(fileController.saveActiveScene)
-        self.actions["save"] = saveAction
-        
-        # Save As
-        saveAction = QAction("&Save As", self)
-        saveAction.setIcon(QIcon(":/icons/saveas"))
-        saveAction.triggered.connect(fileController.saveActiveSceneAs)
-        self.actions["saveAs"] = saveAction
-        
-        # Open
-        openAction = QAction("&Open", self)
-        openAction.setIcon(QIcon(":/icons/open"))
-        openAction.triggered.connect(fileController.openScene)
-        self.actions["open"] = openAction
+
+        self.addAction("scene-new", 
+                       fileController.new,
+                       None,
+                       "New", 
+                       disabled = False)
         
         
+        self.addAction("scene-save", 
+                       fileController.saveActiveScene,
+                       None, #FIXME:
+                       "Save", 
+                       disabled = True)
         
-        # Quit
-        quitAction = QAction("&Quit", self)
-        quitAction.triggered.connect(self.close)
-        self.actions["quit"] = quitAction
+        
+        self.addAction("scene-save-as", 
+                       fileController.saveActiveSceneAs,
+                       None, #FIXME:
+                       "Save As", 
+                       disabled = True)
+        
+        self.addAction("scene-open", 
+                       fileController.openScene,
+                       None, 
+                       "Open", 
+                       disabled = False)
+        
+        
+        self.addAction("app-quit", 
+                       self.close,
+                       None, 
+                       "Quit", 
+                       disabled = False)
  
- 
- 
-        # keys:
-        addLayerAction.setShortcut(ActionKeySequences.addNewLayerSeqence)
-        deleteLayerAction.setShortcut(ActionKeySequences.deleteActiveLayerSeqence)
-        deleteSelectionAction.setShortcut(ActionKeySequences.deleteSelectedItemsSeqence)
-        redoAction.setShortcut(ActionKeySequences.redoSequence)
-        undoAction.setShortcut(ActionKeySequences.undoSequence)
-        newAction.setShortcut(ActionKeySequences.newSequence)
-        copyAction.setShortcut(ActionKeySequences.copySequence)
-        cutAction.setShortcut(ActionKeySequences.cutSequence)
-        pasteAction.setShortcut(ActionKeySequences.pasteSequence)
-        
-        zoomInAction.setShortcut(ActionKeySequences.zoomInSequence)
-        zoomOutAction.setShortcut(ActionKeySequences.zoomOutSequence)
-        centerSelecetionAction.setShortcut(ActionKeySequences.centerSelecetionSequence)
 
 
     def _createWidgets(self):
@@ -344,46 +329,46 @@ class MainWindow(QMainWindow):
         
         # File Menu
         fileMenu =  QMenu("&File", self)
-        fileMenu.addAction(actions["new"])
-        fileMenu.addAction(actions["save"])
-        fileMenu.addAction(actions["saveAs"])
-        fileMenu.addAction(actions["open"])
-        fileMenu.addAction(actions["quit"])
+        fileMenu.addAction(actions["scene-new"])
+        fileMenu.addAction(actions["scene-save"])
+        fileMenu.addAction(actions["scene-save-as"])
+        fileMenu.addAction(actions["scene-open"])
+        fileMenu.addAction(actions["app-quit"])
         menuBar.addMenu(fileMenu)
 
 
             
         # Edit Menu
         editMenu = QMenu("&Edit", self) 
-        editMenu.addAction(actions["newLayer"])
-        editMenu.addAction(actions["deleteLayer"])
-        editMenu.addAction(actions["moveUpLayer"])
-        editMenu.addAction(actions["moveDownLayer"])
-        editMenu.addAction(actions["moveLayerToTop"])
-        editMenu.addAction(actions["moveLayerToBottom"])
-        editMenu.addAction(actions["deleteSelection"])
-        editMenu.addAction(actions["moveUpSelection"])
-        editMenu.addAction(actions["moveDownSelection"])
-        editMenu.addAction(actions["moveSelectionToTop"])
-        editMenu.addAction(actions["moveSelectionToBottom"])
+        editMenu.addAction(actions["layer-new"])
+        editMenu.addAction(actions["layer-delete"])
+        editMenu.addAction(actions["layer-move-up"])
+        editMenu.addAction(actions["layer-move-down"])
+        editMenu.addAction(actions["layer-move-top"])
+        editMenu.addAction(actions["layer-move-bottom"])
+        editMenu.addAction(actions["selection-delete"])
+        editMenu.addAction(actions["selection-move-up"])
+        editMenu.addAction(actions["selection-move-down"])
+        editMenu.addAction(actions["selection-move-top"])
+        editMenu.addAction(actions["selection-move-bottom"])
 
 
         
-        editMenu.addAction(actions["redo"])
-        editMenu.addAction(actions["undo"])
-        editMenu.addAction(actions["copy"])
-        editMenu.addAction(actions["cut"])
-        editMenu.addAction(actions["paste"])
+        editMenu.addAction(actions["edit-undo"])
+        editMenu.addAction(actions["edit-redo"])
+        editMenu.addAction(actions["edit-copy"])
+        editMenu.addAction(actions["edit-cut"])
+        editMenu.addAction(actions["edit-paste"])
         menuBar.addMenu(editMenu)
         
         
         # View Menu
         viewMenu = QMenu("&View", self) 
-        viewMenu.addAction(actions["zoomIn"])
-        viewMenu.addAction(actions["zoomOut"])
-        viewMenu.addAction(actions["resetZoom"])
-        viewMenu.addAction(actions["centerSelecetion"])
-        viewMenu.addAction(actions["centerOrigin"])
+        viewMenu.addAction(actions["view-zoom-in"])
+        viewMenu.addAction(actions["view-zoom-out"])
+        viewMenu.addAction(actions["view-zoom-reset"])
+        viewMenu.addAction(actions["view-center-selection"])
+        viewMenu.addAction(actions["view-center-origin"])
 
 
         menuBar.addMenu(viewMenu)

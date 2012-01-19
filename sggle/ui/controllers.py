@@ -22,7 +22,7 @@ import sggle.saveload.readwrite as saveload
 
 
 
-class Clipboard(QObject):
+class Clipboard(QObject): 
     
     
     def __init__(self):
@@ -52,10 +52,18 @@ class BaseController(QObject):
     
 
 
-class SceneEditController(BaseController):  # refactor _handleItemCreationRequest to scene
+class SceneEditController(BaseController):  # refactor move _handleItemCreationRequest to scene
                                             # and merge with ItemController
     
-    clipboardDataAvailableChanged = Signal(bool)
+    clipboardDataAvailableChanged = Signal(bool) # move to clipboard
+    
+    canAddNewLayerChanged          = Signal(bool)
+    canDeleteActiveLayerChanged    = Signal(bool)
+    canDeleteItemSelectionChanged  = Signal(bool)
+    canCopyChanged                 = Signal(bool)
+    canPasteChanged                = Signal(bool)
+
+    
     
     def __init__(self, sceneGroup):
         BaseController.__init__(self)
@@ -520,12 +528,13 @@ class ItemsController(BaseController):
         
         
         
-class ViewController(BaseController): # Should go into ui/workspace 
+class ViewController(BaseController):
     
     
-    canZoomInChanged  = Signal(bool)
-    canZoomOutChanged = Signal(bool)
-    zoomChanged       = Signal(int, int)
+    canZoomInChanged    = Signal(bool)
+    canZoomOutChanged   = Signal(bool)
+    canResetZoomChanged = Signal(bool)
+    zoomChanged         = Signal(int, int)
     
     
     def __init__(self, sceneGroup, welcomeScene):

@@ -81,7 +81,6 @@ class MainWindow(QMainWindow):
  
     def _createControllers(self):
         
-        self.editController  =  controllers.SceneEditController(self.sceneGroup)
         self.fileController  =  controllers.FileController(self.sceneGroup)
         self.itemsController =  controllers.ItemsController(self.sceneGroup)
         self.viewController  =  controllers.ViewController(self.sceneGroup, 
@@ -105,22 +104,21 @@ class MainWindow(QMainWindow):
     def _createActions(self):
        
         sceneGroup      = self.sceneGroup
-        editController  = self.editController
         fileController  = self.fileController
         itemsController = self.itemsController
         viewController  = self.viewController
 
        
         self.addAction("layer-new", 
-                       editController.addNewLayer, 
-                       editController.canAddNewLayerChanged, # check for scene
+                       itemsController.addNewLayer, 
+                       itemsController.canAddNewLayerChanged, # check for scene
                        "&Add New Layer", 
                        disabled = True)
              
              
         self.addAction("layer-delete", 
-                       editController.deleteActiveLayer, 
-                       editController.canDeleteActiveLayerChanged, 
+                       itemsController.deleteActiveLayer, 
+                       itemsController.canDeleteActiveLayerChanged, 
                        "&Delete Active Layer", 
                        disabled = True)
         
@@ -154,8 +152,8 @@ class MainWindow(QMainWindow):
         
         
         self.addAction("selection-delete", 
-                       editController.deleteSelectedItems,
-                       editController.canDeleteItemSelectionChanged,
+                       itemsController.deleteSelectedItems,
+                       itemsController.canDeleteItemSelectionChanged,
                        "Delete &Selection", 
                        disabled = True)
         
@@ -203,22 +201,22 @@ class MainWindow(QMainWindow):
         
         
         self.addAction("edit-copy", 
-                       editController.copySelectionToClipboard, # FIXME: also layer
-                       editController.canCopyChanged,
+                       itemsController.copySelectionToClipboard, # FIXME: also layer
+                       itemsController.canCopyChanged,
                        "&Copy", 
                        disabled = True)
         
         
         self.addAction("edit-cut", 
-                       editController.cutSelectionToClipboard, # FIXME: also layer
-                       editController.canCopyChanged,
+                       itemsController.cutSelectionToClipboard, # FIXME: also layer
+                       itemsController.canCopyChanged,
                        "Cut", 
                        disabled = True)
         
         
         self.addAction("edit-paste", 
-                       editController.cutSelectionToClipboard, # FIXME: also layer
-                       editController.canPasteChanged,
+                       itemsController.cutSelectionToClipboard, # FIXME: also layer
+                       itemsController.canPasteChanged,
                        "&Paste", 
                        disabled = True)
      

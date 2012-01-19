@@ -24,6 +24,7 @@ import sggle.saveload.readwrite as saveload
 
 class Clipboard(QObject): 
     
+    clipboardDataAvailableChanged = Signal(bool) # do I need this?
     
     def __init__(self):
         QObject.__init__(self)
@@ -48,106 +49,6 @@ class BaseController(QObject):
     
     def __init__(self):
         QObject.__init__(self)
-        
-    
-
-
-class SceneEditController(BaseController):  # refactor move _handleItemCreationRequest to scene
-                                            # and merge with ItemController
-    
-    clipboardDataAvailableChanged = Signal(bool) # move to clipboard
-    
-    canAddNewLayerChanged          = Signal(bool)
-    canDeleteActiveLayerChanged    = Signal(bool)
-    canDeleteItemSelectionChanged  = Signal(bool)
-    canCopyChanged                 = Signal(bool)
-    canPasteChanged                = Signal(bool)
-
-    
-    
-    def __init__(self, sceneGroup):
-        BaseController.__init__(self)
-        
-        self._sceneGroup = sceneGroup
-        self._clipboard  = Clipboard()
-        
-        sceneGroup.itemCreationRequest.connect(self._handleItemCreationRequest)
-        
-         
-    def _scene(self):
-        return self._sceneGroup.activeScene()
-    
-    
-    def _pushCommand(self, cmd):
-        self._sceneGroup.undoGroup().activeStack().push(cmd)
-        
-       
-    def _handleItemCreationRequest(self, item, x, y): #FIXME: Move To Scene
-
-        cmd = commands.newAddItemCommand(self._scene(), item, x, y)
-        self._pushCommand(cmd)
-        
-        
-    def addNewLayer(self):
-        cmd = commands.newAddLayerCommand(self._scene())
-        self._pushCommand(cmd)
-        
-    
-    def deleteActiveLayer(self):
-        if self._scene().editMode():
-            return
-        
-        scene = self._scene()
-        cmd = commands.newDeleteLayerCommand(scene, scene.activeLayer())
-        self._pushCommand(cmd)
-    
-    
-    def deleteSelectedItems(self):
-        scene = self._scene()
-        batch = commands.newCommandBatch()
-        
-        for item in scene.selectedItems():
-            commands.newDeleteItemCommand(scene, item, batch)
-        
-        if scene.selectedItems():
-            self._pushCommand(batch)    
-    
-    
-    def copySelectionToClipboard(self):
-        scene     = self._scene()
-        clipboard = self._clipboard
-        items     = scene.selectedItems()
-        
-        if items: 
-            self._clipboard.clear()
-            
-        for item in items:
-            clipboard.append(item.copy())
-            
-        self.clipboardDataAvailableChanged.emit(True if clipboard.data() else False)
-        
-    
-    def cutSelectionToClipboard(self):
-        self.copySelectionToClipboard()
-        self.deleteSelectedItems()
-    
-    
-    def pasteFromClipboard(self):
-        assert self._clipboard.data()
-        
-        scene        = self._scene()
-        clipboard    = self._clipboard
-        batch        = commands.newCommandBatch()
-        
-        scene.clearSelection()
-        
-        for clipboardItem in clipboard.data():
-            item = clipboardItem.copy()
-            pos = item.value("position")
-            commands.newAddItemCommand(scene, item, x = pos.x(), y = pos.y(), commandBatch=batch)
-
-        self._pushCommand(batch)
-            
             
     
     
@@ -163,7 +64,7 @@ class FileController(BaseController): # Rename: SceneConteroller
     def __init__(self, sceneGroup):
         BaseController.__init__(self)
         
-        self._sceneGroup          = sceneGroup
+        self.sceneGroup          = sceneGroup
         self._sceneToFilePathMap  = {}
         self._sceneList           = []
         
@@ -175,13 +76,13 @@ class FileController(BaseController): # Rename: SceneConteroller
 
 
     def _forwardActiveSceneNameChanges(self, item, key):
-        if key == "name" and item is self._sceneGroup.activeScene().rootItem():                
+        if key == "name" and item is self.sceneGroup.activeScene().rootItem():                
             self.activeSceneNameChanged.emit(item.value("name"))
         
         
     def _addScene(self, scene, filePath):
         self._sceneToFilePathMap[scene] = filePath
-        self._sceneGroup.addScene(scene)
+        self.sceneGroup.addScene(scene)
         self._sceneList.append(scene)
         
         self.sceneAdded.emit(scene.rootItem().value("name"))
@@ -189,7 +90,7 @@ class FileController(BaseController): # Rename: SceneConteroller
 
     def _removeScene(self, scene):
         self._sceneToFilePathMap.pop(scene)
-        self._sceneGroup.removeScene(scene)
+        self.sceneGroup.removeScene(scene)
         
         index = self._sceneList.index(scene)
         self._sceneList.pop(index)
@@ -261,11 +162,11 @@ class FileController(BaseController): # Rename: SceneConteroller
         
         
     def saveActiveScene(self):
-        self.saveScene(self._sceneGroup.activeScene())
+        self.saveScene(self.sceneGroup.activeScene())
     
     
     def saveActiveSceneAs(self):
-        self.saveSceneAs(self._sceneGroup.activeScene())
+        self.saveSceneAs(self.sceneGroup.activeScene())
         
         
     def saveSceneAs(self, scene):
@@ -286,7 +187,7 @@ class FileController(BaseController): # Rename: SceneConteroller
     
     
     def closeActiveScene(self):
-        self.closeScene(self._sceneGroup.index(self._sceneGroup.activeScene()))
+        self.closeScene(self.sceneGroup.index(self.sceneGroup.activeScene()))
     
  
     def closeScene(self, sceneIndex):
@@ -313,7 +214,7 @@ class FileController(BaseController): # Rename: SceneConteroller
 
     
     def setActiveScene(self, sceneIndex):
-        self._sceneGroup.setActiveScene(self._sceneList[sceneIndex])
+        self.sceneGroup.setActiveScene(self._sceneList[sceneIndex])
         
         
     def swapSceneIndexOrder(self, fromIndex, toIndex):
@@ -322,36 +223,50 @@ class FileController(BaseController): # Rename: SceneConteroller
         sceneList[toIndex]   = sceneList[fromIndex]
         sceneList[fromIndex] = tmp
     
-    
-
         
+
 
 class ItemsController(BaseController):
     
-    canMoveSelectionUpChanged   = Signal(bool)
-    canMoveSelectionDownChanged = Signal(bool)
-    canMoveLayerUpChanged       = Signal(bool)
-    canMoveLayerDownChanged     = Signal(bool)
-    
+    canMoveSelectionUpChanged    = Signal(bool)
+    canMoveSelectionDownChanged  = Signal(bool)
+    canMoveLayerUpChanged        = Signal(bool)
+    canMoveLayerDownChanged      = Signal(bool)
+    canPasteClipBoardChanged     = Signal(bool)
+    canCopyChanged               = Signal(bool) 
+    canPasteChanged              = Signal(bool)
+
+
+    canAddNewLayerChanged          = Signal(bool) 
+    canDeleteActiveLayerChanged    = Signal(bool) 
+    canDeleteItemSelectionChanged  = Signal(bool) 
+
     
     def __init__(self, sceneGroup):
         BaseController.__init__(self)
         
-        self._sceneGroup   = sceneGroup
-        self._commandBatch = None
-        
-        
+        self.sceneGroup   = sceneGroup        
+        self._clipboard  = Clipboard()
+
         sceneGroup.listOfItemsChanged.connect(self._updateSignals)
         sceneGroup.selectionChanged.connect(self._updateSignals)
+        sceneGroup.activeLayerChanged.connect(self._updateSignals)
+        
+        sceneGroup.itemCreationRequest.connect(self._handleItemCreationRequest) #FIXME: move to scene
 
+
+    def _handleItemCreationRequest(self, item, x, y): #FIXME: Move To Scene
+
+        cmd = commands.newAddItemCommand(self._scene(), item, x, y)
+        self._pushCommand(cmd)
         
                
     def _scene(self):
-        return self._sceneGroup.activeScene()
+        return self.sceneGroup.activeScene()
         
            
     def _pushCommand(self, cmd):
-        self._sceneGroup.undoGroup().activeStack().push(cmd)  
+        self.sceneGroup.undoGroup().activeStack().push(cmd)  
     
     
     def _updateSignals(self):
@@ -361,7 +276,7 @@ class ItemsController(BaseController):
         activeLayer = scene.activeLayer()
         items       = activeLayer.childItems() if activeLayer else []  
 
-        if len(layers):
+        if len(layers) and activeLayer:
             self.canMoveLayerUpChanged.emit(True if   activeLayer is not layers[-1] else False)
             self.canMoveLayerDownChanged.emit(True if activeLayer is not layers[0] else False)
         else:
@@ -375,7 +290,67 @@ class ItemsController(BaseController):
             self.canMoveSelectionDownChanged.emit(False)
             self.canMoveSelectionUpChanged.emit(False)
         
+ 
+    def addNewLayer(self):
+        cmd = commands.newAddLayerCommand(self._scene())
+        self._pushCommand(cmd)
         
+    
+    def deleteActiveLayer(self):
+        if self._scene().editMode(): 
+            return
+        
+        scene = self._scene()
+        cmd = commands.newDeleteLayerCommand(scene, scene.activeLayer())
+        self._pushCommand(cmd)
+    
+    
+    def deleteSelectedItems(self):
+        scene = self._scene()
+        batch = commands.newCommandBatch()
+        
+        for item in scene.selectedItems():
+            commands.newDeleteItemCommand(scene, item, batch)
+        
+        if scene.selectedItems():
+            self._pushCommand(batch)    
+    
+    
+    def copySelectionToClipboard(self):
+        scene     = self._scene()
+        clipboard = self._clipboard
+        items     = scene.selectedItems()
+        
+        if items: 
+            self._clipboard.clear()
+            
+        for item in items:
+            clipboard.append(item.copy())
+            
+        self.clipboardDataAvailableChanged.emit(True if clipboard.data() else False)
+        
+    
+    def cutSelectionToClipboard(self):
+        self.copySelectionToClipboard()
+        self.deleteSelectedItems()
+    
+    
+    def pasteFromClipboard(self):
+        assert self._clipboard.data()
+        
+        scene        = self._scene()
+        clipboard    = self._clipboard
+        batch        = commands.newCommandBatch()
+        
+        scene.clearSelection()
+        
+        for clipboardItem in clipboard.data():
+            item = clipboardItem.copy()
+            pos = item.value("position")
+            commands.newAddItemCommand(scene, item, x = pos.x(), y = pos.y(), commandBatch=batch)
+
+        self._pushCommand(batch)
+      
         
     def moveItemSelectionUp(self):
         cmdBatch = commands.newCommandBatch()
@@ -540,7 +515,7 @@ class ViewController(BaseController):
     def __init__(self, sceneGroup, welcomeScene):
         BaseController.__init__(self)
 
-        self._sceneGroup    = sceneGroup
+        self.sceneGroup    = sceneGroup
         self._welcomeScene  = welcomeScene
         self._view          = None
         self._zoomByScene   = []
@@ -568,13 +543,13 @@ class ViewController(BaseController):
     def _handleActiveSceneChanged(self, new, old):
         
         if old: # save zoom & center
-            index = self._sceneGroup.index(old)
+            index = self.sceneGroup.index(old)
             self._centerByScene[index] = self._view.center()
             self._zoomByScene[index]   = self.zoomPercentage()
             
         if new:
             self._view.setScene(new)
-            index = self._sceneGroup.index(new)
+            index = self.sceneGroup.index(new)
             self.setZoomPercentage(self._zoomByScene[index])
             self._view.centerOn(self._centerByScene[index])
             
@@ -606,7 +581,7 @@ class ViewController(BaseController):
     
     def setZoomPercentage(self, percentage):
         assert self._view
-        assert self._sceneGroup.activeScene()
+        assert self.sceneGroup.activeScene()
         
         if percentage > self._maxZoom:
             percentage = self._maxZoom
@@ -624,15 +599,15 @@ class ViewController(BaseController):
     
     def centerOnOrigin(self):
         assert self._view
-        originPoint = self._sceneGroup.activeScene().rootItem().value("origin")
+        originPoint = self.sceneGroup.activeScene().rootItem().value("origin")
         self._view.centerOn(originPoint)
     
     
     def centerOnSelectionMaster(self):
         assert self._view
-        assert self._sceneGroup.activeScene()
+        assert self.sceneGroup.activeScene()
         
-        master = self._sceneGroup.activeScene().selectionMaster()
+        master = self.sceneGroup.activeScene().selectionMaster()
         self._view.centerOn(master)
     
     

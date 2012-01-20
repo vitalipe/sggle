@@ -568,19 +568,21 @@ class ItemsController(BaseController):
         
         
         
-class ViewController(QObject):
+class ViewController(BaseController):
     
     
-    canZoomInChanged    = Signal(bool)
-    canZoomOutChanged   = Signal(bool)
-    canResetZoomChanged = Signal(bool)
-    zoomChanged         = Signal(int, int)
+    canZoomInChanged                 = Signal(bool)
+    canZoomOutChanged                = Signal(bool)
+    canResetZoomChanged              = Signal(bool)
+    canCenterOnSeletionMasterChanged = Signal(bool)
+    canCenterOnOriginChanged         = Signal(bool)
+
+    zoomChanged                      = Signal(int, int)
     
     
     def __init__(self, sceneGroup, welcomeScene):
-        QObject.__init__(self)
+        BaseController.__init__(self, sceneGroup)
 
-        self.sceneGroup    = sceneGroup
         self._welcomeScene  = welcomeScene
         self._view          = None
         self._zoomByScene   = []
@@ -594,7 +596,21 @@ class ViewController(QObject):
         sceneGroup.sceneWasAdded.connect(self._handleSceneWasAdded)
         sceneGroup.sceneWasRemoved.connect(self._handleSceneWasRemoved)
 
+        self.zoomChanged.connect(self._updateAllSignalTriggers)
 
+    def _updateAllSignalTriggers(self):
+        self.canZoomInChanged.emit(self.zoomPercentage() < self._maxZoom)
+        self.canZoomOutChanged.emit(self.zoomPercentage() > self._minZoom)    
+        self.canResetZoomChanged.emit(self.zoomPercentage() != 100)
+        
+        if self._scene():
+            self.canCenterOnOriginChanged.emit(True)
+            self.canCenterOnSeletionMasterChanged.emit(len(self._scene().selectedItems()) > 0)    
+        else:
+            self.canCenterOnOriginChanged.emit(False)
+            self.canCenterOnSeletionMasterChanged.emit(False)    
+
+    
     def _handleSceneWasAdded(self, index):
         self._zoomByScene.append(100)
         self._centerByScene.append(QPointF(0,0)) #FIXME: scene origin
@@ -608,7 +624,7 @@ class ViewController(QObject):
     def _handleActiveSceneChanged(self, new, old):
         
         if old: # save zoom & center
-            index = self.sceneGroup.index(old)
+            index = self.sceneGroup.index(old) #FIXME: don't really need inexes here...
             self._centerByScene[index] = self._view.center()
             self._zoomByScene[index]   = self.zoomPercentage()
             
@@ -646,7 +662,7 @@ class ViewController(QObject):
     
     def setZoomPercentage(self, percentage):
         assert self._view
-        assert self.sceneGroup.activeScene()
+        assert self._scene()
         
         if percentage > self._maxZoom:
             percentage = self._maxZoom
@@ -658,19 +674,15 @@ class ViewController(QObject):
         
         # emit signals
         self.zoomChanged.emit(percentage, oldZoom)
-        self.canZoomInChanged.emit(percentage < self._maxZoom)
-        self.canZoomOutChanged.emit(percentage > self._minZoom)
     
     
     def centerOnOrigin(self):
         assert self._view
-        originPoint = self.sceneGroup.activeScene().rootItem().value("origin")
+        originPoint = self._scene().rootItem().value("origin")
         self._view.centerOn(originPoint)
     
     
     def centerOnSelectionMaster(self):
-        assert self._view
-        assert self.sceneGroup.activeScene()
         
         master = self.sceneGroup.activeScene().selectionMaster()
         self._view.centerOn(master)

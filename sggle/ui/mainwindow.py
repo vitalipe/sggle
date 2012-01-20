@@ -243,14 +243,14 @@ class MainWindow(QMainWindow):
         
         self.addAction("view-center-selection", 
                        viewController.centerOnSelectionMaster,
-                       None, #FIXME:
+                       viewController.canCenterOnSeletionMasterChanged,
                        "Center On Selection", 
                        disabled = True)
         
         
         self.addAction("view-center-origin", 
                        viewController.centerOnOrigin,
-                       None, #FIXME:
+                       viewController.canCenterOnOriginChanged,
                        "Center On Origin", 
                        disabled = True)
 

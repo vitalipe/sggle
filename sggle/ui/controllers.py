@@ -288,9 +288,12 @@ class ItemsController(BaseController):
         
         
     def _updateSelectionTriggers(self, scene):
-        selection   = scene.selectedItems()
-        items       = scene.activeLayer().childItems() if scene.activeLayer() else []  
-        editMode    = scene.editMode()
+        if scene:
+            selection   = scene.selectedItems()
+            items       = scene.activeLayer().childItems() if scene.activeLayer() else []  
+            editMode    = scene.editMode()
+        else:
+            selection = []
 
         if len(selection) and not editMode:
             self.canMoveSelectionDownChanged.emit(not items[0].isSelected())
@@ -303,7 +306,7 @@ class ItemsController(BaseController):
 
             
     def _updateCopyPasteTriggers(self, scene, clipboard):
-        activeLayer = scene.activeLayer()
+        activeLayer = scene.activeLayer() if scene else None
    
         if activeLayer:
             self.canCopyChanged.emit(True)
@@ -314,10 +317,12 @@ class ItemsController(BaseController):
     
     
     def _updateLayerSignals(self, scene):
-        activeLayer = scene.activeLayer()
-        layers      = scene.layers()
-        editMode    = scene.editMode()
-
+        if scene:
+            activeLayer = scene.activeLayer()
+            layers      = scene.layers()
+            editMode    = scene.editMode()
+        else:
+            activeLayer = None
         
         if activeLayer and not editMode:
             self.canMoveLayerUpChanged.emit(True if   activeLayer is not layers[-1] else False)

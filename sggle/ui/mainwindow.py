@@ -201,21 +201,21 @@ class MainWindow(QMainWindow):
         
         
         self.addAction("edit-copy", 
-                       itemsController.copySelectionToClipboard, # FIXME: also layer
+                       itemsController.copyToClipboard, 
                        itemsController.canCopyChanged,
                        "&Copy", 
                        disabled = True)
         
         
         self.addAction("edit-cut", 
-                       itemsController.cutSelectionToClipboard, # FIXME: also layer
+                       itemsController.cutToClipboard, 
                        itemsController.canCopyChanged,
                        "Cut", 
                        disabled = True)
         
         
         self.addAction("edit-paste", 
-                       itemsController.cutSelectionToClipboard, # FIXME: also layer
+                       itemsController.pasteFromClipboard,
                        itemsController.canPasteChanged,
                        "&Paste", 
                        disabled = True)
@@ -261,17 +261,23 @@ class MainWindow(QMainWindow):
                        "New", 
                        disabled = False)
         
+        self.addAction("scene-close", 
+                       fileController.closeActiveScene,
+                       fileController.sceneAvailableChanged,
+                       "Close", 
+                       disabled = True)
+        
         
         self.addAction("scene-save", 
                        fileController.saveActiveScene,
-                       None, #FIXME:
+                       fileController.cleanStateChanged,
                        "Save", 
                        disabled = True)
         
         
         self.addAction("scene-save-as", 
                        fileController.saveActiveSceneAs,
-                       None, #FIXME:
+                       fileController.sceneAvailableChanged,
                        "Save As", 
                        disabled = True)
         
@@ -331,6 +337,7 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(actions["scene-save"])
         fileMenu.addAction(actions["scene-save-as"])
         fileMenu.addAction(actions["scene-open"])
+        fileMenu.addAction(actions["scene-close"])
         fileMenu.addAction(actions["app-quit"])
         menuBar.addMenu(fileMenu)
 

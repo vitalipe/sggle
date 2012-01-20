@@ -14,7 +14,7 @@ from PySide.QtCore import QPointF
 from PySide.QtGui  import QFileDialog
 from PySide.QtGui  import QMessageBox
 
-
+ 
 import sggle.scene.commands as commands
 import sggle.scene as scene
 import sggle.saveload.readwrite as saveload
@@ -22,9 +22,9 @@ import sggle.saveload.readwrite as saveload
 
 
 
-class Clipboard(QObject): 
+class ItemsClipboard(QObject): 
     
-    clipboardDataAvailableChanged = Signal(bool) # do I need this?
+    clipboardDataAvailableChanged = Signal(bool) 
     
     def __init__(self):
         QObject.__init__(self)
@@ -34,27 +34,50 @@ class Clipboard(QObject):
         
     def clear(self):    
         self._data = []
-    
-    
+        self.clipboardDataAvailableChanged.emit(False)
+
+
     def data(self):
         return self._data
     
     
-    def append(self, data):
-        self._data.append(data)
+    def setData(self, data):
+        self._data = data
+        self.clipboardDataAvailableChanged.emit(True)
+
+        
+    def  hasData(self):
+        return len(self._data) > 0
+
+
+    def hasLayer(self):
+        return self.hasData() and type(self._data[0]).__name__ == "Layer"
+
 
 
 
 class BaseController(QObject):
     
-    def __init__(self):
+    def __init__(self, sceneGroup):
         QObject.__init__(self)
-            
     
+        self.sceneGroup = sceneGroup
+        
+        
+    def _scene(self):
+        return self.sceneGroup.activeScene()
+        
+           
+    def _pushCommand(self, cmd):
+        self.sceneGroup.undoGroup().activeStack().push(cmd)  
+        
+
+
     
-class FileController(BaseController): # Rename: SceneConteroller  
+class FileController(QObject):  
     
-    cleanStateChanged   = Signal(bool) 
+    cleanStateChanged     = Signal(bool)
+    sceneAvailableChanged = Signal(bool)
     
     sceneAdded             = Signal(str) # @param str: name 
     sceneRemoved           = Signal(int) # @param int: index
@@ -62,7 +85,7 @@ class FileController(BaseController): # Rename: SceneConteroller
 
     
     def __init__(self, sceneGroup):
-        BaseController.__init__(self)
+        QObject.__init__(self)
         
         self.sceneGroup          = sceneGroup
         self._sceneToFilePathMap  = {}
@@ -72,9 +95,9 @@ class FileController(BaseController): # Rename: SceneConteroller
 
         sceneGroup.itemPropertyWasChanged.connect(self._forwardActiveSceneNameChanges)
         sceneGroup.undoGroup().cleanChanged.connect(self.cleanStateChanged.emit)
+        sceneGroup.activeSceneChanged.connect(lambda s: self.sceneAvailableChanged.emit(s != None))
 
-
-
+        
     def _forwardActiveSceneNameChanges(self, item, key):
         if key == "name" and item is self.sceneGroup.activeScene().rootItem():                
             self.activeSceneNameChanged.emit(item.value("name"))
@@ -214,7 +237,7 @@ class FileController(BaseController): # Rename: SceneConteroller
 
     
     def setActiveScene(self, sceneIndex):
-        self.sceneGroup.setActiveScene(self._sceneList[sceneIndex])
+        self.sceneGroup.setActiveScene(None if sceneIndex == -1 else self._sceneList[sceneIndex])
         
         
     def swapSceneIndexOrder(self, fromIndex, toIndex):
@@ -226,71 +249,173 @@ class FileController(BaseController): # Rename: SceneConteroller
         
 
 
+
 class ItemsController(BaseController):
     
+       
     canMoveSelectionUpChanged    = Signal(bool)
     canMoveSelectionDownChanged  = Signal(bool)
-    canMoveLayerUpChanged        = Signal(bool)
-    canMoveLayerDownChanged      = Signal(bool)
-    canPasteClipBoardChanged     = Signal(bool)
-    canCopyChanged               = Signal(bool) 
-    canPasteChanged              = Signal(bool)
-
-
-    canAddNewLayerChanged          = Signal(bool) 
-    canDeleteActiveLayerChanged    = Signal(bool) 
     canDeleteItemSelectionChanged  = Signal(bool) 
 
+    canMoveLayerUpChanged        = Signal(bool)
+    canMoveLayerDownChanged      = Signal(bool)
+    canDeleteActiveLayerChanged  = Signal(bool) 
+    canAddNewLayerChanged        = Signal(bool) 
+
+    canCopyChanged               = Signal(bool) 
+    canPasteChanged              = Signal(bool)
+    
     
     def __init__(self, sceneGroup):
-        BaseController.__init__(self)
+        BaseController.__init__(self, sceneGroup)
         
-        self.sceneGroup   = sceneGroup        
-        self._clipboard  = Clipboard()
+        self._clipboard  = ItemsClipboard()
+        
+        self.sceneGroup.listOfItemsChanged.connect(self._updateAllSignalTriggers)
+        self.sceneGroup.selectionChanged.connect(self._updateAllSignalTriggers)
+        self.sceneGroup.activeLayerChanged.connect(self._updateAllSignalTriggers)
+        self.sceneGroup.activeSceneChanged.connect(self._updateAllSignalTriggers)
+        self.sceneGroup.editModeChanged.connect(self._updateAllSignalTriggers)
+        self._clipboard.clipboardDataAvailableChanged.connect(self._updateAllSignalTriggers)
 
-        sceneGroup.listOfItemsChanged.connect(self._updateSignals)
-        sceneGroup.selectionChanged.connect(self._updateSignals)
-        sceneGroup.activeLayerChanged.connect(self._updateSignals)
         
         sceneGroup.itemCreationRequest.connect(self._handleItemCreationRequest) #FIXME: move to scene
-
-
     def _handleItemCreationRequest(self, item, x, y): #FIXME: Move To Scene
 
         cmd = commands.newAddItemCommand(self._scene(), item, x, y)
         self._pushCommand(cmd)
-        
-               
-    def _scene(self):
-        return self.sceneGroup.activeScene()
-        
-           
-    def _pushCommand(self, cmd):
-        self.sceneGroup.undoGroup().activeStack().push(cmd)  
+ 
     
-    
-    def _updateSignals(self):
-        scene       = self._scene()
-        layers      = scene.layers()
+    def _updateAllSignalTriggers(self):
+        scene  = self._scene()
+        
+        self._updateSelectionTriggers(scene)
+        self._updateLayerSignals(scene)
+        self._updateCopyPasteTriggers(scene, self._clipboard)
+        
+        
+    def _updateSelectionTriggers(self, scene):
         selection   = scene.selectedItems()
-        activeLayer = scene.activeLayer()
-        items       = activeLayer.childItems() if activeLayer else []  
+        items       = scene.activeLayer().childItems() if scene.activeLayer() else []  
+        editMode    = scene.editMode()
 
-        if len(layers) and activeLayer:
-            self.canMoveLayerUpChanged.emit(True if   activeLayer is not layers[-1] else False)
-            self.canMoveLayerDownChanged.emit(True if activeLayer is not layers[0] else False)
-        else:
-            self.canMoveLayerUpChanged.emit(False)
-            self.canMoveLayerDownChanged.emit(False)
-            
-        if len(selection):
+        if len(selection) and not editMode:
             self.canMoveSelectionDownChanged.emit(not items[0].isSelected())
             self.canMoveSelectionUpChanged.emit(not items[-1].isSelected())
+            self.canDeleteItemSelectionChanged.emit(True)
         else:
             self.canMoveSelectionDownChanged.emit(False)
             self.canMoveSelectionUpChanged.emit(False)
+            self.canDeleteItemSelectionChanged.emit(False)
+
+            
+    def _updateCopyPasteTriggers(self, scene, clipboard):
+        activeLayer = scene.activeLayer()
+   
+        if activeLayer:
+            self.canCopyChanged.emit(True)
+            self.canPasteChanged.emit(clipboard.hasData())
+        else:
+            self.canCopyChanged.emit(False)
+            self.canPasteChanged.emit(scene and clipboard.hasLayer())
+    
+    
+    def _updateLayerSignals(self, scene):
+        activeLayer = scene.activeLayer()
+        layers      = scene.layers()
+        editMode    = scene.editMode()
+
         
- 
+        if activeLayer and not editMode:
+            self.canMoveLayerUpChanged.emit(True if   activeLayer is not layers[-1] else False)
+            self.canMoveLayerDownChanged.emit(True if activeLayer is not layers[0] else False)
+            self.canDeleteActiveLayerChanged.emit(True)
+
+        else:
+            self.canMoveLayerUpChanged.emit(False)
+            self.canMoveLayerDownChanged.emit(False)
+            self.canDeleteActiveLayerChanged.emit(False)
+            
+        if scene and not editMode:
+            self.canAddNewLayerChanged.emit(True)
+        else:
+            self.canAddNewLayerChanged.emit(False)
+
+
+    def _sortByZOrder(self, items):
+        cmpZ     = lambda x,y: ( 1 if x.zValue()  > y.zValue() else 
+                                -1 if  x.zValue() < y.zValue() else 0)
+        items.sort(cmp=cmpZ)
+        return items
+    
+    
+    def _moveItemSelectionZOrder(self, parentItem, selectedItems, offset, commandBatch):
+        assert offset == -1 or offset == 1
+            
+        items = parentItem.childItems() # sorted by zValue
+        self._sortByZOrder(selectedItems)
+        if offset > 0:  
+            selectedItems.reverse()
+          
+        for item in selectedItems:
+            z     = item.zValue()
+            index = int(z) + offset
+            if -1 < index < len(items):
+                other = items[index] 
+                # swap to keep items z sorted:
+                items[index]  = items
+                items[int(z)] = other
+                
+                commands.newChangeZValueCommand(other, z, commandBatch)
+                commands.newChangeZValueCommand(item, index, commandBatch)
+            
+            
+    def _moveToBottom(self, selectedItems, items, commandBatch):
+        for z,item in enumerate(selectedItems):
+            if item.zValue() != z:
+                commands.newChangeZValueCommand(item, z, commandBatch)
+            
+        for z, item in enumerate(items, z+1):
+            if item not in selectedItems and item.zValue() != z:
+                    commands.newChangeZValueCommand(item, z, commandBatch)
+    
+        
+    def _moveToTop(self, selectedItems, items, commandBatch):
+        z = 0
+        for item in items:
+            if item not in selectedItems and item.zValue() != z:
+                commands.newChangeZValueCommand(item, z, commandBatch)
+                z += 1
+        
+        for z,item in enumerate(selectedItems,z):
+            if item.zValue() != z:
+                commands.newChangeZValueCommand(item, z, commandBatch)
+
+
+    def _pasteLayerFromClipboard(self):
+        scene  = self._scene()
+        layer  = self._clipboard.data()[0]
+        self._pushCommand(commands.AddLayerCommand(layer.copy()))
+        
+        
+    def _pasteItemsFromClipboard(self):
+        
+        scene        = self._scene()
+        clipboard    = self._clipboard
+        batch        = commands.newCommandBatch()
+        
+        scene.clearSelection()
+        
+        for clipboardItem in clipboard.data():
+            item = clipboardItem.copy()
+            pos = item.value("position") #FIXME: use mouse position
+            commands.newAddItemCommand(scene, item, x = pos.x(), y = pos.y(), commandBatch=batch)
+
+        self._pushCommand(batch)
+      
+        
+    ## Action callback functions ##
+
     def addNewLayer(self):
         cmd = commands.newAddLayerCommand(self._scene())
         self._pushCommand(cmd)
@@ -316,42 +441,38 @@ class ItemsController(BaseController):
             self._pushCommand(batch)    
     
     
-    def copySelectionToClipboard(self):
-        scene     = self._scene()
-        clipboard = self._clipboard
-        items     = scene.selectedItems()
+    def copyToClipboard(self):
+        scene       = self._scene()
+        clipboard   = self._clipboard
+        activeLayer = scene.activeLayer()
+        items       = scene.selectedItems()
+        copiedData  = []
         
-        if items: 
-            self._clipboard.clear()
+        for item in (items if len(items) else [activeLayer] if activeLayer else []):
+            copiedData.append(item.copy())
             
-        for item in items:
-            clipboard.append(item.copy())
-            
-        self.clipboardDataAvailableChanged.emit(True if clipboard.data() else False)
+        if len(copiedData):
+            clipboard.setData(copiedData) 
+                    
         
+    def cutToClipboard(self):
+        self.copyToClipboard()
+        
+        if self._scene().selectedItems():
+            self.deleteSelectedItems()
+        else:
+            self.deleteActiveLayer()
     
-    def cutSelectionToClipboard(self):
-        self.copySelectionToClipboard()
-        self.deleteSelectedItems()
-    
-    
+        
     def pasteFromClipboard(self):
-        assert self._clipboard.data()
-        
-        scene        = self._scene()
-        clipboard    = self._clipboard
-        batch        = commands.newCommandBatch()
-        
-        scene.clearSelection()
-        
-        for clipboardItem in clipboard.data():
-            item = clipboardItem.copy()
-            pos = item.value("position")
-            commands.newAddItemCommand(scene, item, x = pos.x(), y = pos.y(), commandBatch=batch)
+        assert self._clipboard.hasData()
 
-        self._pushCommand(batch)
-      
+        if self._clipboard.hasLayer():
+            self._pasteLayerFromClipboard()
+        else:
+            self._pasteItemsFromClipboard()
         
+    
     def moveItemSelectionUp(self):
         cmdBatch = commands.newCommandBatch()
         self._moveItemSelectionZOrder(self._scene().activeLayer(), 
@@ -449,61 +570,12 @@ class ItemsController(BaseController):
         if batch.childCount() > 1:
             self._pushCommand(batch)
 
-           
-    def _sortByZOrder(self, items):
-        cmpZ     = lambda x,y: ( 1 if x.zValue()  > y.zValue() else 
-                                -1 if  x.zValue() < y.zValue() else 0)
-        items.sort(cmp=cmpZ)
-        return items
-    
-    
-    def _moveItemSelectionZOrder(self, parentItem, selectedItems, offset, commandBatch):
-        assert offset == -1 or offset == 1
-            
-        items = parentItem.childItems() # sorted by zValue
-        self._sortByZOrder(selectedItems)
-        if offset > 0:  
-            selectedItems.reverse()
-          
-        for item in selectedItems:
-            z     = item.zValue()
-            index = int(z) + offset
-            if -1 < index < len(items):
-                other = items[index] 
-                # swap to keep items z sorted:
-                items[index]  = items
-                items[int(z)] = other
-                
-                commands.newChangeZValueCommand(other, z, commandBatch)
-                commands.newChangeZValueCommand(item, index, commandBatch)
-            
-            
-    def _moveToBottom(self, selectedItems, items, commandBatch):
-        for z,item in enumerate(selectedItems):
-            if item.zValue() != z:
-                commands.newChangeZValueCommand(item, z, commandBatch)
-            
-        for z, item in enumerate(items, z+1):
-            if item not in selectedItems and item.zValue() != z:
-                    commands.newChangeZValueCommand(item, z, commandBatch)
-    
-        
-    def _moveToTop(self, selectedItems, items, commandBatch):
-        z = 0
-        for item in items:
-            if item not in selectedItems and item.zValue() != z:
-                commands.newChangeZValueCommand(item, z, commandBatch)
-                z += 1
-        
-        for z,item in enumerate(selectedItems,z):
-            if item.zValue() != z:
-                commands.newChangeZValueCommand(item, z, commandBatch)
-
+ 
         
         
         
         
-class ViewController(BaseController):
+class ViewController(QObject):
     
     
     canZoomInChanged    = Signal(bool)
@@ -513,7 +585,7 @@ class ViewController(BaseController):
     
     
     def __init__(self, sceneGroup, welcomeScene):
-        BaseController.__init__(self)
+        QObject.__init__(self)
 
         self.sceneGroup    = sceneGroup
         self._welcomeScene  = welcomeScene

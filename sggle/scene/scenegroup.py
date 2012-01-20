@@ -15,7 +15,7 @@ import models
 class SceneGroup(QObject):
     
     # Signals
-    activeSceneChanged         =  Signal(object, object)
+    activeSceneChanged         =  Signal(object, object) # @param: new @param: old 
     sceneWasAdded              =  Signal(int, str)
     sceneWasRemoved            =  Signal(int)
     

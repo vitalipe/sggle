@@ -295,7 +295,6 @@ class MainWindow(QMainWindow):
         menuBar = self.menuBar()
         actions = self.actions
         
-        
         # File Menu
         fileMenu =  QMenu("&File", self)
         fileMenu.addAction(actions["scene-new"])
@@ -304,33 +303,31 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(actions["scene-open"])
         fileMenu.addAction(actions["scene-close"])
         fileMenu.addAction(actions["app-quit"])
-        menuBar.addMenu(fileMenu)
-
-
             
         # Edit Menu
         editMenu = QMenu("&Edit", self) 
-        editMenu.addAction(actions["layer-new"])
-        editMenu.addAction(actions["layer-delete"])
-        editMenu.addAction(actions["layer-move-up"])
-        editMenu.addAction(actions["layer-move-down"])
-        editMenu.addAction(actions["layer-move-top"])
-        editMenu.addAction(actions["layer-move-bottom"])
-        editMenu.addAction(actions["selection-delete"])
-        editMenu.addAction(actions["selection-move-up"])
-        editMenu.addAction(actions["selection-move-down"])
-        editMenu.addAction(actions["selection-move-top"])
-        editMenu.addAction(actions["selection-move-bottom"])
-
-
-        
         editMenu.addAction(actions["edit-undo"])
         editMenu.addAction(actions["edit-redo"])
         editMenu.addAction(actions["edit-copy"])
         editMenu.addAction(actions["edit-cut"])
         editMenu.addAction(actions["edit-paste"])
-        menuBar.addMenu(editMenu)
+
+        # Layer menu
+        layerMenu = QMenu("&Layer", self)
+        layerMenu.addAction(actions["layer-new"])
+        layerMenu.addAction(actions["layer-delete"])
+        layerMenu.addAction(actions["layer-move-up"])
+        layerMenu.addAction(actions["layer-move-down"])
+        layerMenu.addAction(actions["layer-move-top"])
+        layerMenu.addAction(actions["layer-move-bottom"])
         
+        # Selection menu
+        selectionMenu = QMenu("&Seletion", self)
+        selectionMenu.addAction(actions["selection-delete"])
+        selectionMenu.addAction(actions["selection-move-up"])
+        selectionMenu.addAction(actions["selection-move-down"])
+        selectionMenu.addAction(actions["selection-move-top"])
+        selectionMenu.addAction(actions["selection-move-bottom"])
         
         # View Menu
         viewMenu = QMenu("&View", self) 
@@ -340,9 +337,17 @@ class MainWindow(QMainWindow):
         viewMenu.addAction(actions["view-center-selection"])
         viewMenu.addAction(actions["view-center-origin"])
 
+        # Help menu
+        helpMenu = QMenu("&Help", self) 
 
+
+        menuBar.addMenu(fileMenu)
+        menuBar.addMenu(editMenu)
+        menuBar.addMenu(layerMenu)
+        menuBar.addMenu(selectionMenu)
         menuBar.addMenu(viewMenu)
-        
+        menuBar.addMenu(helpMenu)
+
         
     def _unsavedScenes(self):
         dirtyScenes = []

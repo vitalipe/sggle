@@ -91,13 +91,15 @@ class MainWindow(QMainWindow):
         return self.sceneGroup.activeScene()
     
     
-    def addAction(self, name, callback, trigger, displayName = None, disabled = True):
+    def addAction(self, name, callback, trigger, displayName = None, 
+                  disabled = True, reverseTrigger = False):
+        
         displayName = displayName if displayName else name
         
         action = QAction(displayName, self)
         action.setDisabled(disabled)
         if callback: action.triggered.connect(callback)
-        if trigger:  trigger.connect(action.setEnabled)
+        if trigger:  trigger.connect(action.setEnabled if not reverseTrigger else action.setDisabled)
         self.actions[name] = action
         
     
@@ -112,148 +114,114 @@ class MainWindow(QMainWindow):
         self.addAction("layer-new", 
                        itemsController.addNewLayer, 
                        itemsController.canAddNewLayerChanged, # check for scene
-                       "&Add New Layer", 
-                       disabled = True)
-             
+                       "&Add New Layer")             
              
         self.addAction("layer-delete", 
                        itemsController.deleteActiveLayer, 
                        itemsController.canDeleteActiveLayerChanged, 
-                       "&Delete Active Layer", 
-                       disabled = True)
-        
+                       "&Delete Active Layer")        
         
         self.addAction("layer-move-up", 
                        itemsController.moveLayerUp,
                        itemsController.canMoveLayerUpChanged,
-                       "Move Up Layer", 
-                       disabled = True)
-        
+                       "Move Up Layer")        
         
         self.addAction("layer-move-down", 
                        itemsController.moveLayerDown,
                        itemsController.canMoveLayerDownChanged,
-                       "Move Down Layer", 
-                       disabled = True)
-        
+                       "Move Down Layer")        
         
         self.addAction("layer-move-top", 
                        itemsController.moveLayerToTop,
                        itemsController.canMoveLayerUpChanged,
-                       "Move Layer To Top", 
-                       disabled = True)
+                       "Move Layer To Top")
         
         
         self.addAction("layer-move-bottom", 
                        itemsController.moveLayerToBottom,
                        itemsController.canMoveLayerDownChanged,
-                       "Move Layer To Bottom", 
-                       disabled = True)
-        
+                       "Move Layer To Bottom")
         
         self.addAction("selection-delete", 
                        itemsController.deleteSelectedItems,
                        itemsController.canDeleteItemSelectionChanged,
-                       "Delete &Selection", 
-                       disabled = True)
-        
+                       "Delete &Selection") 
         
         self.addAction("selection-move-up", 
                        itemsController.moveItemSelectionUp,
                        itemsController.canMoveSelectionUpChanged,
-                       "Move Up Selection", 
-                       disabled = True)
-        
+                       "Move Up Selection")
         
         self.addAction("selection-move-down", 
                        itemsController.moveItemSelectionDown,
                        itemsController.canMoveSelectionDownChanged,
-                       "Move Down Selection", 
-                       disabled = True)
-
+                       "Move Down Selection")
         
         self.addAction("selection-move-top", 
                        itemsController.moveItemSelectionToTop,
                        itemsController.canMoveSelectionUpChanged,
-                       "Move Selection To Top", 
-                       disabled = True)
-
+                       "Move Selection To Top")
 
         self.addAction("selection-move-bottom", 
                        itemsController.moveItemSelectionToBottom,
                        itemsController.canMoveSelectionDownChanged,
-                       "Move Selection To Bottom", 
-                       disabled = True)
+                       "Move Selection To Bottom")
         
         
         self.addAction("edit-undo", 
                        sceneGroup.undoGroup().undo,
                        sceneGroup.undoGroup().canUndoChanged,
-                       "Undo", 
-                       disabled = True)
+                       "Undo")
         
         
         self.addAction("edit-redo", 
                        sceneGroup.undoGroup().redo,
                        sceneGroup.undoGroup().canRedoChanged,
-                       "Redo", 
-                       disabled = True)
+                       "Redo")
         
         
         self.addAction("edit-copy", 
                        itemsController.copyToClipboard, 
                        itemsController.canCopyChanged,
-                       "&Copy", 
-                       disabled = True)
+                       "&Copy")
         
         
         self.addAction("edit-cut", 
                        itemsController.cutToClipboard, 
                        itemsController.canCopyChanged,
-                       "Cut", 
-                       disabled = True)
-        
+                       "Cut")
         
         self.addAction("edit-paste", 
                        itemsController.pasteFromClipboard,
                        itemsController.canPasteChanged,
-                       "&Paste", 
-                       disabled = True)
+                       "&Paste")
      
      
         self.addAction("view-zoom-in", 
                        viewController.zoomIn,
                        viewController.canZoomInChanged,
-                       "Zoom &In", 
-                       disabled = True)
+                       "Zoom &In")
         
         self.addAction("view-zoom-out", 
                        viewController.zoomOut,
                        viewController.canZoomOutChanged,
-                       "Zoom &Out", 
-                       disabled = True)
-                
+                       "Zoom &Out")
                 
         self.addAction("view-zoom-reset", 
                        viewController.resetZoom,
                        viewController.canResetZoomChanged,
-                       "&Reset Zoom", 
-                       disabled = True)
-        
+                       "&Reset Zoom")
         
         self.addAction("view-center-selection", 
                        viewController.centerOnSelectionMaster,
                        viewController.canCenterOnSeletionMasterChanged,
-                       "Center On Selection", 
-                       disabled = True)
+                       "Center On Selection")
         
         
         self.addAction("view-center-origin", 
                        viewController.centerOnOrigin,
                        viewController.canCenterOnOriginChanged,
-                       "Center On Origin", 
-                       disabled = True)
-
+                       "Center On Origin")
 
         self.addAction("scene-new", 
                        fileController.new,
@@ -264,29 +232,26 @@ class MainWindow(QMainWindow):
         self.addAction("scene-close", 
                        fileController.closeActiveScene,
                        fileController.sceneAvailableChanged,
-                       "Close", 
-                       disabled = True)
+                       "Close")
         
         
         self.addAction("scene-save", 
                        fileController.saveActiveScene,
                        fileController.cleanStateChanged,
-                       "Save", 
-                       disabled = True)
+                       "Save",
+                       reverseTrigger = True)
         
         
         self.addAction("scene-save-as", 
                        fileController.saveActiveSceneAs,
                        fileController.sceneAvailableChanged,
-                       "Save As", 
-                       disabled = True)
+                       "Save As")
         
         self.addAction("scene-open", 
                        fileController.openScene,
                        None, 
                        "Open", 
                        disabled = False)
-        
         
         self.addAction("app-quit", 
                        self.close,

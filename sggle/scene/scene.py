@@ -416,6 +416,11 @@ class EditableScene(LayeredGraphicsScene):
             
     def undoStack(self):
         return self._undoStack
+    
+    def adjustParallax(self, center):
+        if self.editMode():
+            return
+        LayeredGraphicsScene.adjustParallax(self, center)
 
             
                 

@@ -98,6 +98,10 @@ class SceneItem(object):
             if not item.hasProperty(key): # assume custom
                 item.addCustomProperty(key)
             item.setValue(key, value)
+        
+        # copy children 
+        for child in self.childItems(): 
+            child.copy().setParentItem(item) 
 
         return item
   

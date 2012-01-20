@@ -16,7 +16,7 @@ from PySide.QtGui import QItemSelectionModel
 from PySide.QtGui import QItemSelection
 
 
-
+#TODO: cleanup this ugly old code
 
 class ItemPropertiesModel(QAbstractItemModel):
 
@@ -291,7 +291,8 @@ class ItemTreeModel(QAbstractItemModel):
 
     def reset(self):
         QAbstractItemModel.reset(self)
-        self.selectionModel().updateFromScene()
+        if self._root():
+            self.selectionModel().updateFromScene()
 
 
     def index(self, row, col, parentIndex = QModelIndex()):
@@ -401,9 +402,8 @@ class LayerListModel(QAbstractListModel):
         sceneGroup.itemPropertyWasChanged.connect(self._handleItemPropertyWasChanged)
      
     def _handleItemPropertyWasChanged(self, item, property):
-        if item in self._layers():
+        if property == "name" and item in self._layers():
             self.reset()
-            self.selectionModel().updateFromScene()
      
  
     def _layers(self):
@@ -413,6 +413,10 @@ class LayerListModel(QAbstractListModel):
         else:
             return []
         
+    def reset(self):
+        QAbstractListModel.reset(self)
+        if self._sceneGroup.activeScene():
+            self.selectionModel().updateFromScene()
         
     def rowCount(self, parentIndex):
         return len(self._layers())
@@ -490,12 +494,13 @@ class LayerSelectionModel(QItemSelectionModel):
         
         self._sceneGroup = sceneGroup
         
-        self._sceneGroup.activeLayerChanged.connect(self.updateFromScene)
+        self._sceneGroup.activeLayerChanged.connect(self.reset)
         self.currentChanged.connect(self.updateSceneFromView)
         
     def reset(self):
         QItemSelectionModel.reset(self)
-        self.updateFromScene()
+        if self._sceneGroup.activeScene():
+            self.updateFromScene()
             
             
     def updateFromScene(self):

@@ -393,7 +393,7 @@ class ItemsController(BaseController):
     def _pasteLayerFromClipboard(self):
         scene  = self._scene()
         layer  = self._clipboard.data()[0]
-        self._pushCommand(commands.AddLayerCommand(layer.copy()))
+        self._pushCommand(commands.AddLayerCommand(scene, layer.copy()))
         
         
     def _pasteItemsFromClipboard(self):

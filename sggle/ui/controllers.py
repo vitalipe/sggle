@@ -278,14 +278,7 @@ class ItemsController(BaseController):
         self.sceneGroup.editModeChanged.connect(self._updateAllSignalTriggers)
         self._clipboard.clipboardDataAvailableChanged.connect(self._updateAllSignalTriggers)
 
-        
-        sceneGroup.itemCreationRequest.connect(self._handleItemCreationRequest) #FIXME: move to scene
-    def _handleItemCreationRequest(self, item, x, y): #FIXME: Move To Scene
 
-        cmd = commands.newAddItemCommand(self._scene(), item, x, y)
-        self._pushCommand(cmd)
- 
-    
     def _updateAllSignalTriggers(self):
         scene  = self._scene()
         

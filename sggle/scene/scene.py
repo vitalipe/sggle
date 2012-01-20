@@ -256,7 +256,6 @@ class EditableScene(LayeredGraphicsScene):
     
        
     itemPropertyWasChanged     = Signal(object, str)
-    itemCreationRequest        = Signal(object, float, float)
     editModeChanged            = Signal(int, int)
     
         
@@ -382,10 +381,9 @@ class EditableScene(LayeredGraphicsScene):
         path = self._editModeData["path"]
         x    = self._editModeData["pos"].x()
         y    = self._editModeData["pos"].y()
-        self.itemCreationRequest.emit(items.newPixmapItemFromPath(path), x, y)
+        item = items.newPixmapItemFromPath(path)
+        self.undoStack().push(commands.newAddItemCommand(self, item, x, y))
         self.exitEditMode()
-        
-        
         
     
     def dragLeaveEvent(self, event):

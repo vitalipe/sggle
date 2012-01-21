@@ -298,9 +298,11 @@ class MainWindow(QMainWindow):
         # File Menu
         fileMenu =  QMenu("&File", self)
         fileMenu.addAction(actions["scene-new"])
+        fileMenu.addAction(actions["scene-open"])
+        fileMenu.addSeparator()
         fileMenu.addAction(actions["scene-save"])
         fileMenu.addAction(actions["scene-save-as"])
-        fileMenu.addAction(actions["scene-open"])
+        fileMenu.addSeparator()
         fileMenu.addAction(actions["scene-close"])
         fileMenu.addAction(actions["app-quit"])
             
@@ -308,6 +310,7 @@ class MainWindow(QMainWindow):
         editMenu = QMenu("&Edit", self) 
         editMenu.addAction(actions["edit-undo"])
         editMenu.addAction(actions["edit-redo"])
+        editMenu.addSeparator()
         editMenu.addAction(actions["edit-copy"])
         editMenu.addAction(actions["edit-cut"])
         editMenu.addAction(actions["edit-paste"])
@@ -316,6 +319,7 @@ class MainWindow(QMainWindow):
         layerMenu = QMenu("&Layer", self)
         layerMenu.addAction(actions["layer-new"])
         layerMenu.addAction(actions["layer-delete"])
+        layerMenu.addSeparator()
         layerMenu.addAction(actions["layer-move-up"])
         layerMenu.addAction(actions["layer-move-down"])
         layerMenu.addAction(actions["layer-move-top"])
@@ -324,6 +328,7 @@ class MainWindow(QMainWindow):
         # Selection menu
         selectionMenu = QMenu("&Seletion", self)
         selectionMenu.addAction(actions["selection-delete"])
+        selectionMenu.addSeparator()
         selectionMenu.addAction(actions["selection-move-up"])
         selectionMenu.addAction(actions["selection-move-down"])
         selectionMenu.addAction(actions["selection-move-top"])
@@ -334,6 +339,7 @@ class MainWindow(QMainWindow):
         viewMenu.addAction(actions["view-zoom-in"])
         viewMenu.addAction(actions["view-zoom-out"])
         viewMenu.addAction(actions["view-zoom-reset"])
+        viewMenu.addSeparator()
         viewMenu.addAction(actions["view-center-selection"])
         viewMenu.addAction(actions["view-center-origin"])
 

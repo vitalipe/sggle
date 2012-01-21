@@ -34,6 +34,7 @@ def newItemTree(model, dock=None):
     itemTree.setSelectionMode(QTreeView.ExtendedSelection)
     itemTree.setDragEnabled(False)
     itemTree.setHeaderHidden(True)
+    itemTree.setRootIsDecorated(False)
     itemTree.setModel(model)
     itemTree.setSelectionModel(model.selectionModel())
     

@@ -263,6 +263,7 @@ class ItemTreeModel(QAbstractItemModel):
         self._sceneGroup     = sceneGroup
         self._selectionModel = ItemSelectionModel(sceneGroup, self) 
         self._layer          = None
+        self._previewIcons   = {}
         
         sceneGroup.activeSceneChanged.connect(self._handleActiveLayerOrSceneChanged)
         sceneGroup.activeLayerChanged.connect(self._handleActiveLayerOrSceneChanged)
@@ -289,10 +290,16 @@ class ItemTreeModel(QAbstractItemModel):
         self.reset()
 
 
+    def _buildPreviewIcons(self):
+        self._previewIcons = {}
+        for item in self._root().childItems():
+            self._previewIcons[item] = QIcon(item.pixmap())
+            
     def reset(self):
         QAbstractItemModel.reset(self)
         if self._root():
             self.selectionModel().updateFromScene()
+            self._buildPreviewIcons()
 
 
     def index(self, row, col, parentIndex = QModelIndex()):
@@ -310,6 +317,9 @@ class ItemTreeModel(QAbstractItemModel):
         
         if not index.isValid():
             return None
+        
+        if role == Qt.DecorationRole:
+            return self._previewIcons.get(index.internalPointer())
         
         if role == Qt.DisplayRole or role ==  Qt.EditRole:
             return index.internalPointer().value("name")

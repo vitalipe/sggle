@@ -68,16 +68,31 @@ class MainWindow(QMainWindow):
         self._createMenuBars()
         self._createToolBars()        
  
+ 
     def _createToolBars(self):
         
-        toolBar = QToolBar("tools", self)
-        toolBar.setFloatable(False)
-        toolBar.addAction(self.actions["scene-new"])
-        toolBar.addAction(self.actions["scene-save"])
-        toolBar.addAction(self.actions["scene-open"])
+        fileToolBar = QToolBar("File", self)
+        fileToolBar.addAction(self.actions["scene-new"])
+        fileToolBar.addAction(self.actions["scene-open"])
+        fileToolBar.addAction(self.actions["scene-save"])
         
-        self.addToolBar(toolBar)
+        editToolBar = QToolBar("Edit", self)
+        editToolBar.addAction(self.actions["edit-undo"])
+        editToolBar.addAction(self.actions["edit-redo"])
+        editToolBar.addSeparator()
+        editToolBar.addAction(self.actions["edit-cut"])
+        editToolBar.addAction(self.actions["edit-copy"])
+        editToolBar.addAction(self.actions["edit-paste"])
+
+        viewToolBar = QToolBar("View", self)
+        viewToolBar.addAction(self.actions["view-zoom-in"])
+        viewToolBar.addAction(self.actions["view-zoom-reset"])
+        viewToolBar.addAction(self.actions["view-zoom-out"])
         
+        self.addToolBar(fileToolBar)
+        self.addToolBar(editToolBar)
+        self.addToolBar(viewToolBar)
+
  
     def _createControllers(self):
         
@@ -241,7 +256,6 @@ class MainWindow(QMainWindow):
                        "Save",
                        reverseTrigger = True)
         
-        
         self.addAction("scene-save-as", 
                        fileController.saveActiveSceneAs,
                        fileController.sceneAvailableChanged,
@@ -259,6 +273,10 @@ class MainWindow(QMainWindow):
                        "Quit", 
                        disabled = False)
  
+        # load icons
+        for actionName, action in self.actions.items():
+            action.setIcon(QIcon(":/icons/actions/" + actionName))
+            action.setIconVisibleInMenu(True)
 
 
     def _createWidgets(self):

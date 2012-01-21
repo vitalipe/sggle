@@ -129,7 +129,7 @@ class OpenTabButton(QPushButton):
     def __init__(self, parent=None):
         QPushButton.__init__(self, "", parent)
         
-        iconPixmap = QPixmap(":/icons/add-tab")
+        iconPixmap = QPixmap(":/icons/resource-folder-add")
         
         self.setIcon(iconPixmap)
         self.setMaximumSize((iconPixmap.size()))        

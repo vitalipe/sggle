@@ -31,9 +31,9 @@ class ItemPropertiesModel(QAbstractItemModel):
         
         self._item           = None
         self._sceneGroup     = sceneGroup
-        self._propertyIcon    = QIcon(":/icons/property/builtin") 
-        self._subPropertyIcon = QIcon(":/icons/property/component")
-        self._sepIcon         = QIcon(":/icons/property/separator")
+        self._propertyIcon    = QIcon(":/img/property-builtin") 
+        self._subPropertyIcon = QIcon(":/img/property-component")
+        self._sepIcon         = QIcon(":/img/property-separator")
 
         
         sceneGroup.activeSceneChanged.connect(self._updateItem)

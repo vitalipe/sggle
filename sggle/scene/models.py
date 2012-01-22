@@ -55,7 +55,7 @@ class ItemPropertiesModel(QAbstractItemModel):
         
     def _updateItem(self):
         if self._sceneGroup.activeScene() is None:
-            return None
+            return self._setItem(None)
         
         funcs = [
                  self._sceneGroup.activeScene().selectionMaster,

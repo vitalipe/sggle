@@ -19,7 +19,7 @@ from properties import newBuiltinProperty
 from item import SceneItem
 
 
-class SceneRootItem(SceneItem, QGraphicsPixmapItem):
+class SceneRoot(SceneItem, QGraphicsPixmapItem):
     
     def __init__(self):
         QGraphicsPixmapItem.__init__(self)

@@ -82,12 +82,12 @@ class ItemChangeZValueCommand(QUndoCommand):
 class ItemPropertyEditCommand(QUndoCommand):
     
     
-    def __init__(self, item, property, value, parent = None):
+    def __init__(self, item, propertyObject, value, parent = None):
         QUndoCommand.__init__(self, parent)
         
         self._item         = item
-        self._propertyName = property
-        self._oldValue     = item.value(property)
+        self._propertyName = propertyObject
+        self._oldValue     = item.value(propertyObject)
         self._newValue     = value
      
         

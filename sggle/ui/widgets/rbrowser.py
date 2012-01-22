@@ -8,7 +8,6 @@ Created on Jan 4, 2012
 from os.path import expanduser
 
 
-from PySide.QtCore import Signal
 from PySide.QtCore import QDir
 from PySide.QtCore import Qt
 from PySide.QtCore import QFileInfo

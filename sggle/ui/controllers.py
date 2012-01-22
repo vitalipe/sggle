@@ -166,7 +166,7 @@ class FileController(QObject):
             return
 
         try:
-            newScene = saveload.readScene( fileStream, fileType) #FIXME: pass scene ref
+            newScene = saveload.readScene(fileStream, fileType)
         except Exception as e: 
             QMessageBox.critical(None, "Unable to load Scene" + " [" + 
                                  type(e).__name__ + "]", str(e))

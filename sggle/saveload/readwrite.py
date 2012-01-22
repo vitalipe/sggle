@@ -10,26 +10,26 @@ def writeScene(sceneObject, fileStream, formatName):
     assert isinstance(fileStream, file)
     assert formatName in formats.knowFileFormats()
     
-    format = formats.fromName(formatName)
+    fileFormat = formats.fromName(formatName)
     
-    builder  = format.builder()
-    dumper   = format.dumper()
+    builder  = fileFormat.builder()
+    dumper   = fileFormat.dumper()
     
     treeRoot = buildTree(formats.scene.ItemNodeAdapter(sceneObject.rootItem()), builder)
     dumper.dump(treeRoot, fileStream)
     
     
 
-def readScene(aFile, formatName):
-    assert isinstance(aFile, file)
-    assert isinstance(formatName, (str, unicode))
+def readScene(fileStream, formatName):
+    assert isinstance(fileStream, file)
+    assert formatName in formats.knowFileFormats()
 
-    format = formats.fromName(formatName)
+    fileFormat = formats.fromName(formatName)
 
-    parser   = format.parser()
-    adapterFactory  = format.adapter
+    parser   = fileFormat.parser()
+    adapterFactory  = fileFormat.adapter
 
-    treeRoot = parser.parse(aFile)
+    treeRoot = parser.parse(fileStream)
     return buildTree(adapterFactory(treeRoot), formats.scene.SceneTreeBuilder())
 
 

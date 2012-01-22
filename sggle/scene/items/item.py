@@ -14,11 +14,6 @@ import properties
 
 
 
-    
- 
-    
-    
-
 
 class SceneItem(object):
   
@@ -64,7 +59,7 @@ class SceneItem(object):
     
     
     def setValue(self,key,value=None, **kv):
-        assert (value is None) != (len(kv) == 0) # value xor kv
+        assert (value is None) != (len(kv) == 0) # xor
         p = self.property(key)
             
         if value is not None:
@@ -75,8 +70,8 @@ class SceneItem(object):
     
     
     def addCustomProperty(self, key, value = None):
-        property = properties.newCustomProperty(self, key)
-        self._addProperty(property)
+        p = properties.newCustomProperty(self, key)
+        self._addProperty(p)
     
     
     def hasProperty(self, key):
@@ -104,19 +99,6 @@ class SceneItem(object):
             child.copy().setParentItem(item) 
 
         return item
-  
-  
-    def serializeProperties(self): # FIXME: remove
-        properties = OrderedDict()
-        for key in self._properties.keys():
-            properties[key] = self.property(key).serializeValue()
-        
-        return properties.items()
-
- 
-    def deserializeProperties(self, properties): # FIXME: remove
-        for k,v in properties:
-            self.value(k).deserializeValue(v)
     
     
     def notifyChildListChanges(self):
@@ -181,9 +163,9 @@ class SceneItem(object):
         return self._itemChangeToPropertyMap.get(changeType)
  
  
-    def _addProperty(self, property, changeTypeId=None):
-        key = property.name()
-        self._properties[key] = property
+    def _addProperty(self, newProperty, changeTypeId=None):
+        key = newProperty.name()
+        self._properties[key] = newProperty
         if changeTypeId is not None:
             self._registerPropertyUpdate(key, changeTypeId)
     

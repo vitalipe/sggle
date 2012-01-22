@@ -39,10 +39,10 @@ class LayeredGraphicsScene(QGraphicsScene):
         self._selectionMaster = None
         
         #FIXME: use QSettings
-        self._bgColor   = QColor(Qt.gray)
+        self._bgColor   = QColor(83,113,121)
         self._showGrid  = True
-        self._gridSize  = 128
-        self._gridColor = QColor(0,0,0)
+        self._gridSize  = 64
+        self._gridColor = QColor(96, 125,  133)
         
         QGraphicsScene.addItem(self, self._rootItem)
         self.selectionChanged.connect(self._updateSelectionMaster)

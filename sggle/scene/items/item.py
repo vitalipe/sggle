@@ -14,6 +14,11 @@ import properties
 
 
 
+    
+ 
+    
+    
+
 
 class SceneItem(object):
   
@@ -59,7 +64,7 @@ class SceneItem(object):
     
     
     def setValue(self,key,value=None, **kv):
-        assert (value is None) != (len(kv) == 0) # xor
+        assert (value is None) != (len(kv) == 0) # xor 
         p = self.property(key)
             
         if value is not None:
@@ -70,8 +75,8 @@ class SceneItem(object):
     
     
     def addCustomProperty(self, key, value = None):
-        p = properties.newCustomProperty(self, key)
-        self._addProperty(p)
+        property = properties.newCustomProperty(self, key)
+        self._addProperty(property)
     
     
     def hasProperty(self, key):
@@ -99,6 +104,14 @@ class SceneItem(object):
             child.copy().setParentItem(item) 
 
         return item
+  
+  
+    def serializeProperties(self):
+        properties = OrderedDict()
+        for key in self._properties.keys():
+            properties[key] = self.property(key).serializeValue()
+        
+        return properties.items()
     
     
     def notifyChildListChanges(self):
@@ -163,9 +176,9 @@ class SceneItem(object):
         return self._itemChangeToPropertyMap.get(changeType)
  
  
-    def _addProperty(self, newProperty, changeTypeId=None):
-        key = newProperty.name()
-        self._properties[key] = newProperty
+    def _addProperty(self, property, changeTypeId=None):
+        key = property.name()
+        self._properties[key] = property
         if changeTypeId is not None:
             self._registerPropertyUpdate(key, changeTypeId)
     

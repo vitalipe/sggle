@@ -602,18 +602,23 @@ class ViewController(BaseController):
         sceneGroup.sceneWasRemoved.connect(self._handleSceneWasRemoved)
 
         self.zoomChanged.connect(self._updateAllSignalTriggers)
+        sceneGroup.activeSceneChanged.connect(self._updateAllSignalTriggers)
+
 
     def _updateAllSignalTriggers(self):
-        self.canZoomInChanged.emit(self.zoomPercentage() < self._maxZoom)
-        self.canZoomOutChanged.emit(self.zoomPercentage() > self._minZoom)    
-        self.canResetZoomChanged.emit(self.zoomPercentage() != 100)
-        
         if self._scene():
+
+            self.canZoomInChanged.emit(self.zoomPercentage() < self._maxZoom)
+            self.canZoomOutChanged.emit(self.zoomPercentage() > self._minZoom)    
+            self.canResetZoomChanged.emit(self.zoomPercentage() != 100)
             self.canCenterOnOriginChanged.emit(True)
             self.canCenterOnSeletionMasterChanged.emit(len(self._scene().selectedItems()) > 0)    
         else:
             self.canCenterOnOriginChanged.emit(False)
-            self.canCenterOnSeletionMasterChanged.emit(False)    
+            self.canCenterOnSeletionMasterChanged.emit(False)
+            self.canZoomInChanged.emit(False)
+            self.canZoomOutChanged.emit(False)    
+            self.canResetZoomChanged.emit(False)
 
     
     def _handleSceneWasAdded(self, index):

@@ -39,10 +39,10 @@ class LayeredGraphicsScene(QGraphicsScene):
         self._selectionMaster = None
         
         #FIXME: use QSettings
-        self._bgColor   = Qt.gray   
+        self._bgColor   = QColor(Qt.gray)
         self._showGrid  = True
-        self._gridSize  = 100
-        self._gridColor = Qt.black
+        self._gridSize  = 128
+        self._gridColor = QColor(0,0,0)
         
         QGraphicsScene.addItem(self, self._rootItem)
         self.selectionChanged.connect(self._updateSelectionMaster)
@@ -180,9 +180,21 @@ class LayeredGraphicsScene(QGraphicsScene):
 
     def _drawGrid(self, painter, rect):
         color    = self._gridColor
-
+        color2   = QColor(color.red()+20,color.green()+20, color.blue()+20)
+        color4   = QColor(color2.red()+20,color2.green()+20, color2.blue()+20)
+        
         painter.setPen(QPen(color, 0.0)) 
         painter.drawLines(self._gridLines)
+        
+        painter.setPen(QPen(color2, 0.0)) 
+        for i, ln in enumerate(self._gridLines):
+            if i % 2 == 0:
+                painter.drawLine(ln)
+        
+        painter.setPen(QPen(color4, 0.0)) 
+        for i, ln in enumerate(self._gridLines):
+            if i % 4 == 0:
+                painter.drawLine(ln)
 
 
     def _buildGridLines(self, rect):

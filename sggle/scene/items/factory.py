@@ -5,6 +5,7 @@ Created on Dec 31, 2011
 '''
 
 from os.path import splitext
+from os.path import basename
 import builtin
 
 
@@ -15,7 +16,7 @@ def newLayerItem():
 def newPixmapItemFromPath(path):
     item =  builtin.TextureItem()
     item.setValueDirectly("texture", path)
-    item.setValueDirectly("name", splitext(path)[0])
+    item.setValueDirectly("name", splitext(basename(path))[0])
 
     return item
 

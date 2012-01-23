@@ -41,7 +41,9 @@ def newResourceBrowser(dock=None):
     dock.setWindowTitle("Resources")
     dock.setWidget(rBrowser)
     
-    _setupDynamicDockFeatures(dock)
+    dock.setTitleBarWidget(QWidget()) # remove header
+    dock.setFeatures(dock.DockWidgetClosable)
+    #_setupDynamicDockFeatures(dock)
     
     return dock
 

@@ -54,12 +54,13 @@ class ActionKeySequences(object):
 class MainWindow(QMainWindow):
   
   
-    def __init__(self):
+    def __init__(self, title):
         QMainWindow.__init__(self)
            
         self.sceneGroup  = scene.newSceneGroup(self)
         self.actions     = {}
-         
+        
+        self.setWindowTitle(title)
         self.setWindowState(Qt.WindowMaximized)
         
         self._createControllers()

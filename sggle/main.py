@@ -7,7 +7,7 @@ Created on Sep 30, 2011
 
 from sys           import argv
 from PySide.QtGui  import QApplication
-
+from version       import version      
 
 from sggle.ui.mainwindow import MainWindow
 
@@ -15,7 +15,7 @@ from sggle.ui.mainwindow import MainWindow
 def main():
     
     app         =  QApplication(argv)
-    mainWindow  =  MainWindow()
+    mainWindow  =  MainWindow("SGGLE  v" +  version)
 
     
     mainWindow.show()    

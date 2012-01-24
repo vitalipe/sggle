@@ -40,9 +40,10 @@ class ItemsClipboard(QObject):
         return self._data
     
     
-    def setData(self, data):
-        self._data = data
-        self.clipboardDataAvailableChanged.emit(True)
+    def append(self, data):
+        self._data.append(data)
+        if len(self._data):
+            self.clipboardDataAvailableChanged.emit(True)
 
         
     def  hasData(self):
@@ -451,17 +452,18 @@ class ItemsController(BaseController):
     
     
     def copyToClipboard(self):
-        scene       = self._scene()
-        clipboard   = self._clipboard
-        activeLayer = scene.activeLayer()
-        items       = scene.selectedItems()
-        copiedData  = []
+        scene         = self._scene()
+        clipboard     = self._clipboard
+        activeLayer   = scene.activeLayer()
+        selectedItems = scene.selectedItems()
         
-        for item in (items if len(items) else [activeLayer] if activeLayer else []):
-            copiedData.append(item.copy())
-            
-        if len(copiedData):
-            clipboard.setData(copiedData) 
+        if len(selectedItems) == 0 or activeLayer is None:
+            return
+        
+        clipboard.clear()        
+        items = self._sortByZOrder(selectedItems if len(selectedItems) else [activeLayer])
+        for item in items:
+            clipboard.append(item.copy()) 
                     
         
     def cutToClipboard(self):

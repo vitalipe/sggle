@@ -4,7 +4,7 @@ Created on Jan 4, 2012
 @author: vitali
 '''
 
-
+from PySide.QtCore import Qt
 from PySide.QtCore import QDir
 from PySide.QtCore import QFileInfo
 from PySide.QtCore import QSize
@@ -79,7 +79,13 @@ class ResourceFolderModel(QFileSystemModel):
         self._setDefaults()
         self.setNameFilters(nameFilters)
         
-        
+    
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole: #hide filenames                                                                  
+            return ""
+        return QFileSystemModel.data(self, index, role)
+
+
     def _setDefaults(self):
         self.setReadOnly(True)
         self.setFilter(QDir.Files)

@@ -245,7 +245,7 @@ class MainWindow(QMainWindow):
                        "Center On Origin")
 
         self.addAction("scene-new", 
-                       fileController.new,
+                       fileController.newScene,
                        None,
                        "New Scene", 
                        disabled = False)

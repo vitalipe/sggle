@@ -7,7 +7,6 @@ Created on Nov 8, 2011
 from os.path import splitext
 from os.path import expanduser
 
-from PySide.QtCore import QDir
 from PySide.QtCore import QObject
 from PySide.QtCore import Signal
 from PySide.QtCore import QPointF
@@ -145,7 +144,7 @@ class FileController(QObject):
             fileStream.close()
         
     
-    def new(self):        
+    def newScene(self):        
         newScene = scene.newEmptyGraphicsScene()
         self._addScene(newScene, None)
 
@@ -245,10 +244,7 @@ class FileController(QObject):
     
         if path:
             self._mainWindow.addDockedReourceViewer(path) 
-            # remember directory 
-            parent = QDir(path)
-            parent.cdUp()
-            self._recentDir = parent.absolutePath()         
+            self._recentDir = path # remember directory       
 
     
     def setActiveScene(self, sceneIndex):

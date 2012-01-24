@@ -1,21 +1,16 @@
-'''
-Created on Sep 30, 2011
+#!/usr/bin/env python
 
-@author: vitali
-'''
-    
 
 from sys           import argv
 from PySide.QtGui  import QApplication
-from version       import version      
 
 from sggle.ui.mainwindow import MainWindow
-
+from sggle import __version__
 
 def main():
     
     app         =  QApplication(argv)
-    mainWindow  =  MainWindow("SGGLE  v" +  version)
+    mainWindow  =  MainWindow("SGGLE  v" +  __version__)
 
     
     mainWindow.show()    

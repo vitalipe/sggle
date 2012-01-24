@@ -614,6 +614,8 @@ class ViewController(BaseController):
 
         self.zoomChanged.connect(self._updateAllSignalTriggers)
         sceneGroup.activeSceneChanged.connect(self._updateAllSignalTriggers)
+        sceneGroup.selectionChanged.connect(self._updateAllSignalTriggers)
+
 
 
     def _updateAllSignalTriggers(self):

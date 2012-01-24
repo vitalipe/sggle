@@ -63,6 +63,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(title)
         self.setWindowState(Qt.WindowMaximized)
         
+        self.setDockOptions(self.AnimatedDocks | self.AllowTabbedDocks | self.VerticalTabs)
+        self.setDockNestingEnabled(True)
+        
         self._createControllers()
         self._createActions()
         self._createWidgets()
@@ -73,9 +76,11 @@ class MainWindow(QMainWindow):
     def _createToolBars(self):
         
         fileToolBar = QToolBar("File", self)
+        fileToolBar.addAction(self.actions["resource-folder-add"])
         fileToolBar.addAction(self.actions["scene-new"])
         fileToolBar.addAction(self.actions["scene-open"])
         fileToolBar.addAction(self.actions["scene-save"])
+
         
         editToolBar = QToolBar("Edit", self)
         editToolBar.addAction(self.actions["edit-undo"])
@@ -97,7 +102,7 @@ class MainWindow(QMainWindow):
  
     def _createControllers(self):
         
-        self.fileController  =  controllers.FileController(self.sceneGroup)
+        self.fileController  =  controllers.FileController(self.sceneGroup, self)
         self.itemsController =  controllers.ItemsController(self.sceneGroup)
         self.viewController  =  controllers.ViewController(self.sceneGroup, 
                                                            scene.newWelcomeScreenScene())
@@ -242,36 +247,42 @@ class MainWindow(QMainWindow):
         self.addAction("scene-new", 
                        fileController.new,
                        None,
-                       "New", 
+                       "New Scene", 
                        disabled = False)
         
         self.addAction("scene-close", 
                        fileController.closeActiveScene,
                        fileController.sceneAvailableChanged,
-                       "Close")
+                       "Close Scene")
         
         
         self.addAction("scene-save", 
                        fileController.saveActiveScene,
                        fileController.cleanStateChanged,
-                       "Save",
+                       "Save Scene",
                        reverseTrigger = True)
         
         self.addAction("scene-save-as", 
                        fileController.saveActiveSceneAs,
                        fileController.sceneAvailableChanged,
-                       "Save As")
+                       "Save Scene As")
         
         self.addAction("scene-open", 
                        fileController.openScene,
                        None, 
-                       "Open", 
+                       "Open Scene", 
                        disabled = False)
         
         self.addAction("app-quit", 
                        self.close,
                        None, 
                        "Quit", 
+                       disabled = False)
+        
+        self.addAction("resource-folder-add", 
+                       fileController.openResourceFolder,
+                       None, 
+                       "Open Content Folder", 
                        disabled = False)
  
         # load icons
@@ -303,11 +314,7 @@ class MainWindow(QMainWindow):
         PropertiesDock = widgets.newPropertiesEditor(sceneGroup.itemPropertiesModel(), QDockWidget())
         self.addDockWidget(Qt.LeftDockWidgetArea, PropertiesDock)
         
-        # Resource browser
-        resourcesDock   = widgets.newResourceBrowser(QDockWidget())
-        self.addDockWidget(Qt.BottomDockWidgetArea, resourcesDock)
-        
-        
+
     def _createMenuBars(self):
         assert self.actions
         
@@ -318,6 +325,8 @@ class MainWindow(QMainWindow):
         fileMenu =  QMenu("&File", self)
         fileMenu.addAction(actions["scene-new"])
         fileMenu.addAction(actions["scene-open"])
+        fileMenu.addSeparator()
+        fileMenu.addAction(actions["resource-folder-add"])
         fileMenu.addSeparator()
         fileMenu.addAction(actions["scene-save"])
         fileMenu.addAction(actions["scene-save-as"])
@@ -402,7 +411,11 @@ class MainWindow(QMainWindow):
                 event.ignore()
         else:
             event.accept()
-
+            
+            
+    def addDockedReourceViewer(self, path):        
+        resourcesDock = widgets.newResourceFolderViewer(path, QDockWidget())
+        self.addDockWidget(Qt.RightDockWidgetArea, resourcesDock)
 
 
         

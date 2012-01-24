@@ -7,7 +7,7 @@ Created on Nov 8, 2011
 from os.path import splitext
 from os.path import expanduser
 
-
+from PySide.QtCore import QDir
 from PySide.QtCore import QObject
 from PySide.QtCore import Signal
 from PySide.QtCore import QPointF
@@ -79,19 +79,21 @@ class FileController(QObject):
     cleanStateChanged     = Signal(bool)
     sceneAvailableChanged = Signal(bool)
     
-    sceneAdded             = Signal(str) # @param str: name 
-    sceneRemoved           = Signal(int) # @param int: index
-    activeSceneNameChanged = Signal(str) # @param int: index, @param str: name 
+    sceneAdded                = Signal(str) # @param str: name 
+    sceneRemoved              = Signal(int) # @param int: index
+    activeSceneNameChanged    = Signal(str) # @param int: index, @param str: name 
 
     
-    def __init__(self, sceneGroup):
+    def __init__(self, sceneGroup, mainWindow):
         QObject.__init__(self)
         
-        self.sceneGroup          = sceneGroup
+        self.sceneGroup           = sceneGroup
         self._sceneToFilePathMap  = {}
         self._sceneList           = []
+        self._mainWindow          = mainWindow
         
-        self._lastLocation = expanduser("~")
+        self._recentDir           = expanduser("~")
+        self._lastLocation        = expanduser("~")
 
         sceneGroup.itemPropertyWasChanged.connect(self._forwardActiveSceneNameChanges)
         sceneGroup.undoGroup().cleanChanged.connect(self.cleanStateChanged.emit)
@@ -234,6 +236,19 @@ class FileController(QObject):
                 
         else:
             self._removeScene(scene) 
+       
+            
+    def openResourceFolder(self):
+          
+        path =  QFileDialog.getExistingDirectory(None, "Select Directory",self._recentDir,
+                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+    
+        if path:
+            self._mainWindow.addDockedReourceViewer(path) 
+            # remember directory 
+            parent = QDir(path)
+            parent.cdUp()
+            self._recentDir = parent.absolutePath()         
 
     
     def setActiveScene(self, sceneIndex):

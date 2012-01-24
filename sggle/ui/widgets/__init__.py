@@ -6,3 +6,4 @@ from rbrowser     import newResourceFolderViewer
 from treeview     import newItemTree
 from treeview     import newLayerList
 from workspace    import newWorkspace 
+from dock         import newToolbarDockWidget

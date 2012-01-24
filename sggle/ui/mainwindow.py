@@ -294,6 +294,7 @@ class MainWindow(QMainWindow):
     def _createWidgets(self):
         
         sceneGroup  = self.sceneGroup
+        actions     = self.actions
         
         self._sceneView      = widgets.newGraphicsView()
         self._workspace      = widgets.newWorkspace(self._sceneView, self.fileController)
@@ -303,11 +304,26 @@ class MainWindow(QMainWindow):
 
         
         # Layer list
-        layersDock = widgets.newLayerList(sceneGroup.layerListModel(), QDockWidget())  
+        layersDock = widgets.newToolbarDockWidget((
+                                                   (actions["layer-new"],
+                                                    actions["layer-delete"],
+                                                    None, # separator
+                                                    actions["layer-move-top"],
+                                                    actions["layer-move-up"],
+                                                    actions["layer-move-down"],
+                                                    actions["layer-move-bottom"])))
+        widgets.newLayerList(sceneGroup.layerListModel(), layersDock)  
         self.addDockWidget(Qt.LeftDockWidgetArea, layersDock)
         
         # Item tree 
-        itemsDock  = widgets.newItemTree(sceneGroup.activeItemsTreeModel(), QDockWidget())
+        itemsDock = widgets.newToolbarDockWidget((
+                                                   (actions["selection-delete"],
+                                                    None, # separator
+                                                    actions["selection-move-top"],
+                                                    actions["selection-move-up"],
+                                                    actions["selection-move-down"],
+                                                    actions["selection-move-bottom"])))
+        widgets.newItemTree(sceneGroup.activeItemsTreeModel(), itemsDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, itemsDock)
         
         #Properties Editor 

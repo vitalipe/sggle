@@ -77,6 +77,7 @@ class MainWindow(QMainWindow):
         
         fileToolBar = QToolBar("File", self)
         fileToolBar.addAction(self.actions["resource-folder-add"])
+        fileToolBar.addSeparator()
         fileToolBar.addAction(self.actions["scene-new"])
         fileToolBar.addAction(self.actions["scene-open"])
         fileToolBar.addAction(self.actions["scene-save"])
@@ -94,6 +95,9 @@ class MainWindow(QMainWindow):
         viewToolBar.addAction(self.actions["view-zoom-in"])
         viewToolBar.addAction(self.actions["view-zoom-reset"])
         viewToolBar.addAction(self.actions["view-zoom-out"])
+        viewToolBar.addSeparator()
+        viewToolBar.addAction(self.actions["view-center-origin"])
+        viewToolBar.addAction(self.actions["view-center-selection"])
         
         self.addToolBar(fileToolBar)
         self.addToolBar(editToolBar)
@@ -236,13 +240,13 @@ class MainWindow(QMainWindow):
         self.addAction("view-center-selection", 
                        viewController.centerOnSelectionMaster,
                        viewController.canCenterOnSeletionMasterChanged,
-                       "Center On Selection")
+                       "Goto Selection")
         
         
         self.addAction("view-center-origin", 
                        viewController.centerOnOrigin,
                        viewController.canCenterOnOriginChanged,
-                       "Center On Origin")
+                       "Goto Origin")
 
         self.addAction("scene-new", 
                        fileController.newScene,

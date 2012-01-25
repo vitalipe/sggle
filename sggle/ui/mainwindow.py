@@ -15,6 +15,7 @@ from PySide.QtGui import QKeySequence
 from PySide.QtGui import QMessageBox
 from PySide.QtGui import QToolBar
 from PySide.QtGui import QIcon
+from PySide.QtGui import QPixmap
 
 
 
@@ -22,7 +23,7 @@ import widgets
 import controllers
 
 import sggle.scene as scene
-
+from sggle import __version__
 
 # FIXME: Move to config 
 class ActionKeySequences(object):
@@ -54,13 +55,13 @@ class ActionKeySequences(object):
 class MainWindow(QMainWindow):
   
   
-    def __init__(self, title):
+    def __init__(self):
         QMainWindow.__init__(self)
            
         self.sceneGroup  = scene.newSceneGroup(self)
         self.actions     = {}
         
-        self.setWindowTitle(title)
+        self.setWindowTitle("SGGLE  v" +  __version__)
         self.setWindowState(Qt.WindowMaximized)
         
         self.setDockOptions(self.AnimatedDocks | self.AllowTabbedDocks | self.VerticalTabs)
@@ -288,7 +289,13 @@ class MainWindow(QMainWindow):
                        None, 
                        "Open Content Folder", 
                        disabled = False)
- 
+        
+        self.addAction("help-about", 
+                       self.aboutDialog,
+                       None, 
+                       "About", 
+                       disabled = False)
+         
         # load icons
         for actionName, action in self.actions.items():
             action.setIcon(QIcon(":/icons/actions/" + actionName))
@@ -393,6 +400,8 @@ class MainWindow(QMainWindow):
 
         # Help menu
         helpMenu = QMenu("&Help", self) 
+        helpMenu.addAction(actions["help-about"])
+
 
 
         menuBar.addMenu(fileMenu)
@@ -437,6 +446,17 @@ class MainWindow(QMainWindow):
         resourcesDock = widgets.newResourceFolderViewer(path, QDockWidget())
         self.addDockWidget(Qt.RightDockWidgetArea, resourcesDock)
         resourcesDock.setFloating(True)
+
+
+    def aboutDialog(self):
+        dialog = QMessageBox(self)
+        dialog.setWindowTitle("About")
+        dialog.setWindowIcon(self.actions["help-about"].icon())
+        dialog.setIconPixmap(QPixmap(":icons/about"))
+        dialog.setText("SGGLE [" +  __version__  + "]")
+        dialog.setStandardButtons(QMessageBox.Close)
+        dialog.exec_()
+        
 
 
         

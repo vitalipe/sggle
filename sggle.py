@@ -5,12 +5,14 @@ from sys           import argv
 from PySide.QtGui  import QApplication
 
 from sggle.ui.mainwindow import MainWindow
-from sggle import __version__
+
+
+
 
 def main():
     
     app         =  QApplication(argv)
-    mainWindow  =  MainWindow("SGGLE  v" +  __version__)
+    mainWindow  =  MainWindow()
 
     
     mainWindow.show()    

@@ -19,8 +19,9 @@ from PySide.QtGui  import QGraphicsItem
 
 import items.builtin
 import commands
-from sggle.resources import loader
 
+from sggle.resources import loader
+from editmodes       import  *
 
 
 class LayeredGraphicsScene(QGraphicsScene):
@@ -256,29 +257,27 @@ class LayeredGraphicsScene(QGraphicsScene):
 class EditableScene(LayeredGraphicsScene):
     
     # EditModes
-    NoEditMode      = 0
-    MoveEditMode    = 1
-    RotateEditMode  = 2
-    scaleEditMode   = 3
-    PixmapDropMode  = 4
+    NoEditMode      = NoEditMode()
+    MoveEditMode    = MoveEditMode()
+    RotateEditMode  = RotateEditMode()
+    scaleEditMode   = ScaleEditMode()
+    PixmapDropMode  = PixmapDropMode()
     
-    RectDrawMode    = 5
-    PathDrawMode    = 6
-    ElipseDrawMod   = 7
+    RectDrawMode    = None
+    PathDrawMode    = None
+    ElipseDrawMod   = None
     
        
     itemPropertyWasChanged     = Signal(object, str)
-    editModeChanged            = Signal(int, int)
+    editModeChanged            = Signal(IEditMode, IEditMode) # @param new @param old  
     
         
     def __init__(self, undoStack):
         LayeredGraphicsScene.__init__(self)
         
-        self._editMode             = EditableScene.NoEditMode
+        self._editMode         = EditableScene.NoEditMode
         self._editModeCmdBatch = None
-        self._editModeData     = None
-        self._mousePos         = None
-        
+
         self._undoStack        = undoStack
         
         
@@ -291,7 +290,6 @@ class EditableScene(LayeredGraphicsScene):
     
     
     def enterEditMode(self, mode):
-        assert type(mode) is int 
         assert self.editMode() == self.NoEditMode or mode == self.NoEditMode
         
         batch = self._editModeCmdBatch
@@ -317,85 +315,34 @@ class EditableScene(LayeredGraphicsScene):
         
     def mousePressEvent(self, mouseEvent):
         QGraphicsScene.mousePressEvent(self, mouseEvent) # Handle selection first
-        
-        if self.editMode() != self.NoEditMode:
-            return
-        
-        itemUnderMouse = self.itemAt(mouseEvent.scenePos())
-        if itemUnderMouse and itemUnderMouse.isSelected():
-
-            if mouseEvent.button() == Qt.LeftButton: 
-                self.enterEditMode(self.MoveEditMode)
-                
-            if  mouseEvent.button() == Qt.RightButton:
-                self.enterEditMode(self.RotateEditMode)
-            
-            if  mouseEvent.button() == Qt.MiddleButton:
-                self.enterEditMode(self.scaleEditMode)
+        self.editMode().mousePressEvent(self, mouseEvent)
             
         
     def mouseReleaseEvent(self,  mouseEvent):
-        self.exitEditMode()
-        
+        self.editMode().mouseReleaseEvent(self, mouseEvent)        
         return QGraphicsScene.mouseReleaseEvent(self, mouseEvent)
     
     
     def mouseMoveEvent(self, mouseEvent):
-        
-        editMode = self.editMode()
-        oldPos   = mouseEvent.lastScenePos()
-        pos      = mouseEvent.scenePos()        
-
-        # Update mousePosition first         
-        self._mousePos = pos
-        
-        if editMode == self.scaleEditMode:
-            deltaY = pos.y() - oldPos.y()
-            for item in self.selectedItems():
-                scale = item.scale() + (deltaY / 10)
-                if scale < 0.1:    scale = 0.1
-                elif scale > 10.0: scale = 10.0
-                item.setScale(scale)   
- 
-        if editMode == self.RotateEditMode:
-            deltaX = pos.x() - oldPos.x()
-            for item in self.selectedItems():
-                rotation = item.rotation() + int(deltaX)
-                item.setRotation(rotation)   
-                   
-        LayeredGraphicsScene.mouseMoveEvent(self, mouseEvent)
+        self.editMode().mouseMoveEvent(self, mouseEvent)
+        return LayeredGraphicsScene.mouseMoveEvent(self, mouseEvent)
         
                           
     def dragEnterEvent(self, event):        
         if not event.mimeData().hasText() or not self.activeLayer():
             event.ignore()
             return
-        
-        event.accept()
-        
-        path =  event.mimeData().text()
-        self._editModeData = { 
-                              "pos"    : event.scenePos(), 
-                              "pixmap" : loader.pixmap.load(path),
-                              "path"   : path
-                              }
-        
-        self.enterEditMode(self.PixmapDropMode)
+        else:
+            self.enterEditMode(self.PixmapDropMode)
+            self.editMode().dragEnterEvent(self, event)
             
         
     def dragMoveEvent(self, event):
-        self._editModeData["pos"] = event.scenePos()
-        self.invalidate(layers=self.ForegroundLayer)
+        self.editMode().dragMoveEvent(self, event)
         
         
     def dropEvent(self, event):
-        self.invalidate(layers=self.ForegroundLayer)
-        path = self._editModeData["path"]
-        x    = self._editModeData["pos"].x()
-        y    = self._editModeData["pos"].y()
-        item = items.newPixmapItemFromPath(path)
-        self.undoStack().push(commands.newAddItemCommand(self, item, x, y))
-        self.exitEditMode()
+        self.editMode().dropEvent(self, event)
         
     
     def dragLeaveEvent(self, event):
@@ -404,15 +351,7 @@ class EditableScene(LayeredGraphicsScene):
         
           
     def drawForeground(self, painter, rect):
-        if self.editMode() == self.PixmapDropMode:
-            pos    = self._editModeData["pos"]
-            pixmap = self._editModeData["pixmap"]
-            pos.setX(pos.x() - (pixmap.width()/2))
-            pos.setY(pos.y() - (pixmap.height()/2))
-
-            assert pos and pixmap
-            painter.drawPixmap(pos, pixmap)
-            
+        self.editMode().drawForeground(self, painter, rect)
         QGraphicsScene.drawForeground(self, painter, rect)
         
         
@@ -435,7 +374,4 @@ class EditableScene(LayeredGraphicsScene):
         LayeredGraphicsScene.adjustParallax(self, center)
 
             
-                
-            
-        
             

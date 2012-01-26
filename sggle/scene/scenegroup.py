@@ -24,7 +24,7 @@ class SceneGroup(QObject):
     activeLayerChanged         =  Signal(object)
     selectionMasterChanged     =  Signal(object)
     itemPropertyWasChanged     =  Signal(object, str)
-    editModeChanged            =  Signal(int, int)
+    editModeChanged            =  Signal(object, object)
     listOfLayersChanged        =  Signal(list)
     listOfItemsChanged          = Signal(object) 
 

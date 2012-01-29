@@ -328,12 +328,7 @@ class EditableScene(LayeredGraphicsScene):
         return LayeredGraphicsScene.mouseMoveEvent(self, mouseEvent)
         
                           
-    def dragEnterEvent(self, event):        
-        if not event.mimeData().hasText() or not self.activeLayer():
-            event.ignore()
-            return
-        else:
-            self.enterEditMode(self.PixmapDropMode)
+    def dragEnterEvent(self, event):
             self.editMode().dragEnterEvent(self, event)
             
         
@@ -346,9 +341,8 @@ class EditableScene(LayeredGraphicsScene):
         
     
     def dragLeaveEvent(self, event):
-        self.exitEditMode()
-        self.invalidate(layers=self.ForegroundLayer)
-        
+        self.editMode().dragLeaveEvent(self, event)
+          
           
     def drawForeground(self, painter, rect):
         self.editMode().drawForeground(self, painter, rect)

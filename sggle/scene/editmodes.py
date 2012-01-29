@@ -1,4 +1,8 @@
-from PySide.QtCore import Qt
+from PySide.QtCore   import Qt
+
+import items
+import commands
+
 
                 
 class IEditMode(object):
@@ -49,6 +53,10 @@ class NoEditMode(IEditMode):
                 scene.enterEditMode(scene.scaleEditMode)
     
     
+    def dragEnterEvent(self, scene, event):
+        scene.enterEditMode(scene.PixmapDropMode)
+        scene.PixmapDropMode.dragEnterEvent(scene, event)
+        
     def __nonzero__(self): # allows me to do: if scene.editMode() ...
         return False
     
@@ -111,8 +119,7 @@ class PixmapDropMode(IEditMode):
         IEditMode.__init__(self)
         
         self.pos    = None
-        self.pixmap = None
-        self.path   = None
+        self.item   = None
     
     
     def dragEnterEvent(self, scene, event):
@@ -125,10 +132,14 @@ class PixmapDropMode(IEditMode):
             
             path =  event.mimeData().text()
             
-            self.pos     = event.event.scenePos()
-            self.pixmap  = loader.pixmap.load(path)
-            self.path    = path
-        
+            self.pos     = event.scenePos()
+            self.item  = items.newPixmapItemFromPath(path)
+    
+    
+    def dragLeaveEvent(self, scene, event):
+        scene.exitEditMode()
+        scene.invalidate(layers=scene.ForegroundLayer)
+    
             
     def dragMoveEvent(self, scene, event):
         self.pos = event.scenePos()
@@ -140,15 +151,14 @@ class PixmapDropMode(IEditMode):
 
         x    = self.pos.x()
         y    = self.pos.y()
-        item = items.newPixmapItemFromPath(self.path)
-        scene.undoStack().push(commands.newAddItemCommand(self, item, x, y))
+        scene.undoStack().push(commands.newAddItemCommand(scene, self.item.copy(), x, y))
         
         scene.exitEditMode()
         
         
     def drawForeground(self, scene, painter, rect):
         pos    = self.pos
-        pixmap = self.pixmap
+        pixmap = self.item.value("texture")
         pos.setX(pos.x() - (pixmap.width()/2))
         pos.setY(pos.y() - (pixmap.height()/2))
 

@@ -45,12 +45,15 @@ class NoEditMode(IEditMode):
 
             if mouseEvent.button() == Qt.LeftButton: 
                 scene.enterEditMode(scene.MoveEditMode)
+                scene.editMode().mousePressEvent(scene, mouseEvent)
                 
             elif  mouseEvent.button() == Qt.RightButton:
                 scene.enterEditMode(scene.RotateEditMode)
+                scene.editMode().mousePressEvent(scene, mouseEvent)
             
             elif  mouseEvent.button() == Qt.MiddleButton:
                 scene.enterEditMode(scene.scaleEditMode)
+                scene.editMode().mousePressEvent(scene, mouseEvent)
     
     
     def dragEnterEvent(self, scene, event):

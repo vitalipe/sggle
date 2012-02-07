@@ -12,6 +12,7 @@ from PySide.QtCore import Qt
 
 from PySide.QtCore  import QLine
 from PySide.QtCore  import QRectF
+from PySide.QtCore  import QPointF
 from PySide.QtGui  import QPen
 from PySide.QtGui  import QColor
 from PySide.QtGui  import QGraphicsScene 
@@ -41,6 +42,7 @@ class LayeredGraphicsScene(QGraphicsScene):
         self._activeLayer     = None
         self._selectionMaster = None
         self._selectionRect   = QRectF()
+        self._selectionOrigin = QPointF()
         
         #FIXME: use QSettings
         self._bgColor   = QColor(83,113,121)
@@ -52,37 +54,6 @@ class LayeredGraphicsScene(QGraphicsScene):
         self.selectionChanged.connect(self._updateSelectionMaster)
         self.selectionChanged.connect(self._updateSelectionRect)
         self.sceneRectChanged.connect(lambda r: self._buildGridLines(r))
-
-    def _updateSelectionRect(self):
-        if len(self.selectedItems()) == 0: # clear selection rect
-            self._selectionRect = QRectF() 
-            self.invalidate(layers=self.ForegroundLayer)
-            return 
-        
-        items = self.selectedItems()
-        rect  = self.selectedItems()[0].sceneBoundingRect()
-        
-        #FIXME: very naive approach... later I should probably
-        #       rewrite this, and make use of the BSP Tree... 
-        for i in self.selectedItems():  
-            boundingRect = i.sceneBoundingRect()
-            
-            top    = boundingRect.top()
-            bottom = boundingRect.bottom()
-            left   = boundingRect.left()
-            right  = boundingRect.right()
-            
-            if top < rect.top():
-                rect.setTop(top)
-            if bottom > rect.bottom():
-                rect.setBottom(bottom)
-            if left < rect.left():
-                rect.setLeft(left)
-            if right > rect.right():
-                rect.setRight(right)
-                
-        self._selectionRect = rect
-        self.invalidate(layers=self.ForegroundLayer)
             
             
     def rootItem(self): 
@@ -210,16 +181,63 @@ class LayeredGraphicsScene(QGraphicsScene):
         painter.fillRect(rect, self._bgColor) 
         if self._showGrid:
             self._drawGrid(painter, rect)
-       
+            
+    
+    def selectionOrigin(self):
+        return self._selectionRect.center()
+    
+    
+    def selectionRect(self):
+        return self._selectionRect
+            
             
     def drawForeground(self, painter, rect):
-        selectionRect = self._selectionRect
-        if selectionRect.isNull():
-            return
+        if not self.selectionRect().isNull():        
+            self._drawSelectionFrame(painter)
+            self._drawSelectionOrigin(painter)
+      
+        
+        # << Helper methods >> #
 
+    def _updateSelectionRect(self):
+        if len(self.selectedItems()) == 0: # clear selection rect
+            self._selectionRect = QRectF() 
+            self.invalidate(layers=self.ForegroundLayer)
+            return 
+        
+        items = self.selectedItems()
+        rect  = self.selectedItems()[0].sceneBoundingRect()
+        
+        #FIXME: very naive approach... later I should probably
+        #       rewrite this, and make use of the BSP Tree... 
+        for i in self.selectedItems():  
+            boundingRect = i.sceneBoundingRect()
+            
+            top    = boundingRect.top()
+            bottom = boundingRect.bottom()
+            left   = boundingRect.left()
+            right  = boundingRect.right()
+            
+            if top < rect.top():
+                rect.setTop(top)
+            if bottom > rect.bottom():
+                rect.setBottom(bottom)
+            if left < rect.left():
+                rect.setLeft(left)
+            if right > rect.right():
+                rect.setRight(right)
+                
+        self._selectionRect = rect
+        self.invalidate(layers=self.ForegroundLayer)
+       
+        
+    def _drawSelectionFrame(self, painter):
+        selectionRect = self._selectionRect        
+        scaleFactor   = painter.transform().m11() # scale to match zoom 
+        
         # draw selection frame
         framePen  = QPen()
-        framePen.setWidth(1)
+        framePen.setWidthF(1 / scaleFactor)
         framePen.setColor(Qt.black)
         
         painter.setPen(framePen)
@@ -229,18 +247,36 @@ class LayeredGraphicsScene(QGraphicsScene):
         pen = QPen()
         pen.setColor(Qt.black)
         pen.setCapStyle(Qt.SquareCap)
-        pen.setWidthF(6.0)
+        pen.setWidthF(6.0 / scaleFactor)
         
         painter.setPen(pen)    
         painter.drawPoint(selectionRect.topRight())
         painter.drawPoint(selectionRect.topLeft())
         painter.drawPoint(selectionRect.bottomLeft())
         painter.drawPoint(selectionRect.bottomRight())
-
     
     
-        # << Helper methods >> #
-
+    def _drawSelectionOrigin(self, painter):
+        selectionOrigin = self.selectionOrigin()
+        scaleFactor     = painter.transform().m11() # scale to match zoom 
+     
+        # draw selection origin
+        len   = 10 / scaleFactor
+        width = 3  / scaleFactor
+        x,y   = selectionOrigin.toTuple()
+        h     = (x - len, y , x + len, y )
+        v     = (x , y - len , x , y + len)
+        
+        pen   = QPen()
+        pen.setColor(Qt.black)
+        pen.setCapStyle(Qt.SquareCap)
+        pen.setWidthF(width)
+        
+        painter.setPen(pen)
+        painter.drawLine(*h)
+        painter.drawLine(*v)
+        
+        
     def _drawGrid(self, painter, rect):
         color    = self._gridColor
         color2   = QColor(color.red()+20,color.green()+20, color.blue()+20)

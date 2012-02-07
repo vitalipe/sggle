@@ -11,10 +11,12 @@ from PySide.QtCore import Signal
 from PySide.QtCore import Qt
 
 from PySide.QtCore  import QLine
+from PySide.QtCore  import QRectF
 from PySide.QtGui  import QPen
 from PySide.QtGui  import QColor
 from PySide.QtGui  import QGraphicsScene 
 from PySide.QtGui  import QGraphicsItem
+from PySide.QtGui  import QTransform
 
 
 import items.builtin
@@ -38,6 +40,7 @@ class LayeredGraphicsScene(QGraphicsScene):
         self._rootItem        = items.newRootItem()
         self._activeLayer     = None
         self._selectionMaster = None
+        self._selectionRect   = QRectF()
         
         #FIXME: use QSettings
         self._bgColor   = QColor(83,113,121)
@@ -47,9 +50,41 @@ class LayeredGraphicsScene(QGraphicsScene):
         
         QGraphicsScene.addItem(self, self._rootItem)
         self.selectionChanged.connect(self._updateSelectionMaster)
+        self.selectionChanged.connect(self._updateSelectionRect)
         self.sceneRectChanged.connect(lambda r: self._buildGridLines(r))
 
-    
+    def _updateSelectionRect(self):
+        if len(self.selectedItems()) == 0: # clear selection rect
+            self._selectionRect = QRectF() 
+            self.invalidate(layers=self.ForegroundLayer)
+            return 
+        
+        items = self.selectedItems()
+        rect  = self.selectedItems()[0].sceneBoundingRect()
+        
+        #FIXME: very naive approach... later I should probably
+        #       rewrite this, and make use of the BSP Tree... 
+        for i in self.selectedItems():  
+            boundingRect = i.sceneBoundingRect()
+            
+            top    = boundingRect.top()
+            bottom = boundingRect.bottom()
+            left   = boundingRect.left()
+            right  = boundingRect.right()
+            
+            if top < rect.top():
+                rect.setTop(top)
+            if bottom > rect.bottom():
+                rect.setBottom(bottom)
+            if left < rect.left():
+                rect.setLeft(left)
+            if right > rect.right():
+                rect.setRight(right)
+                
+        self._selectionRect = rect
+        self.invalidate(layers=self.ForegroundLayer)
+            
+            
     def rootItem(self): 
         return self._rootItem    
                
@@ -175,6 +210,33 @@ class LayeredGraphicsScene(QGraphicsScene):
         painter.fillRect(rect, self._bgColor) 
         if self._showGrid:
             self._drawGrid(painter, rect)
+       
+            
+    def drawForeground(self, painter, rect):
+        selectionRect = self._selectionRect
+        if selectionRect.isNull():
+            return
+
+        # draw selection frame
+        framePen  = QPen()
+        framePen.setWidth(1)
+        framePen.setColor(Qt.black)
+        
+        painter.setPen(framePen)
+        painter.drawRect(selectionRect)
+        
+        # draw corners
+        pen = QPen()
+        pen.setColor(Qt.black)
+        pen.setCapStyle(Qt.SquareCap)
+        pen.setWidthF(6.0)
+        
+        painter.setPen(pen)    
+        painter.drawPoint(selectionRect.topRight())
+        painter.drawPoint(selectionRect.topLeft())
+        painter.drawPoint(selectionRect.bottomLeft())
+        painter.drawPoint(selectionRect.bottomRight())
+
     
     
         # << Helper methods >> #
@@ -280,6 +342,9 @@ class EditableScene(LayeredGraphicsScene):
 
         self._undoStack        = undoStack
         
+        self.itemPropertyWasChanged.connect(lambda i,p: self._updateSelectionRect() if
+                                            p in ["position", "rotation", "scale"] else None)
+        
         
     def mousePosition(self):
         return self._mousePos
@@ -346,7 +411,7 @@ class EditableScene(LayeredGraphicsScene):
           
     def drawForeground(self, painter, rect):
         self.editMode().drawForeground(self, painter, rect)
-        QGraphicsScene.drawForeground(self, painter, rect)
+        super(EditableScene, self).drawForeground(painter, rect)
         
         
     def notifyItemPropertyChangeRequest(self, item, propertyName, value):

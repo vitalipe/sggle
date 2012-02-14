@@ -42,7 +42,6 @@ class LayeredGraphicsScene(QGraphicsScene):
         self._activeLayer     = None
         self._selectionMaster = None
         self._selectionRect   = QRectF()
-        self._selectionOrigin = QPointF()
         
         #FIXME: use QSettings
         self._bgColor   = QColor(83,113,121)
@@ -184,7 +183,7 @@ class LayeredGraphicsScene(QGraphicsScene):
             
     
     def selectionOrigin(self):
-        return self._selectionRect.center()
+        return self._selectionOrigin
     
     
     def selectionRect(self):
@@ -194,7 +193,6 @@ class LayeredGraphicsScene(QGraphicsScene):
     def drawForeground(self, painter, rect):
         if not self.selectionRect().isNull():        
             self._drawSelectionFrame(painter)
-            self._drawSelectionOrigin(painter)
       
         
         # << Helper methods >> #
@@ -229,7 +227,7 @@ class LayeredGraphicsScene(QGraphicsScene):
                 
         self._selectionRect = rect
         self.invalidate(layers=self.ForegroundLayer)
-       
+        
         
     def _drawSelectionFrame(self, painter):
         selectionRect = self._selectionRect        
@@ -254,27 +252,6 @@ class LayeredGraphicsScene(QGraphicsScene):
         painter.drawPoint(selectionRect.topLeft())
         painter.drawPoint(selectionRect.bottomLeft())
         painter.drawPoint(selectionRect.bottomRight())
-    
-    
-    def _drawSelectionOrigin(self, painter):
-        selectionOrigin = self.selectionOrigin()
-        scaleFactor     = painter.transform().m11() # scale to match zoom 
-     
-        # draw selection origin
-        len   = 10 / scaleFactor
-        width = 3  / scaleFactor
-        x,y   = selectionOrigin.toTuple()
-        h     = (x - len, y , x + len, y )
-        v     = (x , y - len , x , y + len)
-        
-        pen   = QPen()
-        pen.setColor(Qt.black)
-        pen.setCapStyle(Qt.SquareCap)
-        pen.setWidthF(width)
-        
-        painter.setPen(pen)
-        painter.drawLine(*h)
-        painter.drawLine(*v)
         
         
     def _drawGrid(self, painter, rect):
@@ -375,7 +352,7 @@ class EditableScene(LayeredGraphicsScene):
         
         self._editMode         = EditableScene.NoEditMode
         self._editModeCmdBatch = None
-
+        self._mousePosition    = QPointF()
         self._undoStack        = undoStack
         
         self.itemPropertyWasChanged.connect(lambda i,p: self._updateSelectionRect() if
@@ -383,7 +360,7 @@ class EditableScene(LayeredGraphicsScene):
         
         
     def mousePosition(self):
-        return self._mousePos
+        return self._mousePosition
    
    
     def editMode(self):
@@ -425,6 +402,8 @@ class EditableScene(LayeredGraphicsScene):
     
     
     def mouseMoveEvent(self, mouseEvent):
+        self._mousePosition = mouseEvent.scenePos()
+        
         self.editMode().mouseMoveEvent(self, mouseEvent)
         return LayeredGraphicsScene.mouseMoveEvent(self, mouseEvent)
         

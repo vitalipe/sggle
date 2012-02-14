@@ -1,4 +1,10 @@
+import math
+
+
 from PySide.QtCore   import Qt
+from PySide.QtCore   import QPointF
+from PySide.QtGui    import QVector2D
+from PySide.QtGui    import QPen
 
 import items
 import commands
@@ -91,22 +97,52 @@ class ScaleEditMode(IEditMode):
         
 class RotateEditMode(IEditMode):
 
+    def __init__(self):
+        IEditMode.__init__(self)
 
-    def mouseMoveEvent(self, scene, mouseEvent):
-        oldPos   = mouseEvent.lastScenePos()
-        pos      = mouseEvent.scenePos()
+        self._origin = None
         
-        deltaX = pos.x() - oldPos.x()
+        
+    def mousePressEvent(self, scene, mouseEvent):
+        self._origin = scene.selectionMaster().sceneBoundingRect().center()
+        
+        
+    def mouseMoveEvent(self, scene, mouseEvent):
+        origin = self._origin
+        pos    = convertPositionDeltaToVector(origin, mouseEvent.scenePos())
+        oldPos = convertPositionDeltaToVector(origin, mouseEvent.lastScenePos())
+        
+        angleDelta = (math.atan2(pos.y(), pos.x()) - math.atan2(oldPos.y(), oldPos.x())) 
+        angleDelta =  int(angleDelta * (180 / math.pi)) 
+
         for item in scene.selectedItems():
-            rotation = item.rotation() + int(deltaX)
-            item.setRotation(rotation)    
-    
-    
+            item.setRotation(item.rotation() +  angleDelta)
+
+
     def mouseReleaseEvent(self, scene, mouseEvent):
+        scene.invalidate(layers=scene.ForegroundLayer)
         scene.exitEditMode()
     
+    
+    def drawForeground(self, scene, painter, rect):
+        origin   = self._origin
 
+        painter.drawLine(origin, scene.mousePosition())
+        painter.drawPoint(origin)
+        
+        scaleFactor = painter.transform().m11() # scale to match zoom 
+        x,y         = scene.mousePosition().toTuple()
+        width       = 8  / scaleFactor
+        pen         = QPen()
+        
+        pen.setColor(Qt.black)
+        pen.setCapStyle(Qt.RoundCap)
+        pen.setWidthF(width)        
+        painter.setPen(pen)
 
+        painter.drawPoint(x,y)
+        painter.drawPoint(origin)
+    
     
 class MoveEditMode(IEditMode): # Do nothing here, movement is handled by QGraphicsScene
     
@@ -167,4 +203,9 @@ class PixmapDropMode(IEditMode):
 
         painter.drawPixmap(pos, pixmap)
         
+        
+        
+        
+def convertPositionDeltaToVector(origin, pos):
+    return QVector2D(pos - origin)
             

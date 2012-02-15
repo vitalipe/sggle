@@ -53,7 +53,16 @@ class LayeredGraphicsScene(QGraphicsScene):
         self.selectionChanged.connect(self._updateSelectionMaster)
         self.selectionChanged.connect(self._updateSelectionRect)
         self.sceneRectChanged.connect(lambda r: self._buildGridLines(r))
+    
             
+    def isShowGrid(self):
+        return self._showGrid
+    
+    
+    def setShowGrid(self, show):
+        self._showGrid = show
+        self.invalidate(layers=self.BackgroundLayer)
+        
             
     def rootItem(self): 
         return self._rootItem    

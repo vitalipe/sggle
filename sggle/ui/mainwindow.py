@@ -121,14 +121,34 @@ class MainWindow(QMainWindow):
                   disabled = True, reverseTrigger = False):
         
         displayName = displayName if displayName else name
+        action      = QAction(displayName, self)
         
-        action = QAction(displayName, self)
         action.setDisabled(disabled)
+        
         if callback: action.triggered.connect(callback)
         if trigger:  trigger.connect(action.setEnabled if not reverseTrigger else action.setDisabled)
+                
         self.actions[name] = action
-        
     
+        
+    def addCheckableAction(self, name, callback, enableTrigger, checkTrigger, displayName = None,
+                           disabled = True, reverseTrigger = False, checked = False):
+        
+        displayName    = displayName if displayName else name
+        action         = QAction(displayName, self)
+        enableCallback = action.setEnabled if not reverseTrigger else action.setDisabled
+        
+        action.setDisabled(disabled)
+        action.setCheckable(True)
+        action.setChecked(checked)
+        
+        if callback:       action.triggered.connect(lambda : callback(action.isChecked()))
+        if enableTrigger:  enableTrigger.connect(enableCallback)        
+        if checkTrigger:   checkTrigger.connect(action.setChecked)
+        
+        self.actions[name] = action
+
+        
     def _createActions(self):
        
         sceneGroup      = self.sceneGroup
@@ -248,7 +268,14 @@ class MainWindow(QMainWindow):
                        viewController.centerOnOrigin,
                        viewController.canCenterOnOriginChanged,
                        "Goto Origin")
-
+        
+        self.addCheckableAction("view-grid-show",
+                                viewController.setShowGrid,
+                                fileController.sceneAvailableChanged,
+                                viewController.showingGridChanged,
+                                "Show Grid"
+                                )
+        
         self.addAction("scene-new", 
                        fileController.newScene,
                        None,
@@ -397,6 +424,9 @@ class MainWindow(QMainWindow):
         viewMenu.addSeparator()
         viewMenu.addAction(actions["view-center-selection"])
         viewMenu.addAction(actions["view-center-origin"])
+        viewMenu.addSeparator()
+        viewMenu.addAction(actions["view-grid-show"])
+
 
         # Help menu
         helpMenu = QMenu("&Help", self) 

@@ -20,6 +20,9 @@ class IEditMode(object):
     def mouseReleaseEvent(self,  scene, mouseEvent):
         pass
     
+    def mouseDoubleClickEvent(self, scene, mouseEvent):
+        pass
+    
     def mouseMoveEvent(self, scene, mouseEvent):
         pass
     
@@ -43,15 +46,41 @@ class IEditMode(object):
         
 class NoEditMode(IEditMode):
     
-    
-    def mousePressEvent(self, scene, mouseEvent):    
-        
-        itemUnderMouse = scene.itemAt(mouseEvent.scenePos())
-        if itemUnderMouse and itemUnderMouse.isSelected():
+    def mouseDoubleClickEvent(self, scene, mouseEvent):
+        if  mouseEvent.modifiers() & Qt.ControlModifier:
+            return # do nothing when ctrl is pressed
+        else:
+            scene.clearSelection()
+            itemUnderMouse = self.activeItemAt(scene, mouseEvent.scenePos())
+            if itemUnderMouse:
+                itemUnderMouse.setSelected(True)
+             
 
-            if mouseEvent.button() == Qt.LeftButton: 
-                scene.enterEditMode(scene.MoveEditMode)
-                scene.editMode().mousePressEvent(scene, mouseEvent)
+    def mousePressEvent(self, scene, mouseEvent):    
+        itemUnderMouse      = self.activeItemAt(scene, mouseEvent.scenePos())
+        insideSelectionRect = scene.selectionRect().contains(mouseEvent.scenePos())
+        controlMode         = (mouseEvent.modifiers() & Qt.ControlModifier)                               
+        
+        # handle selection
+        if mouseEvent.button() == Qt.LeftButton:
+            if  not insideSelectionRect and not controlMode:
+                scene.clearSelection()
+                
+            if itemUnderMouse:
+                    if not insideSelectionRect or controlMode:
+                        itemUnderMouse.setSelected(not itemUnderMouse.isSelected())
+
+        if itemUnderMouse and itemUnderMouse.isSelected():
+                    scene.setSelectionMaster(itemUnderMouse)     
+
+
+        # enter edit mode
+        if len(scene.selectedItems()) > 0 and not controlMode:
+
+            if mouseEvent.button() == Qt.LeftButton:
+                if insideSelectionRect: 
+                    scene.enterEditMode(scene.MoveEditMode)
+                    scene.editMode().mousePressEvent(scene, mouseEvent)
                 
             elif  mouseEvent.button() == Qt.RightButton:
                 scene.enterEditMode(scene.RotateEditMode)
@@ -65,7 +94,12 @@ class NoEditMode(IEditMode):
     def dragEnterEvent(self, scene, event):
         scene.enterEditMode(scene.PixmapDropMode)
         scene.PixmapDropMode.dragEnterEvent(scene, event)
+    
         
+    def activeItemAt(self, scene, pos):
+        item = scene.itemAt(pos)        
+        return item if (item and item.flags() & item.ItemIsSelectable) else None
+
     def __nonzero__(self): # allows me to do: if scene.editMode() ...
         return False
     
@@ -144,9 +178,22 @@ class RotateEditMode(IEditMode):
         painter.drawPoint(origin)
     
     
-class MoveEditMode(IEditMode): # Do nothing here, movement is handled by QGraphicsScene
+    
+    
+class MoveEditMode(IEditMode): 
+    
+    def mousePressEvent(self, scene, mouseEvent):
+        scene.views()[0].setCursor(Qt.DragMoveCursor)
+    
+    def mouseMoveEvent(self, scene, mouseEvent):
+        posDelta = mouseEvent.scenePos() - mouseEvent.lastScenePos()
+        
+        for item in scene.selectedItems():
+            item.setPos(item.pos() + posDelta)
+            
     
     def mouseReleaseEvent(self, scene, mouseEvent):
+        scene.views()[0].setCursor(Qt.ArrowCursor)
         scene.exitEditMode()
 
 

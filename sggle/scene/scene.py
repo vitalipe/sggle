@@ -305,13 +305,11 @@ class LayeredGraphicsScene(QGraphicsScene):
         
         
     def _activateItem(self, item):
-        item.setFlag(QGraphicsItem.ItemIsMovable            , True)
         item.setFlag(QGraphicsItem.ItemIsSelectable         , True)
         item.setFlag(QGraphicsItem.ItemSendsGeometryChanges , True)
     
     
     def _deactivateItem(self, item):
-        item.setFlag(QGraphicsItem.ItemIsMovable            , False)
         item.setFlag(QGraphicsItem.ItemIsSelectable         , False)
         item.setFlag(QGraphicsItem.ItemSendsGeometryChanges , False)
         
@@ -392,13 +390,16 @@ class EditableScene(LayeredGraphicsScene):
 
         
     def mousePressEvent(self, mouseEvent):
-        QGraphicsScene.mousePressEvent(self, mouseEvent) # Handle selection first
         self.editMode().mousePressEvent(self, mouseEvent)
+
             
-        
     def mouseReleaseEvent(self,  mouseEvent):
         self.editMode().mouseReleaseEvent(self, mouseEvent)        
-        return QGraphicsScene.mouseReleaseEvent(self, mouseEvent)
+
+    
+    
+    def mouseDoubleClickEvent(self, mouseEvent):
+        self.editMode().mouseDoubleClickEvent(self, mouseEvent)
     
     
     def mouseMoveEvent(self, mouseEvent):
@@ -422,7 +423,7 @@ class EditableScene(LayeredGraphicsScene):
     
     def dragLeaveEvent(self, event):
         self.editMode().dragLeaveEvent(self, event)
-          
+    
           
     def drawForeground(self, painter, rect):
         self.editMode().drawForeground(self, painter, rect)

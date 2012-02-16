@@ -83,6 +83,9 @@ class TextureItem(SceneItem, QGraphicsPixmapItem):
         SceneItem.__init__(self)
         
         self.setTransformationMode(Qt.SmoothTransformation)
+        
+        self._xFlipped = False
+        self._yFlipped = False
 
        
     def flipX(self, flip):
@@ -91,9 +94,16 @@ class TextureItem(SceneItem, QGraphicsPixmapItem):
             return
         
         x,y   = self.transformOriginPoint().toTuple()
-        xFlip = -1 if flip else 1
-        yFlip = -1 if self.yFlipped() else 1 
-        self.setTransform(QTransform().translate(x, y).scale(xFlip,yFlip).translate(-x, -y))
+        t     = self.transform()
+        
+        t.translate(x, y)
+        t.setMatrix(t.m11()* (-1), t.m12(), t.m13(), 
+                    t.m21(), t.m22() , t.m23(), 
+                    t.m31(), t.m32(), t.m33())
+        t.translate(-x, -y)
+        
+        self.setTransform(t)
+        self._xFlipped = not self._xFlipped
         
         self.itemChange(TextureItem.ItemXFlipHasChanged, flip)
     
@@ -104,26 +114,39 @@ class TextureItem(SceneItem, QGraphicsPixmapItem):
             return
               
         x,y   = self.transformOriginPoint().toTuple()
-        xFlip = -1 if self.xFlipped() else 1
-        yFlip = -1 if flip else 1
-        self.setTransform(QTransform().translate(x, y).scale(xFlip,yFlip).translate(-x, -y))
+        t     = self.transform()
+        
+        t.translate(x, y)
+        t.setMatrix(t.m11(), t.m12(), t.m13(), 
+                    t.m21(), t.m22() * (-1), t.m23(), 
+                    t.m31(), t.m32(), t.m33())
+        t.translate(-x, -y)
+
+        self.setTransform(t)
+        self._yFlipped = not self._yFlipped
         
         self.itemChange(TextureItem.ItemYFlipHasChanged, flip)
 
-    
+
     def xFlipped(self):
-        return False if self.transform().m11() > 0 else True
-    
+        return self._xFlipped
+        
     
     def yFlipped(self):
-        return False if self.transform().m22() > 0 else True
-    
+        return self._yFlipped
+ 
            
     def setPixmap(self, pixmap): 
-        QGraphicsPixmapItem.setPixmap(self, pixmap) 
-        self.setTransformOriginPoint(self.pixmap().width()/2 , self.pixmap().height()/2)   
+        QGraphicsPixmapItem.setPixmap(self, pixmap)
+        self._adjustOrigin()
 
 
+    def _adjustOrigin(self): # translate to center
+        center = self.boundingRect().center()
+        self.setTransform(self.transform().translate(-1 * center.x(), -1 * center.y()))
+        self.setTransformOriginPoint(center.x() , center.y())   
+       
+        
     def _createBuiltinProperties(self):
         self._addProperty(newBuiltinProperty("name"     , self, "item"))
         self._addProperty(newBuiltinProperty("position" , self, QPointF(0,0)), QGraphicsItem.ItemPositionChange)

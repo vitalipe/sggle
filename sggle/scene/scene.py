@@ -433,6 +433,7 @@ class EditableScene(LayeredGraphicsScene):
     
     def mouseMoveEvent(self, mouseEvent):
         self._mousePosition = mouseEvent.scenePos()
+        print mouseEvent.scenePos()
         
         self.editMode().mouseMoveEvent(self, mouseEvent)
         return LayeredGraphicsScene.mouseMoveEvent(self, mouseEvent)

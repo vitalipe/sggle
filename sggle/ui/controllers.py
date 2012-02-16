@@ -594,7 +594,8 @@ class ViewController(BaseController):
     canResetZoomChanged              = Signal(bool)
     canCenterOnSeletionMasterChanged = Signal(bool)
     canCenterOnOriginChanged         = Signal(bool)
-    showingGridChanged               = Signal(bool)
+    showGridChanged                  = Signal(bool)
+    snap2GridChanged                 = Signal(bool)
 
     zoomChanged                      = Signal(int, int)
     
@@ -629,15 +630,19 @@ class ViewController(BaseController):
             self.canResetZoomChanged.emit(self.zoomPercentage() != 100)
             self.canCenterOnOriginChanged.emit(True)
             self.canCenterOnSeletionMasterChanged.emit(len(self._scene().selectedItems()) > 0)  
-            self.showingGridChanged.emit(self._scene().isShowGrid())  
+            self.showGridChanged.emit(self._scene().isShowGrid())  
+            self.snap2GridChanged.emit(self._scene().isSnap2Grid())  
+
         else:
             self.canCenterOnOriginChanged.emit(False)
             self.canCenterOnSeletionMasterChanged.emit(False)
             self.canZoomInChanged.emit(False)
             self.canZoomOutChanged.emit(False)    
             self.canResetZoomChanged.emit(False)
-            self.showingGridChanged.emit(False)  
-
+            self.showGridChanged.emit(False)
+            self.snap2GridChanged.emit(False)  
+ 
+            
 
     
     def _handleSceneWasAdded(self, index):
@@ -722,7 +727,13 @@ class ViewController(BaseController):
     
     
     def setShowGrid(self, show):
-        print show
-        self._scene().setShowGrid(show)    
+        self._scene().setShowGrid(show)
+        
+        
+    def setSnap2Grid(self, snap):
+        self._scene().setSnap2Grid(snap)
+
+        
+         
 
     

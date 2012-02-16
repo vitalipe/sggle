@@ -187,14 +187,27 @@ class MoveEditMode(IEditMode):
     
     def mouseMoveEvent(self, scene, mouseEvent):
         posDelta = mouseEvent.scenePos() - mouseEvent.lastScenePos()
-        
+  
         for item in scene.selectedItems():
             item.setPos(item.pos() + posDelta)
-            
+        
     
     def mouseReleaseEvent(self, scene, mouseEvent):
+        if scene.isSnap2Grid():
+            self._snap2Grid(scene)
+        
         scene.views()[0].setCursor(Qt.ArrowCursor)
         scene.exitEditMode()
+
+
+    def _snap2Grid(self, scene):
+        size = scene.gridSize()
+        
+        for item in scene.selectedItems():
+            pos  = item.pos()
+            pos.setX(size * int((abs(pos.x())+(size/2)) / size) * (-1 if pos.x() < 0 else 1) )
+            pos.setY(size * int((abs(pos.y())+(size/2)) / size) * (-1 if pos.y() < 0 else 1) )
+            item.setPos(pos)
 
 
 

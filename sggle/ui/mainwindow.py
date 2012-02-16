@@ -272,8 +272,15 @@ class MainWindow(QMainWindow):
         self.addCheckableAction("view-grid-show",
                                 viewController.setShowGrid,
                                 fileController.sceneAvailableChanged,
-                                viewController.showingGridChanged,
+                                viewController.showGridChanged,
                                 "Show Grid"
+                                )
+        
+        self.addCheckableAction("view-grid-snap",
+                                viewController.setSnap2Grid,
+                                fileController.sceneAvailableChanged,
+                                viewController.snap2GridChanged,
+                                "Snap To Grid"
                                 )
         
         self.addAction("scene-new", 
@@ -426,6 +433,8 @@ class MainWindow(QMainWindow):
         viewMenu.addAction(actions["view-center-origin"])
         viewMenu.addSeparator()
         viewMenu.addAction(actions["view-grid-show"])
+        viewMenu.addAction(actions["view-grid-snap"])
+
 
 
         # Help menu

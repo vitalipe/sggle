@@ -48,6 +48,7 @@ class LayeredGraphicsScene(QGraphicsScene):
         self._showGrid  = True
         self._gridSize  = 64
         self._gridColor = QColor(96, 125,  133)
+        self._snap2Grid = False
         
         QGraphicsScene.addItem(self, self._rootItem)
         self.selectionChanged.connect(self._updateSelectionMaster)
@@ -62,10 +63,29 @@ class LayeredGraphicsScene(QGraphicsScene):
     def setShowGrid(self, show):
         self._showGrid = show
         self.invalidate(layers=self.BackgroundLayer)
+    
+    
+    def isSnap2Grid(self):
+        return self._snap2Grid
+    
+    
+    def setSnap2Grid(self, snap):
+        self._snap2Grid = snap
+    
+    
+    def gridSize(self):
+        return self._gridSize
+    
+    
+    def setGridSize(self, size):
+        self._gridSize = size
+        self._buildGridLines(self.sceneRect())
+        self.invalidate(layers=self.BackgroundLayer)
         
             
     def rootItem(self): 
         return self._rootItem    
+    
                
     def layers(self):
         return self._rootItem.childItems()

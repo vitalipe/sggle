@@ -255,8 +255,7 @@ class PixmapDropMode(IEditMode):
     def dropEvent(self, scene, event):
         scene.invalidate(layers=scene.ForegroundLayer)
 
-        x    = self.pos.x()
-        y    = self.pos.y()
+        x,y = event.scenePos().toTuple()
         scene.undoStack().push(commands.newAddItemCommand(scene, self.item.copy(), x, y))
         
         scene.exitEditMode()

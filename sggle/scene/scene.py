@@ -27,35 +27,26 @@ from sggle.resources import loader
 from editmodes       import  *
 
 
-class LayeredGraphicsScene(QGraphicsScene):
+
+
+class DecoratedGraphicsScene(QGraphicsScene):
     
-    selectionMasterChanged      = Signal(object)
-    activeLayerChanged          = Signal(object)
-    listOfLayersChanged         = Signal(list)   # @param - list of scene layers
-    listOfItemsChanged          = Signal(object) # @param - parent object
-        
-        
     def __init__(self,):
-        QGraphicsScene.__init__(self)
+        super(DecoratedGraphicsScene,self).__init__()
         
-        self._rootItem        = items.newRootItem()
-        self._activeLayer     = None
-        self._selectionMaster = None
-        self._selectionRect   = QRectF()
-        
-        #FIXME: use QSettings
+        #FIXME: refactor out and use QSettings
         self._bgColor   = QColor(83,113,121)
+        self._gridColor = QColor(96, 125,  133)
+            
         self._showGrid  = True
         self._gridSize  = 64
-        self._gridColor = QColor(96, 125,  133)
-        self._snap2Grid = False
         
-        QGraphicsScene.addItem(self, self._rootItem)
-        self.selectionChanged.connect(self._updateSelectionMaster)
+        self._selectionRect   = QRectF()
+        
         self.selectionChanged.connect(self._updateSelectionRect)
         self.sceneRectChanged.connect(lambda r: self._buildGridLines(r))
-    
-            
+
+
     def isShowGrid(self):
         return self._showGrid
     
@@ -63,14 +54,6 @@ class LayeredGraphicsScene(QGraphicsScene):
     def setShowGrid(self, show):
         self._showGrid = show
         self.invalidate(layers=self.BackgroundLayer)
-    
-    
-    def isSnap2Grid(self):
-        return self._snap2Grid
-    
-    
-    def setSnap2Grid(self, snap):
-        self._snap2Grid = snap
     
     
     def gridSize(self):
@@ -81,150 +64,26 @@ class LayeredGraphicsScene(QGraphicsScene):
         self._gridSize = size
         self._buildGridLines(self.sceneRect())
         self.invalidate(layers=self.BackgroundLayer)
-        
-            
-    def rootItem(self): 
-        return self._rootItem    
-    
-               
-    def layers(self):
-        return self._rootItem.childItems()
-    
-
-    def addLayer(self, layer):
-        assert layer not in self.layers()
-        
-        layers = self.layers()
-        if len(layers) > 0:   
-            z = layers[-1].zValue() + 1
-        else:
-            z = 0
-        layer.setZValue(z)
-                
-        layer.setParentItem(self._rootItem)
-        self.listOfLayersChanged.emit(self.layers())
-        self.setActiveLayer(layer)
-
-    
-    def removeLayer(self, layer):
-        assert layer in self.layers()
-        
-        setNewActiveLayer = False
-        if layer is self.activeLayer():
-            self.setActiveLayer(None)
-            setNewActiveLayer = True
-
-        for item in layer.childItems():
-            self.removeItem(item)
-        
-        layer.setParentItem(None)
-        self.listOfLayersChanged.emit(self.layers())
-        
-        if setNewActiveLayer and self.layers():
-            self.setActiveLayer(self.layers()[-1])
-            
-         
-    def addItem(self, item, layer = None, aX = 0, aY = 0):
-        assert item not in self.items()
-        assert layer in self.layers() or self.activeLayer()
-        
-        layer = layer if layer else self.activeLayer()
-  
-        # Z
-        layerItems = layer.childItems()
-        if layerItems:   
-            z = layerItems[-1].zValue() + 1
-        else:
-            z = 0
-        
-        item.setParentItem(layer)
-        
-        item.setValueDirectly("position", x=aX, y=aY)
-        item.setZValue(z)
-        
-        if layer is self.activeLayer():
-            self._activateItem(item)
-            item.setSelected(True)
-        
-        
-        
-        
-    def removeItem(self, item):
-        assert item in self.items()
-        
-        for child in item.childItems():
-            self.removeItem(child)
-        
-        self._deactivateItem(item)
-        QGraphicsScene.removeItem(self, item)
-        
-    
-    def activeLayer(self):
-        return self._activeLayer
-    
-    
-    def setActiveLayer(self, newActiveLayer):
-        assert newActiveLayer is None or newActiveLayer in self.layers()
-        
-        if newActiveLayer is not self.activeLayer():
-            oldActive         = self.activeLayer()
-            
-            if oldActive is not None:
-                self._deactivateLayerItems(oldActive)
-                
-            self._activeLayer = newActiveLayer
-                
-            if newActiveLayer is not None:
-                self._activateLayerItems(newActiveLayer)
-                            
-            # the order of signals is important here 
-            self.setSelectionMaster(None) 
-            self.activeLayerChanged.emit(newActiveLayer)
 
 
-    def adjustParallax(self, center):
-        x,y = center.toTuple()
-        for layer in self.layers():
-            layer._adjustParallax(x,y)
-
-        
-    def selectionMaster(self):
-        return self._selectionMaster
-   
-    
-    def setSelectionMaster(self, item):
-        assert item is None or self.activeLayer() is None or item in self.activeLayer().childItems()
-
-        if self.activeLayer() is None:
-            return # Can happen with multiple views
-        
-        oldSelectionMaster = self.selectionMaster()
-        if item is not oldSelectionMaster:
-            self._selectionMaster = item
-            self.selectionMasterChanged.emit(item)
+    def selectionRect(self):
+        return self._selectionRect
 
 
     def drawBackground(self, painter, rect):
-        QGraphicsScene.drawBackground(self, painter, rect)
+        super(DecoratedGraphicsScene,self).drawBackground(painter, rect)
+        
         painter.fillRect(rect, self._bgColor) 
         if self._showGrid:
             self._drawGrid(painter, rect)
             
-    
-    def selectionOrigin(self):
-        return self._selectionOrigin
-    
-    
-    def selectionRect(self):
-        return self._selectionRect
-            
-            
+
     def drawForeground(self, painter, rect):
         if not self.selectionRect().isNull():        
             self._drawSelectionFrame(painter)
-      
-        
-        # << Helper methods >> #
+
+
+    # << Helper methods >> #
 
     def _updateSelectionRect(self):
         if len(self.selectedItems()) == 0: # clear selection rect
@@ -321,6 +180,148 @@ class LayeredGraphicsScene(QGraphicsScene):
         
         self._gridLines = lines
         
+
+class LayeredGraphicsScene(DecoratedGraphicsScene):
+    
+    selectionMasterChanged      = Signal(object)
+    activeLayerChanged          = Signal(object)
+    listOfLayersChanged         = Signal(list)   # @param - list of scene layers
+    listOfItemsChanged          = Signal(object) # @param - parent object
+        
+        
+    def __init__(self,):
+        super(LayeredGraphicsScene, self).__init__()
+        
+        self._rootItem        = items.newRootItem()
+        self._activeLayer     = None
+        self._selectionMaster = None
+        
+        
+        super(LayeredGraphicsScene, self).addItem(self._rootItem)
+        self.selectionChanged.connect(self._updateSelectionMaster)
+    
+            
+    def rootItem(self): 
+        return self._rootItem    
+    
+               
+    def layers(self):
+        return self._rootItem.childItems()
+    
+
+    def addLayer(self, layer):
+        assert layer not in self.layers()
+        
+        layers = self.layers()
+        if len(layers) > 0:   
+            z = layers[-1].zValue() + 1
+        else:
+            z = 0
+        layer.setZValue(z)
+                
+        layer.setParentItem(self._rootItem)
+        self.listOfLayersChanged.emit(self.layers())
+        self.setActiveLayer(layer)
+
+    
+    def removeLayer(self, layer):
+        assert layer in self.layers()
+        
+        setNewActiveLayer = False
+        if layer is self.activeLayer():
+            self.setActiveLayer(None)
+            setNewActiveLayer = True
+
+        for item in layer.childItems():
+            self.removeItem(item)
+        
+        layer.setParentItem(None)
+        self.listOfLayersChanged.emit(self.layers())
+        
+        if setNewActiveLayer and self.layers():
+            self.setActiveLayer(self.layers()[-1])
+            
+         
+    def addItem(self, item, layer = None, aX = 0, aY = 0):
+        assert item not in self.items()
+        assert layer in self.layers() or self.activeLayer()
+        
+        layer = layer if layer else self.activeLayer()
+  
+        # Z
+        layerItems = layer.childItems()
+        if layerItems:   
+            z = layerItems[-1].zValue() + 1
+        else:
+            z = 0
+        
+        item.setParentItem(layer)
+        
+        item.setValueDirectly("position", x=aX, y=aY)
+        item.setZValue(z)
+        
+        if layer is self.activeLayer():
+            self._activateItem(item)
+            item.setSelected(True)
+        
+        
+    def removeItem(self, item):
+        assert item in self.items()
+        
+        for child in item.childItems():
+            self.removeItem(child)
+        
+        self._deactivateItem(item)
+        super(LayeredGraphicsScene,self).removeItem(self, item)
+        
+    
+    def activeLayer(self):
+        return self._activeLayer
+    
+    
+    def setActiveLayer(self, newActiveLayer):
+        assert newActiveLayer is None or newActiveLayer in self.layers()
+        
+        if newActiveLayer is not self.activeLayer():
+            oldActive         = self.activeLayer()
+            
+            if oldActive is not None:
+                self._deactivateLayerItems(oldActive)
+                
+            self._activeLayer = newActiveLayer
+                
+            if newActiveLayer is not None:
+                self._activateLayerItems(newActiveLayer)
+                            
+            # the order of signals is important here 
+            self.setSelectionMaster(None) 
+            self.activeLayerChanged.emit(newActiveLayer)
+
+
+    def adjustParallax(self, center):
+        x,y = center.toTuple()
+        for layer in self.layers():
+            layer._adjustParallax(x,y)
+
+        
+    def selectionMaster(self):
+        return self._selectionMaster
+   
+    
+    def setSelectionMaster(self, item):
+        assert item is None or self.activeLayer() is None or item in self.activeLayer().childItems()
+
+        if self.activeLayer() is None:
+            return # Can happen with multiple views
+        
+        oldSelectionMaster = self.selectionMaster()
+        if item is not oldSelectionMaster:
+            self._selectionMaster = item
+            self.selectionMasterChanged.emit(item)
+
+              
+        # << Helper methods >> #
+
         
     def _activateLayerItems(self, layer):
         
@@ -381,9 +382,18 @@ class EditableScene(LayeredGraphicsScene):
         self._editModeCmdBatch = None
         self._mousePosition    = QPointF()
         self._undoStack        = undoStack
-        
+        self._snap2Grid        = False
+
         self.itemPropertyWasChanged.connect(lambda i,p: self._updateSelectionRect() if
                                             p in ["position", "rotation", "scale"] else None)
+        
+        
+    def isSnap2Grid(self):
+        return self._snap2Grid
+
+    
+    def setSnap2Grid(self, snap):
+        self._snap2Grid = snap  
         
         
     def mousePosition(self):
@@ -433,7 +443,6 @@ class EditableScene(LayeredGraphicsScene):
     
     def mouseMoveEvent(self, mouseEvent):
         self._mousePosition = mouseEvent.scenePos()
-        print mouseEvent.scenePos()
         
         self.editMode().mouseMoveEvent(self, mouseEvent)
         return LayeredGraphicsScene.mouseMoveEvent(self, mouseEvent)
@@ -473,10 +482,10 @@ class EditableScene(LayeredGraphicsScene):
     def undoStack(self):
         return self._undoStack
     
+    
     def adjustParallax(self, center):
-        if self.editMode():
-            return
-        LayeredGraphicsScene.adjustParallax(self, center)
+        if not self.editMode():
+            LayeredGraphicsScene.adjustParallax(self, center)
 
             
             

@@ -200,13 +200,18 @@ class MoveEditMode(IEditMode):
 
 
     def _snap2Grid(self, scene):
-        size = scene.gridSize()
+        size    = int(scene.gridSize())
+        x,y     = scene.selectionMaster().pos().toTuple()
+        x, y    = int(x), int(y)
         
+        xOnGrid = size * ((abs(x)+(size/2)) / size) * (-1 if x < 0 else 1)
+        yOnGrid = size * ((abs(y)+(size/2)) / size) * (-1 if y < 0 else 1)
+        
+        xOffset, yOffset  = xOnGrid -x, yOnGrid - y 
+
         for item in scene.selectedItems():
-            pos  = item.pos()
-            pos.setX(size * int((abs(pos.x())+(size/2)) / size) * (-1 if pos.x() < 0 else 1) )
-            pos.setY(size * int((abs(pos.y())+(size/2)) / size) * (-1 if pos.y() < 0 else 1) )
-            item.setPos(pos)
+            item.setX(int(item.x()) + xOffset)
+            item.setY(int(item.y()) + yOffset)
 
 
 

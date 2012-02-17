@@ -272,7 +272,7 @@ class LayeredGraphicsScene(DecoratedGraphicsScene):
             self.removeItem(child)
         
         self._deactivateItem(item)
-        super(LayeredGraphicsScene,self).removeItem(self, item)
+        super(LayeredGraphicsScene,self).removeItem(item)
         
     
     def activeLayer(self):

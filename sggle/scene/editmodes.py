@@ -138,7 +138,7 @@ class RotateEditMode(IEditMode):
         
         
     def mousePressEvent(self, scene, mouseEvent):
-        self._origin = scene.selectionMaster().sceneBoundingRect().center()
+        self._origin = scene.selectionMaster().pos()
         
         
     def mouseMoveEvent(self, scene, mouseEvent):
@@ -160,10 +160,9 @@ class RotateEditMode(IEditMode):
     
     def drawForeground(self, scene, painter, rect):
         origin   = self._origin
-
         painter.drawLine(origin, scene.mousePosition())
-        painter.drawPoint(origin)
         
+        # draw 2 circled points (mouse position and origin)
         scaleFactor = painter.transform().m11() # scale to match zoom 
         x,y         = scene.mousePosition().toTuple()
         width       = 8  / scaleFactor

@@ -150,7 +150,10 @@ class RotateEditMode(IEditMode):
         angleDelta =  int(angleDelta * (180 / math.pi)) 
 
         for item in scene.selectedItems():
-            item.setRotation(item.rotation() +  angleDelta)
+            if item.xFlipped() != item.yFlipped(): # xor
+                item.setRotation(item.rotation() -  angleDelta)
+            else:
+                item.setRotation(item.rotation() +  angleDelta)
 
 
     def mouseReleaseEvent(self, scene, mouseEvent):

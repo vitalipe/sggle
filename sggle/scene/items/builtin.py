@@ -16,14 +16,15 @@ from PySide.QtGui  import QGraphicsItem
 from PySide.QtGui  import QTransform       
 
 from properties import newBuiltinProperty
+from item import BaseItem
 from item import SceneItem
 
 
-class SceneRoot(SceneItem, QGraphicsPixmapItem):
+class SceneRoot(BaseItem, QGraphicsPixmapItem):
     
     def __init__(self):
         QGraphicsPixmapItem.__init__(self)
-        SceneItem.__init__(self)
+        BaseItem.__init__(self)
         
         
     def _createBuiltinProperties(self):
@@ -48,11 +49,11 @@ class SceneRoot(SceneItem, QGraphicsPixmapItem):
 
         
         
-class Layer(SceneItem, QGraphicsPixmapItem):
+class Layer(BaseItem, QGraphicsPixmapItem):
     
     def __init__(self):
         QGraphicsPixmapItem.__init__(self)
-        SceneItem.__init__(self)
+        BaseItem.__init__(self)
     
     
     def _createBuiltinProperties(self):
@@ -71,12 +72,7 @@ class Layer(SceneItem, QGraphicsPixmapItem):
 
         
         
-class TextureItem(SceneItem, QGraphicsPixmapItem):
-    
-    ItemXFlipChange     = 100
-    ItemXFlipHasChanged = 101
-    ItemYFlipChange     = 102
-    ItemYFlipHasChanged = 103
+class SpriteItem(SceneItem, QGraphicsPixmapItem):
     
     def __init__(self):
         QGraphicsPixmapItem.__init__(self)
@@ -84,77 +80,14 @@ class TextureItem(SceneItem, QGraphicsPixmapItem):
         
         self.setTransformationMode(Qt.SmoothTransformation)
         
-        self._xFlipped = False
-        self._yFlipped = False
-
-       
-    def flipX(self, flip):
-        flip    = self.itemChange(TextureItem.ItemXFlipChange, flip)
-        if flip == self.xFlipped():
-            return
-        
-        x,y   = self.transformOriginPoint().toTuple()
-        t     = self.transform()
-        
-        t.translate(x, y)
-        t.setMatrix(t.m11()* (-1), t.m12(), t.m13(), 
-                    t.m21(), t.m22() , t.m23(), 
-                    t.m31(), t.m32(), t.m33())
-        t.translate(-x, -y)
-        
-        self.setTransform(t)
-        self._xFlipped = not self._xFlipped
-        
-        self.itemChange(TextureItem.ItemXFlipHasChanged, flip)
-    
-    
-    def flipY(self, flip):
-        flip    = self.itemChange(TextureItem.ItemYFlipChange, flip)
-        if flip == self.yFlipped():
-            return
-              
-        x,y   = self.transformOriginPoint().toTuple()
-        t     = self.transform()
-        
-        t.translate(x, y)
-        t.setMatrix(t.m11(), t.m12(), t.m13(), 
-                    t.m21(), t.m22() * (-1), t.m23(), 
-                    t.m31(), t.m32(), t.m33())
-        t.translate(-x, -y)
-
-        self.setTransform(t)
-        self._yFlipped = not self._yFlipped
-        
-        self.itemChange(TextureItem.ItemYFlipHasChanged, flip)
-
-
-    def xFlipped(self):
-        return self._xFlipped
-        
-    
-    def yFlipped(self):
-        return self._yFlipped
- 
-           
+   
     def setPixmap(self, pixmap): 
         QGraphicsPixmapItem.setPixmap(self, pixmap)
         self._adjustOrigin()
 
-
-    def _adjustOrigin(self): # translate to center
-        center = self.boundingRect().center()
-        self.setTransform(self.transform().translate(-1 * center.x(), -1 * center.y()))
-        self.setTransformOriginPoint(center.x() , center.y())   
-       
         
     def _createBuiltinProperties(self):
-        self._addProperty(newBuiltinProperty("name"     , self, "item"))
-        self._addProperty(newBuiltinProperty("position" , self, QPointF(0,0)), QGraphicsItem.ItemPositionChange)
-        self._addProperty(newBuiltinProperty("rotation" , self,  0),           QGraphicsItem.ItemRotationChange)
-        self._addProperty(newBuiltinProperty("scale"    , self,  1.0),         QGraphicsItem.ItemScaleChange)
-        self._addProperty(newBuiltinProperty("flip_x"   , self,  False),       TextureItem.ItemXFlipChange)
-        self._addProperty(newBuiltinProperty("flip_y"   , self,  False),       TextureItem.ItemYFlipChange)
-        self._addProperty(newBuiltinProperty("opacity"  , self,  1.0),         QGraphicsItem.ItemOpacityChange)
+        SceneItem._createBuiltinProperties(self)
         self._addProperty(newBuiltinProperty("texture"  , self,  None))
 
  

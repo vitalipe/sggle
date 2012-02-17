@@ -7,20 +7,16 @@ Created on Dec 31, 2011
 
 from collections   import OrderedDict
 
+from PySide.QtCore import QPointF
 from PySide.QtGui  import QTransform       
 from PySide.QtGui  import QGraphicsItem
 
-import properties
 
-
-
-    
- 
-    
+from properties import newCustomProperty
+from properties import newBuiltinProperty    
     
 
-
-class SceneItem(object):
+class BaseItem(object):
   
 
     def __init__(self):
@@ -75,7 +71,7 @@ class SceneItem(object):
     
     
     def addCustomProperty(self, key, value = None):
-        property = properties.newCustomProperty(self, key)
+        property = newCustomProperty(self, key)
         self._addProperty(property)
     
     
@@ -192,3 +188,87 @@ class SceneItem(object):
         for p in self._properties.values():
             if p._value is not None:
                 p.setValueDirectly(p._value)
+
+
+
+
+class SceneItem(BaseItem):
+    
+       
+    ItemXFlipChange     = 100
+    ItemXFlipHasChanged = 101
+    ItemYFlipChange     = 102
+    ItemYFlipHasChanged = 103
+    
+    
+    def __init__(self):
+        BaseItem.__init__(self)
+                
+        self._xFlipped = False
+        self._yFlipped = False
+
+       
+    def flipX(self, flip):
+        flip    = self.itemChange(SceneItem.ItemXFlipChange, flip)
+        if flip == self.xFlipped():
+            return
+        
+        x,y   = self.transformOriginPoint().toTuple()
+        t     = self.transform()
+        
+        t.translate(x, y)
+        t.setMatrix(t.m11()* (-1), t.m12(), t.m13(), 
+                    t.m21(), t.m22() , t.m23(), 
+                    t.m31(), t.m32(), t.m33())
+        t.translate(-x, -y)
+        
+        self.setTransform(t)
+        self._xFlipped = not self._xFlipped
+        
+        self.itemChange(SceneItem.ItemXFlipHasChanged, flip)
+    
+    
+    def flipY(self, flip):
+        flip    = self.itemChange(SceneItem.ItemYFlipChange, flip)
+        if flip == self.yFlipped():
+            return
+              
+        x,y   = self.transformOriginPoint().toTuple()
+        t     = self.transform()
+        
+        t.translate(x, y)
+        t.setMatrix(t.m11(), t.m12(), t.m13(), 
+                    t.m21(), t.m22() * (-1), t.m23(), 
+                    t.m31(), t.m32(), t.m33())
+        t.translate(-x, -y)
+
+        self.setTransform(t)
+        self._yFlipped = not self._yFlipped
+        
+        self.itemChange(SceneItem.ItemYFlipHasChanged, flip)
+
+
+    def xFlipped(self):
+        return self._xFlipped
+        
+    
+    def yFlipped(self):
+        return self._yFlipped
+ 
+
+    def _adjustOrigin(self): # translate to center
+        center = self.boundingRect().center()
+        self.setTransform(self.transform().translate(-1 * center.x(), -1 * center.y()))
+        self.setTransformOriginPoint(center.x() , center.y())   
+       
+       
+    def _createBuiltinProperties(self):
+        self._addProperty(newBuiltinProperty("name"     , self, "item"))
+        self._addProperty(newBuiltinProperty("position" , self, QPointF(0,0)), QGraphicsItem.ItemPositionChange)
+        self._addProperty(newBuiltinProperty("rotation" , self,  0),           QGraphicsItem.ItemRotationChange)
+        self._addProperty(newBuiltinProperty("scale"    , self,  1.0),         QGraphicsItem.ItemScaleChange)
+        self._addProperty(newBuiltinProperty("flip_x"   , self,  False),       SceneItem.ItemXFlipChange)
+        self._addProperty(newBuiltinProperty("flip_y"   , self,  False),       SceneItem.ItemYFlipChange)
+        self._addProperty(newBuiltinProperty("opacity"  , self,  1.0),         QGraphicsItem.ItemOpacityChange)
+
+    

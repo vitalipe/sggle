@@ -14,7 +14,7 @@ def newLayerItem():
 
          
 def newPixmapItemFromPath(path):
-    item =  builtin.TextureItem()
+    item =  builtin.SpriteItem()
     item.setValueDirectly("texture", path)
     item.setValueDirectly("name", splitext(basename(path))[0])
 

@@ -31,6 +31,7 @@ from editmodes       import  *
 
 class DecoratedGraphicsScene(QGraphicsScene):
     
+    
     def __init__(self,):
         super(DecoratedGraphicsScene,self).__init__()
         
@@ -67,7 +68,7 @@ class DecoratedGraphicsScene(QGraphicsScene):
 
 
     def selectionRect(self):
-        return self._selectionRect
+        return QRectF(self._selectionRect)
 
 
     def drawBackground(self, painter, rect):
@@ -79,11 +80,43 @@ class DecoratedGraphicsScene(QGraphicsScene):
             
 
     def drawForeground(self, painter, rect):
-        if not self.selectionRect().isNull():        
-            self._drawSelectionFrame(painter)
+        selectedItems = self.selectedItems()
+        if selectedItems:
+            painter.setRenderHint(painter.Antialiasing, True)
+            if len(selectedItems) > 1:
+                self._drawSelectionRectFrame(painter)
+            self._drawItemFrames(painter)
+
 
 
     # << Helper methods >> #
+    
+    def _drawSelectionRectFrame(self, painter):
+        scaleFactor   = painter.transform().m11() # scale to match zoom 
+        rect          = self.selectionRect()
+
+        spacing       = QPointF(15, 15)
+        rect.setTopLeft(rect.topLeft() - spacing)
+        rect.setBottomRight(rect.bottomRight() + spacing)
+        
+        self._drawFrame(painter, rect, Qt.black, scaleFactor)
+        
+        dots = (rect.topLeft(), rect.bottomLeft(), rect.topRight(), rect.bottomRight())
+        self._drawDots(painter, dots, Qt.black, scaleFactor)
+
+    
+    def _drawItemFrames(self, painter):
+        scaleFactor   = painter.transform().m11() # scale to match zoom 
+
+        for item in self.selectedItems():
+            r = item.boundingRect()
+            color = Qt.red if item is self.selectionMaster() else Qt.gray
+            dots     = map(item.mapToScene, (r.topLeft(), r.topRight(),   
+                                             r.bottomLeft(), r.bottomRight())) 
+                
+            self._drawFrame(painter, item.mapToScene(r), color, scaleFactor)
+            self._drawDots(painter, dots, color, scaleFactor)
+    
 
     def _updateSelectionRect(self):
         if len(self.selectedItems()) == 0: # clear selection rect
@@ -91,8 +124,8 @@ class DecoratedGraphicsScene(QGraphicsScene):
             self.invalidate(layers=self.ForegroundLayer)
             return 
         
-        items = self.selectedItems()
-        rect  = self.selectedItems()[0].sceneBoundingRect()
+        items   = self.selectedItems()
+        rect    = self.selectedItems()[0].sceneBoundingRect()
         
         #FIXME: very naive approach... later I should probably
         #       rewrite this, and make use of the BSP Tree... 
@@ -116,32 +149,29 @@ class DecoratedGraphicsScene(QGraphicsScene):
         self._selectionRect = rect
         self.invalidate(layers=self.ForegroundLayer)
         
+            
+    def _drawFrame(self, painter, framePolygon, color, scaleFactor):
         
-    def _drawSelectionFrame(self, painter):
-        selectionRect = self._selectionRect        
-        scaleFactor   = painter.transform().m11() # scale to match zoom 
-        
-        # draw selection frame
         framePen  = QPen()
         framePen.setWidthF(1 / scaleFactor)
-        framePen.setColor(Qt.black)
+        framePen.setColor(color)
         
         painter.setPen(framePen)
-        painter.drawRect(selectionRect)
-        
-        # draw corners
+        painter.drawPolygon(framePolygon)
+       
+       
+    def _drawDots(self, painter, dots, color, scaleFactor): 
         pen = QPen()
-        pen.setColor(Qt.black)
+        
+        pen.setColor(color)
         pen.setCapStyle(Qt.SquareCap)
         pen.setWidthF(6.0 / scaleFactor)
-        
         painter.setPen(pen)    
-        painter.drawPoint(selectionRect.topRight())
-        painter.drawPoint(selectionRect.topLeft())
-        painter.drawPoint(selectionRect.bottomLeft())
-        painter.drawPoint(selectionRect.bottomRight())
         
+        for dot in dots:
+            painter.drawPoint(dot)
         
+            
     def _drawGrid(self, painter, rect):
         color    = self._gridColor
         color2   = QColor(color.red()+20,color.green()+20, color.blue()+20)
@@ -179,6 +209,8 @@ class DecoratedGraphicsScene(QGraphicsScene):
             lines.append(QLine(realLeft, y, realRight, y))
         
         self._gridLines = lines
+
+
         
 
 class LayeredGraphicsScene(DecoratedGraphicsScene):

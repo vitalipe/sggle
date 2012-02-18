@@ -85,7 +85,7 @@ class DecoratedGraphicsScene(QGraphicsScene):
             painter.setRenderHint(painter.Antialiasing, True)
             if len(selectedItems) > 1:
                 self._drawSelectionRectFrame(painter)
-            self._drawItemFrames(painter)
+            self._drawFrameForItems(painter, selectedItems, Qt.gray)
 
 
 
@@ -105,13 +105,12 @@ class DecoratedGraphicsScene(QGraphicsScene):
         self._drawDots(painter, dots, Qt.black, scaleFactor)
 
     
-    def _drawItemFrames(self, painter):
+    def _drawFrameForItems(self, painter, items, color):
         scaleFactor   = painter.transform().m11() # scale to match zoom 
-
-        for item in self.selectedItems():
-            r = item.boundingRect()
-            color = Qt.red if item is self.selectionMaster() else Qt.gray
-            dots     = map(item.mapToScene, (r.topLeft(), r.topRight(),   
+            
+        for item in items:    
+            r    = item.boundingRect()
+            dots = map(item.mapToScene, (r.topLeft(), r.topRight(),   
                                              r.bottomLeft(), r.bottomRight())) 
                 
             self._drawFrame(painter, item.mapToScene(r), color, scaleFactor)
@@ -148,8 +147,8 @@ class DecoratedGraphicsScene(QGraphicsScene):
                 
         self._selectionRect = rect
         self.invalidate(layers=self.ForegroundLayer)
-        
-            
+    
+         
     def _drawFrame(self, painter, framePolygon, color, scaleFactor):
         
         framePen  = QPen()
@@ -351,7 +350,14 @@ class LayeredGraphicsScene(DecoratedGraphicsScene):
             self._selectionMaster = item
             self.selectionMasterChanged.emit(item)
 
-              
+
+    def drawForeground(self, painter, rect):
+        super(LayeredGraphicsScene, self).drawForeground(painter, rect)
+        selectionMaster = self.selectionMaster()
+        if selectionMaster:
+            self._drawFrameForItems(painter, (selectionMaster,), Qt.red)
+        
+             
         # << Helper methods >> #
 
         
@@ -408,7 +414,7 @@ class EditableScene(LayeredGraphicsScene):
     
         
     def __init__(self, undoStack):
-        LayeredGraphicsScene.__init__(self)
+        super(EditableScene, self).__init__()
         
         self._editMode         = EditableScene.NoEditMode
         self._editModeCmdBatch = None
@@ -477,7 +483,7 @@ class EditableScene(LayeredGraphicsScene):
         self._mousePosition = mouseEvent.scenePos()
         
         self.editMode().mouseMoveEvent(self, mouseEvent)
-        return LayeredGraphicsScene.mouseMoveEvent(self, mouseEvent)
+        return super(EditableScene,self).mouseMoveEvent(mouseEvent)
         
                           
     def dragEnterEvent(self, event):
@@ -517,7 +523,7 @@ class EditableScene(LayeredGraphicsScene):
     
     def adjustParallax(self, center):
         if not self.editMode():
-            LayeredGraphicsScene.adjustParallax(self, center)
+            super(EditableScene, self).adjustParallax(center)
 
             
             

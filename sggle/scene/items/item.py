@@ -10,7 +10,7 @@ from collections   import OrderedDict
 from PySide.QtCore import QPointF
 from PySide.QtGui  import QTransform       
 from PySide.QtGui  import QGraphicsItem
-
+from PySide.QtGui  import QStyle
 
 from properties import newCustomProperty
 from properties import newBuiltinProperty    
@@ -255,7 +255,14 @@ class SceneItem(BaseItem):
     def yFlipped(self):
         return self._yFlipped
  
-
+ 
+    def paint(self, painter, option, widget = None):
+        selected = True if (option.state  &  QStyle.State_Selected) else False
+        option.state &= (~QStyle.State_Selected)  # disable default frame                                          
+        
+        super(SceneItem, self).paint(painter, option, widget)
+        
+        
     def _adjustOrigin(self): # translate to center
         center = self.boundingRect().center()
         self.setTransform(self.transform().translate(-1 * center.x(), -1 * center.y()))

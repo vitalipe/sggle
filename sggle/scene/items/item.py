@@ -216,18 +216,9 @@ class SceneItem(BaseItem):
         if flip == self.xFlipped():
             return
         
-        x,y   = self.transformOriginPoint().toTuple()
-        t     = self.transform()
+        self._flipX()
         
-        t.translate(x, y)
-        t.setMatrix(t.m11()* (-1), t.m12(), t.m13(), 
-                    t.m21(), t.m22() , t.m23(), 
-                    t.m31(), t.m32(), t.m33())
-        t.translate(-x, -y)
-        
-        self.setTransform(t)
         self._xFlipped = not self._xFlipped
-        
         self.itemChange(SceneItem.ItemXFlipHasChanged, flip)
     
     
@@ -236,18 +227,9 @@ class SceneItem(BaseItem):
         if flip == self.yFlipped():
             return
               
-        x,y   = self.transformOriginPoint().toTuple()
-        t     = self.transform()
+        self._flipY()
         
-        t.translate(x, y)
-        t.setMatrix(t.m11(), t.m12(), t.m13(), 
-                    t.m21(), t.m22() * (-1), t.m23(), 
-                    t.m31(), t.m32(), t.m33())
-        t.translate(-x, -y)
-
-        self.setTransform(t)
         self._yFlipped = not self._yFlipped
-        
         self.itemChange(SceneItem.ItemYFlipHasChanged, flip)
 
 
@@ -282,12 +264,46 @@ class SceneItem(BaseItem):
         self._isUnderMouse = False
         self.update()   
     
+    
+    def _flipX(self):
+        x,y   = self.transformOriginPoint().toTuple()
+        t     = self.transform()
+        
+        t.translate(x, y)
+        t.setMatrix(t.m11()* (-1), t.m12(), t.m13(), 
+                    t.m21(), t.m22() , t.m23(), 
+                    t.m31(), t.m32(), t.m33())
+        t.translate(-x, -y)
+        self.setTransform(t)
+        
+        
+    def _flipY(self):
+        x,y   = self.transformOriginPoint().toTuple()
+        t     = self.transform()
+        
+        t.translate(x, y)
+        t.setMatrix(t.m11(), t.m12(), t.m13(), 
+                    t.m21(), t.m22() * (-1), t.m23(), 
+                    t.m31(), t.m32(), t.m33())
+        t.translate(-x, -y)
+        self.setTransform(t)
+        
         
     def _adjustOrigin(self): # translate to center
         center = self.boundingRect().center()
-        self.setTransform(self.transform().translate(-1 * center.x(), -1 * center.y()))
+        
+        # New QTransform should prevent the item from sliding left, 
+        # when we call this method multiple times
+        self.setTransform(QTransform().translate(-1 * center.x(), -1 * center.y()))
         self.setTransformOriginPoint(center.x() , center.y())   
-       
+        
+        # adjust flip
+        if self.xFlipped():
+            self._flipX()
+            
+        if self.yFlipped():
+            self._flipY()
+
        
     def _createBuiltinProperties(self):
         self._addProperty(newBuiltinProperty("name"     , self, "item"))

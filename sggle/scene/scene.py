@@ -376,11 +376,13 @@ class LayeredGraphicsScene(DecoratedGraphicsScene):
     def _activateItem(self, item):
         item.setFlag(QGraphicsItem.ItemIsSelectable         , True)
         item.setFlag(QGraphicsItem.ItemSendsGeometryChanges , True)
+        item.setAcceptHoverEvents(True)
     
     
     def _deactivateItem(self, item):
         item.setFlag(QGraphicsItem.ItemIsSelectable         , False)
         item.setFlag(QGraphicsItem.ItemSendsGeometryChanges , False)
+        item.setAcceptHoverEvents(False)
         
             
     def _updateSelectionMaster(self):

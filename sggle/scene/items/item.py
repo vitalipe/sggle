@@ -8,6 +8,8 @@ Created on Dec 31, 2011
 from collections   import OrderedDict
 
 from PySide.QtCore import QPointF
+from PySide.QtCore import Qt
+
 from PySide.QtGui  import QTransform       
 from PySide.QtGui  import QGraphicsItem
 from PySide.QtGui  import QStyle
@@ -204,8 +206,9 @@ class SceneItem(BaseItem):
     def __init__(self):
         BaseItem.__init__(self)
                 
-        self._xFlipped = False
-        self._yFlipped = False
+        self._xFlipped     = False
+        self._yFlipped     = False
+        self._isUnderMouse = False
 
        
     def flipX(self, flip):
@@ -262,6 +265,23 @@ class SceneItem(BaseItem):
         
         super(SceneItem, self).paint(painter, option, widget)
         
+        # hover effect
+        if self._isUnderMouse:
+            painter.save()
+            painter.setOpacity(0.2)
+            painter.fillRect(self.boundingRect(), Qt.red)
+            painter.restore()
+            
+        
+    def hoverEnterEvent(self, event):
+        self._isUnderMouse = True
+        self.update()   
+    
+    
+    def hoverLeaveEvent(self, event):
+        self._isUnderMouse = False
+        self.update()   
+    
         
     def _adjustOrigin(self): # translate to center
         center = self.boundingRect().center()

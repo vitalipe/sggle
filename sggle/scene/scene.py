@@ -230,6 +230,7 @@ class LayeredGraphicsScene(DecoratedGraphicsScene):
         
         super(LayeredGraphicsScene, self).addItem(self._rootItem)
         self.selectionChanged.connect(self._updateSelectionMaster)
+        self.selectionMasterChanged.connect( lambda: self.invalidate(layers=self.ForegroundLayer))
     
             
     def rootItem(self): 

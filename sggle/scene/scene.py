@@ -457,7 +457,7 @@ class EditableScene(LayeredGraphicsScene):
             self._editModeData     = None
             self._editModeCmdBatch = None
         else:
-            self._editModeCmdBatch = commands.newCommandBatch()
+            self._editModeCmdBatch = commands.newCommandBatch(ordered = False)
         
         # set mode
         oldMode        = self.editMode()

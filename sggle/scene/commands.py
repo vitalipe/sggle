@@ -9,18 +9,17 @@ import items as items
 
 def newAddItemCommand(scene, item, x = 0, y = 0, commandBatch = None):  
     layer   = scene.activeLayer()
-    return AddItemCommand(scene, item, layer, x,y, commandBatch)
+    return newCommand(AddItemCommand(scene, item, layer, x,y), commandBatch)
 
-
-def newAddPixmapItemCommand(scene, path, x = 0, y = 0):
+def newAddPixmapItemCommand(scene, path, x = 0, y = 0, commandBatch = None):
     pixItem = items.newPixmapItemFromPath(path)
     layer   = scene.activeLayer()
     
-    return AddItemCommand(scene, pixItem, layer, x,y)
+    return newCommand(AddItemCommand(scene, pixItem, layer, x,y), commandBatch)
 
 
-def newDeleteItemCommand(scene, item, batch = None):
-    return DeleteItemCommand(scene, item, batch)
+def newDeleteItemCommand(scene, item, commandBatch = None):
+    return newCommand(DeleteItemCommand(scene, item), commandBatch)
 
 
 def newAddLayerCommand(scene):
@@ -33,28 +32,138 @@ def newDeleteLayerCommand(scene, layer):
 
 
 def newEditItemPropertyCommand(item, propertyName, value, commandBatch = None):
-    return ItemPropertyEditCommand(item, propertyName, value, commandBatch)
+     return newCommand(ItemPropertyEditCommand(item, propertyName, value), commandBatch)
 
 
-def newChangeZValueCommand(item, newZValue, batch =  None): # FIXME: Remove
-    return ItemChangeZValueCommand(item, newZValue, batch)
+def newChangeZValueCommand(item, newZValue, batch =  None):
+     return newCommand(ItemChangeZValueCommand(item, newZValue), batch)
 
 
-def newChangeItemLayerCommand(scene, item, layer): # FIXME: Remove
-    return ChangeItemLayerCommand(scene, item, layer)
+def newChangeItemLayerCommand(scene, item, layer, commandBatch = None): # FIXME: Remove
+     return newCommand(ChangeItemLayerCommand(scene, item, layer), commandBatch)
 
 
-def newCommandBatch():
-    return QUndoCommand()
+def newCommandBatch(ordered = True):
+    if ordered:
+        return OrderedCommandBatch()
+    else:
+        return UnorderedCommandBatch()
+
+
+def newCommand(cmd, cmdBatch):
+    if cmdBatch:
+        cmdBatch.appendCommand(cmd)
+    return cmd
 
 
 
 
+class ICommandBatch(QUndoCommand):
+    
+    def appendCommand(self, command):
+        raise NotImplementedError()
+    
+    def redo(self):
+        raise NotImplementedError()
+    
+    def undo(self):
+        raise NotImplementedError()
+
+    def childCount(self):
+        raise NotImplementedError()
+    
+    def mergeWith(self, other): 
+        return False # never merge 
+
+            
+
+
+class OrderedCommandBatch(ICommandBatch):
+    
+    def __init__(self):
+        super(OrderedCommandBatch, self).__init__()
+    
+        self._commands = []
+
+        
+    def appendCommand(self, command):        
+        if len(self._commands) and command.id() == self._commands[-1].id():
+                    if self._commands[-1].mergeWith(command):
+                        return
+        
+        self._commands.append(command)
+        
+    
+    def redo(self):
+        for cmd in self._commands:
+            cmd.redo()
+            
+            
+    def undo(self):
+        for cmd in reversed(self._commands):
+            cmd.undo()
+        
+           
+    def childCount(self):
+        return len(self._commands)
+    
+    
+    
+    
+class UnorderedCommandBatch(ICommandBatch):
+    
+    def __init__(self):
+        super(UnorderedCommandBatch, self).__init__()
+    
+        self._commands     = {} # key: _item or id(), value: list of commands
+        self._commandCount = 0
+
+        
+    def appendCommand(self, command):
+        # Yes, this is a major hack, I am using items as keys because most of 
+        # the time  we have lots of commands with the same id() on different 
+        # items (rotation, scaling, etc...) 
+        key    = command._item if hasattr(command, "_item") else command.id()
+        values = self._commands.get(key)
+        
+        if values:
+            for parentCommand in values:
+                if command.id() == parentCommand.id():
+                    if parentCommand.mergeWith(command):
+                        break
+            else: # can't merge
+                values.append(command)
+        else:
+            self._commands[key] = [command,]
+    
+        self._commandCount += 1
+
+
+    def undo(self):
+        for cmd in self.commands():
+            cmd.undo()
+            
+            
+    def redo(self):
+        for cmd in self.commands():
+            cmd.redo()
+            
+                   
+    def commands(self):
+        for listOfCommands in self._commands.values():
+            for cmd in listOfCommands:
+                yield cmd
+    
+    def childCount(self):
+        return self._commandCount
+    
+    
+    
 class ItemChangeZValueCommand(QUndoCommand):
     
     
-    def __init__(self, item, newZValue, parent = None):
-        QUndoCommand.__init__(self, parent)
+    def __init__(self, item, newZValue):
+        QUndoCommand.__init__(self)
         
         self._item         = item
         self._oldValue     = item.zValue()
@@ -71,19 +180,27 @@ class ItemChangeZValueCommand(QUndoCommand):
                 
     def undo(self):
         self._setValue(self._oldValue)
+    
         
-           
-    def mergeWith(self, other): #FIXME: implement this method
-        return False
+    def id(self):
+        return 1000
+    
+    
+    def mergeWith(self, other): 
+        if self._item is other._item:
+            self._newValue = other._newValue
+            return True
+        else:
+            return False
         
         
-
+        
 
 class ItemPropertyEditCommand(QUndoCommand):
     
     
-    def __init__(self, item, propertyObject, value, parent = None):
-        QUndoCommand.__init__(self, parent)
+    def __init__(self, item, propertyObject, value):
+        QUndoCommand.__init__(self)
         
         self._item         = item
         self._propertyName = propertyObject
@@ -101,18 +218,27 @@ class ItemPropertyEditCommand(QUndoCommand):
                 
     def undo(self):
         self._setValue(self._oldValue)
+    
         
-           
+    def id(self):
+        return 1001
+    
+    
     def mergeWith(self, other):
-        return False
+        if (self._item is other._item) and self._propertyName == other._propertyName:
+            self._newValue = other._newValue
+            return True
+        else:
+            return False
+                
         
         
 
    
 class DeleteItemCommand(QUndoCommand):
     
-    def __init__(self, scene, item, parentCommand = None):
-        QUndoCommand.__init__(self, parentCommand)
+    def __init__(self, scene, item):
+        QUndoCommand.__init__(self)
         
         self._scene = scene
         self._item  = item
@@ -134,8 +260,8 @@ class DeleteItemCommand(QUndoCommand):
     
 class AddItemCommand(QUndoCommand):
 
-    def __init__(self,scene, item, layer, x = 0, y = 0, parent = None):
-        QUndoCommand.__init__(self, parent)
+    def __init__(self,scene, item, layer, x = 0, y = 0):
+        QUndoCommand.__init__(self)
         
         self._scene = scene
         self._item  = item
@@ -200,8 +326,8 @@ class DeleteLayerCommand(QUndoCommand):
   
 class ChangeItemLayerCommand(QUndoCommand): # FIXME: Remove
 
-    def __init__(self,scene, item, layer, parentCommand):
-        QUndoCommand.__init__(self, parentCommand)
+    def __init__(self,scene, item, layer):
+        QUndoCommand.__init__(self)
         
         self._scene     = scene
         self._item      = item

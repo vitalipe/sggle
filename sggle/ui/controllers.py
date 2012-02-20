@@ -594,8 +594,11 @@ class ViewController(BaseController):
     canResetZoomChanged              = Signal(bool)
     canCenterOnSeletionMasterChanged = Signal(bool)
     canCenterOnOriginChanged         = Signal(bool)
+    
     showGridChanged                  = Signal(bool)
     snap2GridChanged                 = Signal(bool)
+    showAxisCanged              = Signal(bool)
+
 
     zoomChanged                      = Signal(int, int)
     
@@ -621,7 +624,6 @@ class ViewController(BaseController):
         sceneGroup.selectionChanged.connect(self._updateAllSignalTriggers)
 
 
-
     def _updateAllSignalTriggers(self):
         if self._scene():
 
@@ -631,7 +633,8 @@ class ViewController(BaseController):
             self.canCenterOnOriginChanged.emit(True)
             self.canCenterOnSeletionMasterChanged.emit(len(self._scene().selectedItems()) > 0)  
             self.showGridChanged.emit(self._scene().isShowGrid())  
-            self.snap2GridChanged.emit(self._scene().isSnap2Grid())  
+            self.snap2GridChanged.emit(self._scene().isSnap2Grid())
+            self.showAxisCanged.emit(self._scene().isShowAxis())  
 
         else:
             self.canCenterOnOriginChanged.emit(False)
@@ -640,10 +643,9 @@ class ViewController(BaseController):
             self.canZoomOutChanged.emit(False)    
             self.canResetZoomChanged.emit(False)
             self.showGridChanged.emit(False)
-            self.snap2GridChanged.emit(False)  
- 
+            self.snap2GridChanged.emit(False)
+            self.showAxisCanged.emit(False)  
             
-
     
     def _handleSceneWasAdded(self, index):
         self._zoomByScene.append(100)
@@ -722,8 +724,8 @@ class ViewController(BaseController):
         self._view.centerOn(master)
     
     
-    def setShowOrigin(self, show):
-        pass
+    def setShowAxis(self, show):
+        self._scene().setShowAxis(show)
     
     
     def setShowGrid(self, show):

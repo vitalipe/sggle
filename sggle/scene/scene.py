@@ -213,12 +213,13 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
         super(DecoratedGraphicsScene,self).__init__()
         
         #FIXME: refactor out and use QSettings
-        self._bgColor         = QColor(83,113,121)
-        self._gridColor       = QColor(96, 125,  133)
-        self._originAxisColor = Qt.white
+        self._bgColor   = QColor(83,113,121)
+        self._gridColor = QColor(96, 125,  133)
+        self._axisColor = Qt.white
         
-        self._showGrid   = True
-        self._gridSize   = 64
+        self._showGrid = True
+        self._gridSize = 64
+        self._showAxis = False
         
         self._selectionRect   = QRectF()
         
@@ -236,6 +237,15 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
         self.invalidate(layers=self.BackgroundLayer)
     
     
+    def isShowAxis(self):
+        return self._showAxis
+    
+    
+    def setShowAxis(self, show):
+        self._showAxis = show
+        self.invalidate(layers=self.BackgroundLayer)
+                
+        
     def gridSize(self):
         return self._gridSize
     
@@ -256,6 +266,9 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
         painter.fillRect(rect, self._bgColor) 
         if self._showGrid:
             self._drawGrid(painter, rect)
+            
+        if self._showAxis:
+            self._drawAxis(painter)
             
 
     def drawForeground(self, painter, rect):
@@ -369,7 +382,14 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
             if i % 4 == 0:
                 painter.drawLine(ln)
 
-
+    def _drawAxis(self, painter):
+        rect = self.sceneRect()
+        painter.setPen(QPen(self._axisColor, 0.0))
+        
+        painter.drawLine(rect.left(), 0, rect.right(), 0)
+        painter.drawLine(0, rect.top(), 0, rect.bottom())
+        
+        
     def _buildGridLines(self, rect):
         gridSize   = self._gridSize
         realLeft   = int(floor(rect.left()))

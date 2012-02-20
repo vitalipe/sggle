@@ -283,6 +283,13 @@ class MainWindow(QMainWindow):
                                 "Snap To Grid"
                                 )
         
+        self.addCheckableAction("view-axis-show",
+                                viewController.setShowAxis,
+                                fileController.sceneAvailableChanged,
+                                viewController.showAxisCanged,
+                                "Show Axis"
+                                )
+        
         self.addAction("scene-new", 
                        fileController.newScene,
                        None,
@@ -434,6 +441,8 @@ class MainWindow(QMainWindow):
         viewMenu.addSeparator()
         viewMenu.addAction(actions["view-grid-show"])
         viewMenu.addAction(actions["view-grid-snap"])
+        viewMenu.addAction(actions["view-axis-show"])
+
 
 
 

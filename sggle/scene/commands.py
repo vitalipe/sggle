@@ -87,8 +87,8 @@ class OrderedCommandBatch(ICommandBatch):
 
         
     def appendCommand(self, command):        
-        if len(self._commands) and command.id() == self._commands[-1].id():
-                    if self._commands[-1].mergeWith(command):
+        if len(self._commands) and command.id() != -1 and command.id() == self._commands[-1].id():
+                    if self._commands[-1].mergeWith(command, force = True):
                         return
         
         self._commands.append(command)
@@ -128,8 +128,8 @@ class UnorderedCommandBatch(ICommandBatch):
         
         if values:
             for parentCommand in values:
-                if command.id() == parentCommand.id():
-                    if parentCommand.mergeWith(command):
+                if command.id() != -1 and command.id() == parentCommand.id():
+                    if parentCommand.mergeWith(command, force = True):
                         break
             else: # can't merge
                 values.append(command)
@@ -183,10 +183,10 @@ class ItemChangeZValueCommand(QUndoCommand):
     
         
     def id(self):
-        return 1000
+        return 100222
     
     
-    def mergeWith(self, other): 
+    def mergeWith(self, other, force = False): 
         if self._item is other._item:
             self._newValue = other._newValue
             return True
@@ -224,7 +224,10 @@ class ItemPropertyEditCommand(QUndoCommand):
         return 1001
     
     
-    def mergeWith(self, other):
+    def mergeWith(self, other, force = False):
+        if not force:
+            return False
+        
         if (self._item is other._item) and self._propertyName == other._propertyName:
             self._newValue = other._newValue
             return True

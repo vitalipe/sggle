@@ -191,6 +191,7 @@ class MoveEditMode(IEditMode):
     def mousePressEvent(self, scene, mouseEvent):
         scene.views()[0].setCursor(Qt.DragMoveCursor)
     
+    
     def mouseMoveEvent(self, scene, mouseEvent):
         posDelta = mouseEvent.scenePos() - mouseEvent.lastScenePos()
   
@@ -200,25 +201,10 @@ class MoveEditMode(IEditMode):
     
     def mouseReleaseEvent(self, scene, mouseEvent):
         if scene.isSnap2Grid():
-            self._snap2Grid(scene)
+            snap2Grid(scene.selectedItems(), scene.gridSize())
         
         scene.views()[0].setCursor(Qt.ArrowCursor)
         scene.exitEditMode()
-
-
-    def _snap2Grid(self, scene):
-        size    = int(scene.gridSize())
-        x,y     = scene.selectionMaster().pos().toTuple()
-        x, y    = int(x), int(y)
-        
-        xOnGrid = size * ((abs(x)+(size/2)) / size) * (-1 if x < 0 else 1)
-        yOnGrid = size * ((abs(y)+(size/2)) / size) * (-1 if y < 0 else 1)
-        
-        xOffset, yOffset  = xOnGrid -x, yOnGrid - y 
-
-        for item in scene.selectedItems():
-            item.setX(int(item.x()) + xOffset)
-            item.setY(int(item.y()) + yOffset)
 
 
 
@@ -260,7 +246,11 @@ class PixmapDropMode(IEditMode):
         scene.invalidate(layers=scene.ForegroundLayer)
 
         x,y = event.scenePos().toTuple()
-        scene.undoStack().push(commands.newAddItemCommand(scene, self.item.copy(), x, y))
+        item = self.item.copy()
+        scene.undoStack().push(commands.newAddItemCommand(scene, item, x, y))
+        
+        if scene.isSnap2Grid():
+            snap2Grid((item,), scene.gridSize())
         
         scene.exitEditMode()
         
@@ -279,3 +269,18 @@ class PixmapDropMode(IEditMode):
 def convertPositionDeltaToVector(origin, pos):
     return QVector2D(pos - origin)
             
+        
+def snap2Grid(items, gridSize):
+    size = int(gridSize)
+    
+    for item in items:
+        x,y     = item.pos().toTuple()
+        x, y    = int(x), int(y)
+        
+        x = size * ((abs(x)+(size/2)) / size) * (-1 if x < 0 else 1)
+        y = size * ((abs(y)+(size/2)) / size) * (-1 if y < 0 else 1)
+        
+        item.setX(x)
+        item.setY(y)
+
+

@@ -28,8 +28,12 @@ def  fs_walk(files, parent, fileList):
             
 
 def create_assets_file():
-    os.system("pyside-rcc " + QRC_PATH + " > " + OUTPUT_PATH)
-
+    exit_code = os.system("pyside-rcc " + QRC_PATH + " > " + OUTPUT_PATH)
+    if exit_code == 0:
+        print "OK."
+    else:
+        print "Faild!"
+        print "Error code: ", exit_code 
 
 create_qrc_file()
 create_assets_file() 

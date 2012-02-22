@@ -4,7 +4,7 @@ Created on Dec 31, 2011
 @author: vitali
 '''
 
-
+from math          import floor 
 from collections   import OrderedDict
 
 from PySide.QtCore import QPointF
@@ -159,6 +159,12 @@ class BaseItem(object):
         elif (not self._directEdit):
             propertyName = self._propertyFromCahngeTypeLookup(changeType)      
             if propertyName is not None: # change we care about
+                if propertyName == "position":
+                    newValue.setX(floor(newValue.x()))
+                    newValue.setY(floor(newValue.y()))
+                if propertyName == "rotation":
+                    newValue = floor(newValue)
+
                 self.notifyPropertyChangeRequest(propertyName, newValue)   
                 return  self.value(propertyName)
         

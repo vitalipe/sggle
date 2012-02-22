@@ -63,14 +63,18 @@ class NoEditMode(IEditMode):
         
         # handle selection
         if mouseEvent.button() == Qt.LeftButton:
-            if  not insideSelectionRect and not controlMode:
-                scene.clearSelection()
-                
-            if itemUnderMouse:
-                    if not insideSelectionRect or controlMode:
-                        itemUnderMouse.setSelected(not itemUnderMouse.isSelected())
+            if controlMode:
+                if itemUnderMouse:
+                    itemUnderMouse.setSelected(not itemUnderMouse.isSelected())
+            else: # simple left click
+                if not insideSelectionRect:
+                    scene.clearSelection()
+                if (itemUnderMouse and not itemUnderMouse.isSelected()):
+                    scene.clearSelection()
+                    itemUnderMouse.setSelected(True) 
 
-        if itemUnderMouse and itemUnderMouse.isSelected():
+        # on any mouse click
+        if itemUnderMouse and itemUnderMouse.isSelected(): 
                     scene.setSelectionMaster(itemUnderMouse)     
 
 

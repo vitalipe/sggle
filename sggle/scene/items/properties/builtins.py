@@ -32,7 +32,7 @@ def newBuiltinProperty(propertyName, item, value=None):
                    "opacity"      : OpacityProperty,
                    "tint"         : None,
                    "content"      : ContentRootProperty,
-                   "origin"       : OriginProperty,
+                   "camera"       : cameraPositionProperty,
                  }
                  
     factory = factories.get(propertyName)
@@ -239,11 +239,11 @@ class OpacityProperty(Property):
    
             
            
-class OriginProperty(PointProperty):
+class cameraPositionProperty(PointProperty):
     
         
     def __init__(self, item):
-        PointProperty.__init__(self, "origin", item, readOnly = False, builtin = True)
+        PointProperty.__init__(self, "camera", item, readOnly = False, builtin = True)
         
         
     def _syncValidator(self, validator, name=None):

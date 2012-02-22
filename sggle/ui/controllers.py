@@ -714,8 +714,7 @@ class ViewController(BaseController):
     
     def centerOnOrigin(self):
         assert self._view
-        originPoint = self._scene().rootItem().value("origin")
-        self._view.centerOn(originPoint)
+        self._view.centerOn(0,0)
     
     
     def centerOnSelectionMaster(self):

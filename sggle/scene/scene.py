@@ -18,6 +18,7 @@ from PySide.QtGui  import QColor
 from PySide.QtGui  import QGraphicsScene 
 from PySide.QtGui  import QGraphicsItem
 from PySide.QtGui  import QTransform
+from PySide.QtGui  import QPixmap
 
 
 import items.builtin
@@ -221,6 +222,10 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
         self._gridSize = 64
         self._showAxis = False
         
+        self._showCamera    = False
+        self._lastCameraPos = self.rootItem().value("camera")
+        self._cameraPixmap  = QPixmap(":img/camera")
+        
         self._selectionRect   = QRectF()
         
         self.selectionChanged.connect(self._updateSelectionRect)
@@ -228,6 +233,16 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
         self.selectionMasterChanged.connect( lambda: self.invalidate(layers=self.ForegroundLayer))
 
 
+    def isShowCamera(self):
+        return self._showCamera
+
+    
+    def setShowCamera(self, show):
+        self._showCamera = show
+        self.invalidate(layers=self.BackgroundLayer)
+
+
+        
     def isShowGrid(self):
         return self._showGrid
     
@@ -280,10 +295,26 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
             
             self._drawFrameForItems(painter, selectedItems, Qt.gray)
             self._drawFrameForItems(painter, (self.selectionMaster(),), Qt.red) 
+        
+        if self._showCamera:
+            self._drawCamera(painter)
 
 
     # << Helper methods >> #
     
+    def _drawCamera(self, painter):
+        scaleFactor   = 1.0 / painter.transform().m11()
+        pixmap        = self._cameraPixmap
+        pos           = self._lastCameraPos
+        
+        painter.save()
+        painter.setOpacity(0.8)
+        painter.scale(scaleFactor, scaleFactor)
+        painter.translate(pixmap.width()/-2 + 5, pixmap.height()/-2 - 2)
+        painter.drawPixmap(pos, pixmap)
+        painter.restore()
+
+
     def _drawSelectionRectFrame(self, painter):
         scaleFactor   = painter.transform().m11() # scale to match zoom 
         rect          = self.selectionRect()
@@ -309,7 +340,12 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
             self._drawFrame(painter, item.mapToScene(r), color, scaleFactor)
             self._drawDots(painter, dots, color, scaleFactor)
     
-
+    
+    def _updateCamera(self):
+        self._lastCameraPos = self.rootItem().value("camera")
+        self.invalidate(layers=self.ForegroundLayer)
+        
+        
     def _updateSelectionRect(self):
         if len(self.selectedItems()) == 0: # clear selection rect
             self._selectionRect = QRectF() 
@@ -441,6 +477,10 @@ class EditableScene(DecoratedGraphicsScene):
 
         self.itemPropertyWasChanged.connect(lambda i,p: self._updateSelectionRect() if
                                             p in ["position", "rotation", "scale"] else None)
+        
+        self.itemPropertyWasChanged.connect(lambda i,p: self._updateCamera() if p == "camera" else None)
+
+        
         
         
     def isSnap2Grid(self):

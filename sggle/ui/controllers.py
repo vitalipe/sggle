@@ -597,9 +597,9 @@ class ViewController(BaseController):
     
     showGridChanged                  = Signal(bool)
     snap2GridChanged                 = Signal(bool)
-    showAxisCanged              = Signal(bool)
-
-
+    showAxisCanged                   = Signal(bool)
+    showCameraCanged                 = Signal(bool)
+    
     zoomChanged                      = Signal(int, int)
     
     
@@ -635,6 +635,7 @@ class ViewController(BaseController):
             self.showGridChanged.emit(self._scene().isShowGrid())  
             self.snap2GridChanged.emit(self._scene().isSnap2Grid())
             self.showAxisCanged.emit(self._scene().isShowAxis())  
+            self.showCameraCanged.emit(self._scene().isShowCamera())  
 
         else:
             self.canCenterOnOriginChanged.emit(False)
@@ -645,6 +646,8 @@ class ViewController(BaseController):
             self.showGridChanged.emit(False)
             self.snap2GridChanged.emit(False)
             self.showAxisCanged.emit(False)  
+            self.showCameraCanged.emit(False)  
+
             
     
     def _handleSceneWasAdded(self, index):
@@ -733,6 +736,11 @@ class ViewController(BaseController):
         
     def setSnap2Grid(self, snap):
         self._scene().setSnap2Grid(snap)
+        
+        
+    def setShowCamera(self, show):
+        self._scene().setShowCamera(show)
+        
 
         
          

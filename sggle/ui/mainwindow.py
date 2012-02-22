@@ -290,6 +290,13 @@ class MainWindow(QMainWindow):
                                 "Show Axis"
                                 )
         
+        self.addCheckableAction("view-camera-show",
+                                viewController.setShowCamera,
+                                fileController.sceneAvailableChanged,
+                                viewController.showCameraCanged,
+                                "Show Camera Position"
+                                )        
+        
         self.addAction("scene-new", 
                        fileController.newScene,
                        None,
@@ -445,6 +452,10 @@ class MainWindow(QMainWindow):
         viewMenu.addAction(actions["view-grid-show"])
         viewMenu.addAction(actions["view-axis-show"])
         viewMenu.addAction(actions["view-grid-snap"])
+        viewMenu.addSeparator()
+        viewMenu.addAction(actions["view-camera-show"])
+
+        
 
 
 

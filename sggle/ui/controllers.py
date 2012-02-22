@@ -674,6 +674,7 @@ class ViewController(BaseController):
             self._view.centerOn(self._centerByScene[index])
             
         else:
+            self._view.setZoomPercentage(100)
             self._view.setScene(self._welcomeScene)
            
     

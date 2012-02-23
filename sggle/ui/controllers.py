@@ -419,7 +419,7 @@ class ItemsController(BaseController):
         for clipboardItem in clipboard.data():
             item = clipboardItem.copy()
             pos = item.value("position") #FIXME: use mouse position
-            commands.newAddItemCommand(scene, item, x = pos.x(), y = pos.y(), commandBatch=batch)
+            commands.newAddItemCommand(scene, item, pos, commandBatch=batch)
 
         self._pushCommand(batch)
       

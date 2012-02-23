@@ -91,7 +91,7 @@ class LayeredGraphicsScene(QGraphicsScene):
             self.setActiveLayer(self.layers()[-1])
             
          
-    def addItem(self, item, layer = None, aX = 0, aY = 0):
+    def addItem(self, item, layer = None):
         assert item not in self.items()
         assert layer in self.layers() or self.activeLayer()
         
@@ -105,13 +105,10 @@ class LayeredGraphicsScene(QGraphicsScene):
             z = 0
         
         item.setParentItem(layer)
-        
-        item.setValueDirectly("position", x=aX, y=aY)
         item.setZValue(z)
         
         if layer is self.activeLayer():
             self._activateItem(item)
-            item.setSelected(True)
         
         
     def removeItem(self, item):

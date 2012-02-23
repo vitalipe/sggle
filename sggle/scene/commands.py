@@ -7,9 +7,9 @@ Created on Oct 5, 2011
 from PySide.QtGui import QUndoCommand
 import items as items
 
-def newAddItemCommand(scene, item, x = 0, y = 0, commandBatch = None):  
+def newAddItemCommand(scene, item, xy, commandBatch = None):  
     layer   = scene.activeLayer()
-    return newCommand(AddItemCommand(scene, item, layer, x,y), commandBatch)
+    return newCommand(AddItemCommand(scene, item, layer, xy), commandBatch)
 
 def newAddPixmapItemCommand(scene, path, x = 0, y = 0, commandBatch = None):
     pixItem = items.newPixmapItemFromPath(path)
@@ -263,23 +263,25 @@ class DeleteItemCommand(QUndoCommand):
     
 class AddItemCommand(QUndoCommand):
 
-    def __init__(self,scene, item, layer, x = 0, y = 0):
+    def __init__(self,scene, item, layer, xy):
         QUndoCommand.__init__(self)
         
         self._scene = scene
         self._item  = item
         self._layer = layer
-        self._xy    = (x,y)        
+        self._xy    = xy        
         
         
     def redo(self):
-        self._scene.addItem(self._item, self._layer, self._xy[0], self._xy[1])
+        self._scene.addItem(self._item, self._layer)
+        self._item.setValueDirectly("position", self._xy)
 
 
     def undo(self):
         self._scene.removeItem(self._item)
         
         
+
     
 class AddLayerCommand(QUndoCommand):
 

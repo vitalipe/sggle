@@ -245,9 +245,9 @@ class PixmapDropMode(IEditMode):
     def dropEvent(self, scene, event):
         scene.invalidate(layers=scene.ForegroundLayer)
 
-        x,y = event.scenePos().toTuple()
+        xy = event.scenePos()
         item = self.item.copy()
-        scene.undoStack().push(commands.newAddItemCommand(scene, item, x, y))
+        scene.undoStack().push(commands.newAddItemCommand(scene, item, xy))
         
         if scene.isSnap2Grid():
             snap2Grid((item,), scene.gridSize())

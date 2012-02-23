@@ -245,12 +245,18 @@ class PixmapDropMode(IEditMode):
     def dropEvent(self, scene, event):
         scene.invalidate(layers=scene.ForegroundLayer)
 
-        xy = event.scenePos()
-        item = self.item.copy()
+        xy           = event.scenePos()
+        item         = self.item.copy()
+        ctrlModifier = event.modifiers() & Qt.ControlModifier
+
         scene.undoStack().push(commands.newAddItemCommand(scene, item, xy))
         
         if scene.isSnap2Grid():
             snap2Grid((item,), scene.gridSize())
+            
+        if not ctrlModifier:
+            scene.clearSelection()
+        item.setSelected(True)
         
         scene.exitEditMode()
         

@@ -95,7 +95,7 @@ class FileController(QObject):
         self._recentDir           = expanduser("~")
         self._lastLocation        = expanduser("~")
 
-        sceneGroup.itemPropertyWasChanged.connect(self._forwardActiveSceneNameChanges)
+        sceneGroup.activeItemPoprertyChanged.connect(self._forwardActiveSceneNameChanges)
         sceneGroup.undoGroup().cleanChanged.connect(self.cleanStateChanged.emit)
         sceneGroup.activeSceneChanged.connect(lambda s: self.sceneAvailableChanged.emit(s != None))
 

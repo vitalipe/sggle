@@ -40,12 +40,12 @@ class ItemPropertiesModel(QAbstractItemModel):
         sceneGroup.activeLayerChanged.connect(self._updateItem)
         sceneGroup.selectionMasterChanged.connect(self._updateItem)
         
-        sceneGroup.itemPropertyWasChanged.connect(lambda i,v: self._notifyPropertyChanged(v)
-                                                   if i is self._item else None)   
+        sceneGroup.activeItemPoprertyChanged.connect(lambda i,v: self._notifyActiveItemPoprertyChanged(v)
+                                                                      if i is self._item else None)   
         self._updateItem()
         
         
-    def _notifyPropertyChanged(self, propertyName): 
+    def _notifyActiveItemPoprertyChanged(self, propertyName): 
         row       = self._item.propertyIndex(propertyName)
         indexFrom = self.createIndex(row,ItemPropertiesModel.ValueColumn)
         indexTo   = self.createIndex(row+1,ItemPropertiesModel.ValueColumn)
@@ -268,14 +268,14 @@ class ItemTreeModel(QAbstractItemModel):
         sceneGroup.activeSceneChanged.connect(self._handleActiveLayerOrSceneChanged)
         sceneGroup.activeLayerChanged.connect(self._handleActiveLayerOrSceneChanged)
         sceneGroup.listOfItemsChanged.connect(lambda p: self.reset() if p is self._root() else None)
-        sceneGroup.itemPropertyWasChanged.connect(self._handleItemPropertyWasChanged)
+        sceneGroup.activeItemPoprertyChanged.connect(self._handleItemPoprertyChanged)
 
     
     def _root(self):
         return self._layer
 
         
-    def _handleItemPropertyWasChanged(self, item, name):
+    def _handleItemPoprertyChanged(self, item, name):
         if item.parentItem() is self._root() and name == "name":
             self.reset()
         
@@ -409,9 +409,9 @@ class LayerListModel(QAbstractListModel):
         sceneGroup.listOfLayersChanged.connect(self.reset)
         sceneGroup.listOfItemsChanged.connect(self.reset)
 
-        sceneGroup.itemPropertyWasChanged.connect(self._handleItemPropertyWasChanged)
+        sceneGroup.activeItemPoprertyChanged.connect(self._handleItemPoprertyChanged)
      
-    def _handleItemPropertyWasChanged(self, item, property):
+    def _handleItemPoprertyChanged(self, item, property):
         if property == "name" and item in self._layers():
             self.reset()
      

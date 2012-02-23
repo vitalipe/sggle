@@ -119,7 +119,7 @@ class BaseItem(object):
     
     def notifyPropertyChanged(self, propertyName):
         if self.scene():
-            self.scene().itemPropertyWasChanged.emit(self, propertyName) 
+            self.scene().notifyItemPropertyChanged(self, propertyName) 
     
     
     def notifyPropertyChangeRequest(self, propertyName, value):

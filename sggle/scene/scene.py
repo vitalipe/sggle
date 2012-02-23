@@ -462,8 +462,8 @@ class EditableScene(DecoratedGraphicsScene):
     ElipseDrawMod   = None
     
        
-    itemPropertyWasChanged     = Signal(object, str)
-    editModeChanged            = Signal(IEditMode, IEditMode) # @param new @param old  
+    activeItemPoprertyChanged = Signal(object, str)
+    editModeChanged           = Signal(IEditMode, IEditMode) # @param new @param old  
     
         
     def __init__(self, undoStack):
@@ -475,10 +475,10 @@ class EditableScene(DecoratedGraphicsScene):
         self._undoStack        = undoStack
         self._snap2Grid        = False
 
-        self.itemPropertyWasChanged.connect(lambda i,p: self._updateSelectionRect() if
+        self.activeItemPoprertyChanged.connect(lambda i,p: self._updateSelectionRect() if
                                             p in ["position", "rotation", "scale"] else None)
         
-        self.itemPropertyWasChanged.connect(lambda i,p: self._updateCamera() if p == "camera" else None)
+        self.activeItemPoprertyChanged.connect(lambda i,p: self._updateCamera() if p == "camera" else None)
 
         
         
@@ -564,16 +564,21 @@ class EditableScene(DecoratedGraphicsScene):
         super(EditableScene, self).drawForeground(painter, rect)
         
         
-    def notifyItemPropertyChangeRequest(self, item, propertyName, value):
+    def notifyItemPropertyChangeRequest(self, item, propertyName, newValue):
         batch = self._editModeCmdBatch
-        cmd = commands.newEditItemPropertyCommand(item, propertyName, value, batch)
+        cmd = commands.newEditItemPropertyCommand(item, propertyName, newValue, batch)
         
         if batch is not None:
             cmd.redo()
         else:
             self._undoStack.push(cmd)
+        
             
-            
+    def notifyItemPropertyChanged(self, item, propertyName):
+        if item is self.selectionMaster() or item in self.layers() or item is self.rootItem():
+            self.activeItemPoprertyChanged.emit(item, propertyName)
+        
+        
     def undoStack(self):
         return self._undoStack
     

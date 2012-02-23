@@ -20,13 +20,13 @@ class SceneGroup(QObject):
     sceneWasRemoved            =  Signal(int)
     
     # Scene Signals
-    selectionChanged           =  Signal()
-    activeLayerChanged         =  Signal(object)
-    selectionMasterChanged     =  Signal(object)
-    itemPropertyWasChanged     =  Signal(object, str)
-    editModeChanged            =  Signal(object, object)
-    listOfLayersChanged        =  Signal(list)
-    listOfItemsChanged          = Signal(object) 
+    selectionChanged          =  Signal()
+    activeLayerChanged        =  Signal(object)
+    selectionMasterChanged    =  Signal(object)
+    activeItemPoprertyChanged =  Signal(object, str)
+    editModeChanged           =  Signal(object, object)
+    listOfLayersChanged       =  Signal(list)
+    listOfItemsChanged        = Signal(object) 
 
     
     def __init__(self, undoGroup):
@@ -147,7 +147,7 @@ class SceneGroup(QObject):
         scene.editModeChanged.connect(self.editModeChanged.emit)
         scene.listOfLayersChanged.connect(self.listOfLayersChanged.emit)
         scene.listOfItemsChanged.connect(self.listOfItemsChanged.emit)
-        scene.itemPropertyWasChanged.connect(self.itemPropertyWasChanged.emit)
+        scene.activeItemPoprertyChanged.connect(self.activeItemPoprertyChanged.emit)
 
         
     
@@ -158,4 +158,4 @@ class SceneGroup(QObject):
         scene.editModeChanged.disconnect(self.editModeChanged.emit)
         scene.listOfLayersChanged.disconnect(self.listOfLayersChanged.emit)
         scene.listOfItemsChanged.disconnect(self.listOfItemsChanged.emit)
-        scene.itemPropertyWasChanged.disconnect(self.itemPropertyWasChanged.emit)
+        scene.activeItemPoprertyChanged.disconnect(self.activeItemPoprertyChanged.emit)

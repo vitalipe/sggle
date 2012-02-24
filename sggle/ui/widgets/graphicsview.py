@@ -27,7 +27,8 @@ class GraphicsSceneView(QGraphicsView):
         self.setMouseTracking(True) # Send mouse events to scene
         self.setRenderHint(QPainter.SmoothPixmapTransform)
 
-        self._zoom = 100
+        self._zoom     = 100
+        self._hasMouse = False
         
         
     def scrollContentsBy(self, dx, dy):
@@ -59,3 +60,16 @@ class GraphicsSceneView(QGraphicsView):
     def center(self):
         return self.mapToScene(self.viewport().rect()).boundingRect().center()
 
+
+    def hasMouse(self):
+        return self._hasMouse
+    
+    
+    def enterEvent(self, event):
+        self._hasMouse = True
+        return super(GraphicsSceneView, self).enterEvent(event)
+        
+        
+    def leaveEvent(self, event):
+        self._hasMouse = False
+        return super(GraphicsSceneView, self).leaveEvent(event)

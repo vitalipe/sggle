@@ -413,19 +413,27 @@ class ItemsController(BaseController):
             return
         
         scene = self._scene()
+        view  = scene.views()[0]
         items = self._clipboard.data()
         batch = commands.newCommandBatch()
                 
         scene.clearSelection()
         
-        firstPos = items[0].value("position")
-        mousePos = scene.mousePosition()
+        posMax = posMin = items[0].value("position")
+        for item in items:
+            pos = item.value("position")
+            posMin = pos if (pos.x() < posMin.x() and pos.y() < posMin.y()) else posMin
+            posMax = pos if (pos.x() > posMax.x() and pos.y() > posMax.y()) else posMax
+        
+        itemsCenterPos = posMin + ((posMax - posMin) / 2)
+        pastePos       = scene.mousePosition() if view.hasMouse() else view.center()
+
         for clipboardItem in items:
             item     = clipboardItem.copy()
             itemPos  = item.value("position")
-            pos      = mousePos + (itemPos - firstPos)
-            commands.newAddItemCommand(scene, item, pos, commandBatch=batch)
-
+            pos      = pastePos + (itemPos - itemsCenterPos)
+            commands.newAddItemCommand(scene, item, pos, select=True, commandBatch=batch)
+            
         self._pushCommand(batch)
       
         

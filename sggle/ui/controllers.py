@@ -409,16 +409,21 @@ class ItemsController(BaseController):
         
         
     def _pasteItemsFromClipboard(self):
+        if not self._clipboard.hasData():
+            return
         
-        scene        = self._scene()
-        clipboard    = self._clipboard
-        batch        = commands.newCommandBatch()
-        
+        scene = self._scene()
+        items = self._clipboard.data()
+        batch = commands.newCommandBatch()
+                
         scene.clearSelection()
         
-        for clipboardItem in clipboard.data():
-            item = clipboardItem.copy()
-            pos = item.value("position") #FIXME: use mouse position
+        firstPos = items[0].value("position")
+        mousePos = scene.mousePosition()
+        for clipboardItem in items:
+            item     = clipboardItem.copy()
+            itemPos  = item.value("position")
+            pos      = mousePos + (itemPos - firstPos)
             commands.newAddItemCommand(scene, item, pos, commandBatch=batch)
 
         self._pushCommand(batch)

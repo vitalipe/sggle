@@ -606,7 +606,6 @@ class ViewController(BaseController):
     canZoomOutChanged                = Signal(bool)
     canResetZoomChanged              = Signal(bool)
     canCenterOnSeletionMasterChanged = Signal(bool)
-    canCenterOnOriginChanged         = Signal(bool)
     
     showGridChanged                  = Signal(bool)
     snap2GridChanged                 = Signal(bool)
@@ -643,7 +642,6 @@ class ViewController(BaseController):
             self.canZoomInChanged.emit(self.zoomPercentage() < self._maxZoom)
             self.canZoomOutChanged.emit(self.zoomPercentage() > self._minZoom)    
             self.canResetZoomChanged.emit(self.zoomPercentage() != 100)
-            self.canCenterOnOriginChanged.emit(True)
             self.canCenterOnSeletionMasterChanged.emit(len(self._scene().selectedItems()) > 0)  
             self.showGridChanged.emit(self._scene().isShowGrid())  
             self.snap2GridChanged.emit(self._scene().isSnap2Grid())
@@ -651,7 +649,6 @@ class ViewController(BaseController):
             self.showCameraCanged.emit(self._scene().isShowCamera())  
 
         else:
-            self.canCenterOnOriginChanged.emit(False)
             self.canCenterOnSeletionMasterChanged.emit(False)
             self.canZoomInChanged.emit(False)
             self.canZoomOutChanged.emit(False)    
@@ -730,16 +727,19 @@ class ViewController(BaseController):
     
     
     def centerOnOrigin(self):
-        assert self._view
         self._view.centerOn(0,0)
     
     
     def centerOnSelectionMaster(self):
-        
         master = self.sceneGroup.activeScene().selectionMaster()
         self._view.centerOn(master)
     
     
+    def centerOnCamera(self):
+        point = self._view.scene().rootItem().value("camera")
+        self._view.centerOn(point)
+        
+        
     def setShowAxis(self, show):
         self._scene().setShowAxis(show)
     

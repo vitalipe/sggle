@@ -99,7 +99,7 @@ class MainWindow(QMainWindow):
         viewToolBar.addAction(self.actions["view-zoom-out"])
         viewToolBar.addSeparator()
         viewToolBar.addAction(self.actions["view-center-origin"])
-        viewToolBar.addAction(self.actions["view-center-selection"])
+        viewToolBar.addAction(self.actions["view-center-selection-master"])
         
         self.addToolBar(fileToolBar)
         self.addToolBar(editToolBar)
@@ -259,16 +259,20 @@ class MainWindow(QMainWindow):
                        viewController.canResetZoomChanged,
                        "&Reset Zoom")
         
-        self.addAction("view-center-selection", 
+        self.addAction("view-center-selection-master", 
                        viewController.centerOnSelectionMaster,
                        viewController.canCenterOnSeletionMasterChanged,
-                       "Goto Selection")
-        
+                       "Goto Active Item")
         
         self.addAction("view-center-origin", 
                        viewController.centerOnOrigin,
-                       viewController.canCenterOnOriginChanged,
+                       fileController.sceneAvailableChanged,
                        "Goto Origin")
+        
+        self.addAction("view-center-camera", 
+                       viewController.centerOnCamera,
+                       fileController.sceneAvailableChanged,
+                       "Goto Camera")
         
         self.addCheckableAction("view-grid-show",
                                 viewController.setShowGrid,
@@ -446,9 +450,11 @@ class MainWindow(QMainWindow):
         zoomMenu.addAction(actions["view-zoom-in"])
         zoomMenu.addAction(actions["view-zoom-out"])
         zoomMenu.addAction(actions["view-zoom-reset"])
-        viewMenu.addSeparator()
-        viewMenu.addAction(actions["view-center-selection"])
-        viewMenu.addAction(actions["view-center-origin"])
+        gotoMenu = viewMenu.addMenu("Goto") 
+        gotoMenu.addAction(actions["view-center-selection-master"])
+        gotoMenu.addAction(actions["view-center-origin"])
+        gotoMenu.addAction(actions["view-center-camera"])
+
         viewMenu.addSeparator()
         viewMenu.addAction(actions["view-grid-show"])
         viewMenu.addAction(actions["view-axis-show"])

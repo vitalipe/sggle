@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         self.sceneGroup  = scene.newSceneGroup(self)
         self.actions     = {}
         
-        self.setWindowTitle("SGGLE  v" +  __version__)
+        self.setWindowTitle("SGGLE")
         self.setWindowState(Qt.WindowMaximized)
         
         self.setDockOptions(self.AnimatedDocks | self.AllowTabbedDocks | self.VerticalTabs)

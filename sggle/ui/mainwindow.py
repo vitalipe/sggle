@@ -71,7 +71,8 @@ class MainWindow(QMainWindow):
         self._createActions()
         self._createWidgets()
         self._createMenuBars()
-        self._createToolBars()        
+        self._createToolBars()
+        self._createStatusBar()
  
  
     def _createToolBars(self):
@@ -455,15 +456,9 @@ class MainWindow(QMainWindow):
         viewMenu.addSeparator()
         viewMenu.addAction(actions["view-camera-show"])
 
-        
-
-
-
-
         # Help menu
         helpMenu = QMenu("&Help", self) 
         helpMenu.addAction(actions["help-about"])
-
 
 
         menuBar.addMenu(fileMenu)
@@ -473,7 +468,11 @@ class MainWindow(QMainWindow):
         menuBar.addMenu(viewMenu)
         menuBar.addMenu(helpMenu)
 
+
+    def _createStatusBar(self):
+        self.statusBar() # empty status bar 
         
+
     def _unsavedScenes(self):
         dirtyScenes = []
         for s in  self.sceneGroup.sceneList():

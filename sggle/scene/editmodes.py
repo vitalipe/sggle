@@ -125,14 +125,13 @@ class ScaleEditMode(IEditMode):
     def mouseMoveEvent(self, scene, mouseEvent):
         oldPos   = mouseEvent.lastScenePos()
         pos      = mouseEvent.scenePos()
+        min      = scene.selectionMaster().property("scale").validator().bottom()
+        max      = scene.selectionMaster().property("scale").validator().top()
+
         
         deltaY = pos.y() - oldPos.y()
         for item in scene.selectedItems():
-            scale = item.scale() + (deltaY / 10)
-            if scale < 0.1:    
-                scale = 0.1
-            elif scale > 10.0: 
-                scale = 10.0
+            scale = clamp(item.scale() + (deltaY / 100), min, max)
             item.setScale(scale)     
     
     
@@ -278,6 +277,12 @@ class PixmapDropMode(IEditMode):
         painter.drawPixmap(pos, pixmap)
         
         
+        
+        
+def clamp(value, min, max):
+    if value < min   : return min
+    elif value > max : return max
+    else             : return value
         
         
 def convertPositionDeltaToVector(origin, pos):

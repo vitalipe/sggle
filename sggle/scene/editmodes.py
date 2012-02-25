@@ -57,11 +57,25 @@ class NoEditMode(IEditMode):
              
 
     def mousePressEvent(self, scene, mouseEvent):    
+        self._handleSelection(mouseEvent, scene)
+        self._handleEditModeSwitch(mouseEvent, scene)
+    
+    
+    def dragEnterEvent(self, scene, event):
+        scene.enterEditMode(scene.PixmapDropMode)
+        scene.PixmapDropMode.dragEnterEvent(scene, event)
+    
+        
+    def activeItemAt(self, scene, pos):
+        item = scene.itemAt(pos)        
+        return item if (item and item.flags() & item.ItemIsSelectable) else None
+
+
+    def _handleSelection(self, mouseEvent, scene):
         itemUnderMouse      = self.activeItemAt(scene, mouseEvent.scenePos())
         insideSelectionRect = scene.selectionRect().contains(mouseEvent.scenePos())
         controlMode         = (mouseEvent.modifiers() & Qt.ControlModifier)                               
         
-        # handle selection
         if mouseEvent.button() == Qt.LeftButton:
             if controlMode:
                 if itemUnderMouse:
@@ -73,12 +87,16 @@ class NoEditMode(IEditMode):
                     scene.clearSelection()
                     itemUnderMouse.setSelected(True) 
 
-        # on any mouse click
+        # on any mouse button click
         if itemUnderMouse and itemUnderMouse.isSelected(): 
                     scene.setSelectionMaster(itemUnderMouse)     
 
 
-        # enter edit mode
+    def _handleEditModeSwitch(self, mouseEvent, scene):
+        itemUnderMouse      = self.activeItemAt(scene, mouseEvent.scenePos())
+        insideSelectionRect = scene.selectionRect().contains(mouseEvent.scenePos())
+        controlMode         = (mouseEvent.modifiers() & Qt.ControlModifier)                               
+        
         if len(scene.selectedItems()) > 0 and not controlMode:
 
             if mouseEvent.button() == Qt.LeftButton:
@@ -93,16 +111,7 @@ class NoEditMode(IEditMode):
             elif  mouseEvent.button() == Qt.MiddleButton:
                 scene.enterEditMode(scene.scaleEditMode)
                 scene.editMode().mousePressEvent(scene, mouseEvent)
-    
-    
-    def dragEnterEvent(self, scene, event):
-        scene.enterEditMode(scene.PixmapDropMode)
-        scene.PixmapDropMode.dragEnterEvent(scene, event)
-    
-        
-    def activeItemAt(self, scene, pos):
-        item = scene.itemAt(pos)        
-        return item if (item and item.flags() & item.ItemIsSelectable) else None
+
 
     def __nonzero__(self): # allows me to do: if scene.editMode() ...
         return False

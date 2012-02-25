@@ -6,6 +6,7 @@ Created on Dec 29, 2011
 
 from os.path import join    as joinPath
 from os.path import relpath as relativePath
+from math    import floor 
 
 from property import Property
 from property import PointProperty
@@ -77,6 +78,9 @@ class PositionProperty(PointProperty):
     
     
     def _customSetValue(self, value):
+        value.setX(floor(value.x()))
+        value.setY(floor(value.y()))
+        
         self.item().setPos(value)
         
     
@@ -94,7 +98,8 @@ class ScaleProperty(Property):
                           validator = FloatValadator(0.1, 10.0, 2, None))
     
     
-    def _customSetValue(self, value):    
+    def _customSetValue(self, value):
+        value = floor(value * 100) / 100.0 # limit to two decimal points
         self.item().setScale(value)
     
     
@@ -115,7 +120,8 @@ class RotationProperty(Property):
         Property.setValue(self, value % 360) #FIXME: remove this
     
     
-    def _customSetValue(self, value):    
+    def _customSetValue(self, value): 
+        value = floor(value)
         self.item().setRotation(value)
     
     

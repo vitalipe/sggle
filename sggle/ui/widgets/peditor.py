@@ -48,7 +48,6 @@ class PropertiesView(QTreeView):
         
     def reset(self):
         QTreeView.reset(self)
-        self.expandAll()
         for c in range(self.model().columnCount()):
             self.resizeColumnToContents(c)
     

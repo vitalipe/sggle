@@ -273,7 +273,8 @@ class ItemsController(BaseController):
     canMoveLayerUpChanged        = Signal(bool)
     canMoveLayerDownChanged      = Signal(bool)
     canDeleteActiveLayerChanged  = Signal(bool) 
-    canAddNewLayerChanged        = Signal(bool) 
+    canAddNewLayerChanged        = Signal(bool)
+    canDuplicateLayerChanged     = Signal(bool)
 
     canCopyChanged               = Signal(bool) 
     canPasteChanged              = Signal(bool)
@@ -317,7 +318,7 @@ class ItemsController(BaseController):
             self.canMoveSelectionUpChanged.emit(False)
             self.canDeleteItemSelectionChanged.emit(False)
         
-        if scene:
+        if scene and not editMode:
             activeLayer = scene.activeLayer()
             if activeLayer and activeLayer.childItems():
                 self.canSelectAllChanged.emit(len(activeLayer.childItems()) != len(scene.selectedItems()))
@@ -349,11 +350,13 @@ class ItemsController(BaseController):
             self.canMoveLayerUpChanged.emit(True if   activeLayer is not layers[-1] else False)
             self.canMoveLayerDownChanged.emit(True if activeLayer is not layers[0] else False)
             self.canDeleteActiveLayerChanged.emit(True)
+            self.canDuplicateLayerChanged.emit(True)
 
         else:
             self.canMoveLayerUpChanged.emit(False)
             self.canMoveLayerDownChanged.emit(False)
             self.canDeleteActiveLayerChanged.emit(False)
+            self.canDuplicateLayerChanged.emit(False)
             
         if scene and not editMode:
             self.canAddNewLayerChanged.emit(True)
@@ -389,6 +392,21 @@ class ItemsController(BaseController):
                 commands.newChangeZValueCommand(item, index, commandBatch)
             
             
+    def _stackItemsAfter(self, parentItem, items, afterItem, commandBatch):
+        assert afterItem not in items
+        assert afterItem in parentItem.childItems()
+        
+        otherItems = self._sortByZOrder(list(set(parentItem.childItems()) - set(items)))
+        z = 0
+        for item in otherItems:
+            commands.newChangeZValueCommand(item, z, commandBatch)
+            z += 1
+            if item is afterItem:
+                for i in items:
+                    commands.newChangeZValueCommand(i, z, commandBatch)
+                    z += 1
+            
+        
     def _moveToBottom(self, selectedItems, items, commandBatch):
         for z,item in enumerate(selectedItems):
             if item.zValue() != z:
@@ -411,19 +429,25 @@ class ItemsController(BaseController):
                 commands.newChangeZValueCommand(item, z, commandBatch)
 
 
-    def _pasteLayerFromClipboard(self):
+    def _pasteLayerFromClipboard(self, clipboard, commandBatch = None):
         scene  = self._scene()
-        layer  = self._clipboard.data()[0]
-        self._pushCommand(commands.AddLayerCommand(scene, layer.copy()))
+        layer  = clipboard.data()[0].copy()
+        
+        if commandBatch:
+            commands.newAddExistingLayerCommand(scene, layer, commandBatch)
+        else:
+            self._pushCommand(commands.AddLayerCommand(scene, layer))
+        
+        return layer
         
         
-    def _pasteItemsFromClipboard(self):
-        if not self._clipboard.hasData():
+    def _pasteItemsFromClipboard(self, clipboard):
+        if not clipboard.hasData():
             return
         
         scene = self._scene()
         view  = scene.views()[0]
-        items = self._clipboard.data()
+        items = clipboard.data()
         batch = commands.newCommandBatch()
                 
         scene.clearSelection()
@@ -445,7 +469,22 @@ class ItemsController(BaseController):
             
         self._pushCommand(batch)
       
+      
+    def _copySelectedItemsToClipboard(self, clipboard):
+        items = self._sortByZOrder(self._scene().selectedItems())
         
+        clipboard.clear() 
+        for item in items:
+            clipboard.append(item.copy())
+            
+    
+    def _copyActiveLayerToClipboard(self, clipboard): 
+        activeLayer = self._scene().activeLayer()
+        
+        clipboard.clear() 
+        clipboard.append(activeLayer)
+    
+     
     ## Action callback functions ##
 
     def addNewLayer(self):
@@ -476,16 +515,11 @@ class ItemsController(BaseController):
     def copyToClipboard(self):
         scene         = self._scene()
         clipboard     = self._clipboard
-        activeLayer   = scene.activeLayer()
-        selectedItems = scene.selectedItems()
         
-        if len(selectedItems) == 0 or activeLayer is None:
-            return
-        
-        clipboard.clear()        
-        items = self._sortByZOrder(selectedItems if len(selectedItems) else [activeLayer])
-        for item in items:
-            clipboard.append(item.copy()) 
+        if scene.selectedItems():
+            self._copySelectedItemsToClipboard(clipboard)
+        elif scene.activeLayer():
+            self._copyActiveLayerToClipboard(clipboard)
                     
         
     def cutToClipboard(self):
@@ -500,10 +534,11 @@ class ItemsController(BaseController):
     def pasteFromClipboard(self):
         assert self._clipboard.hasData()
 
+        clipboard = self._clipboard
         if self._clipboard.hasLayer():
-            self._pasteLayerFromClipboard()
+            self._pasteLayerFromClipboard(clipboard)
         else:
-            self._pasteItemsFromClipboard()
+            self._pasteItemsFromClipboard(clipboard)
         
     
     def moveItemSelectionUp(self):
@@ -573,6 +608,41 @@ class ItemsController(BaseController):
         self._moveToBottom([scene.activeLayer()], scene.rootItem().childItems(), cmdBatch)
         self._pushCommand(cmdBatch)
 
+
+    def duplicateActiveLayer(self):
+        if not self._scene().activeLayer():
+            return
+        
+        cmdBatch    = commands.newCommandBatch()
+        clipboard   = ItemsClipboard()
+        scene       = self._scene()
+        
+        self._copyActiveLayerToClipboard(clipboard)
+        layer = self._pasteLayerFromClipboard(clipboard, cmdBatch)
+        self._stackItemsAfter(scene.rootItem(), [layer], scene.activeLayer(), cmdBatch)
+
+        self._pushCommand(cmdBatch)
+
+
+    def moveSelectionToLayerAbove(self):
+        pass
+        # cut
+        # activate next layer
+        # paste
+    
+    
+    def moveSelectionToLayerBelow(self):
+        pass
+    
+    
+    def moveSelectionToNewLayer(self):
+        pass
+        # copy selection
+        # delete selection
+        # add new layer
+        # activate new layer
+        # paste
+    
     
     def alignSelectionVertical(self):
         selection = self._scene().selectedItems()

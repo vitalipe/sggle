@@ -28,6 +28,10 @@ def newAddLayerCommand(scene):
     return AddLayerCommand(scene, layer)
 
 
+def newAddExistingLayerCommand(scene, layer, commandBatch = None):
+        return newCommand(AddLayerCommand(scene, layer), commandBatch)
+
+
 def newDeleteLayerCommand(scene, layer):
     return DeleteLayerCommand(scene, layer)
 

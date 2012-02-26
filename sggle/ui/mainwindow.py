@@ -160,13 +160,18 @@ class MainWindow(QMainWindow):
        
         self.addAction("layer-new", 
                        itemsController.addNewLayer, 
-                       itemsController.canAddNewLayerChanged, # check for scene
+                       itemsController.canAddNewLayerChanged,
                        "&Add New Layer")             
              
         self.addAction("layer-delete", 
                        itemsController.deleteActiveLayer, 
                        itemsController.canDeleteActiveLayerChanged, 
                        "&Delete Active Layer")        
+        
+        self.addAction("layer-duplicate", 
+                       itemsController.duplicateActiveLayer, 
+                       itemsController.canDuplicateLayerChanged,
+                       "Duplicate Layer")      
         
         self.addAction("layer-move-up", 
                        itemsController.moveLayerUp,
@@ -375,6 +380,7 @@ class MainWindow(QMainWindow):
         layersDock = widgets.newToolbarDockWidget((
                                                    (actions["layer-new"],
                                                     actions["layer-delete"],
+                                                    actions["layer-duplicate"],
                                                     None, # separator
                                                     actions["layer-move-top"],
                                                     actions["layer-move-up"],
@@ -430,6 +436,7 @@ class MainWindow(QMainWindow):
         # Layer menu
         layerMenu = QMenu("&Layer", self)
         layerMenu.addAction(actions["layer-new"])
+        layerMenu.addAction(actions["layer-duplicate"])
         layerMenu.addAction(actions["layer-delete"])
         layerMenu.addSeparator()
         stackMenu = layerMenu.addMenu("Stack")

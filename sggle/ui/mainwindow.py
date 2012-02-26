@@ -194,6 +194,11 @@ class MainWindow(QMainWindow):
                        itemsController.canDeleteItemSelectionChanged,
                        "Delete &Selection") 
         
+        self.addAction("selection-select-all", 
+                       itemsController.selectAll,
+                       itemsController.canSelectAllChanged,
+                       "Select All")
+        
         self.addAction("selection-move-up", 
                        itemsController.moveItemSelectionUp,
                        itemsController.canMoveSelectionUpChanged,
@@ -213,7 +218,6 @@ class MainWindow(QMainWindow):
                        itemsController.moveItemSelectionToBottom,
                        itemsController.canMoveSelectionDownChanged,
                        "Move Selection To Bottom")
-        
         
         self.addAction("edit-undo", 
                        sceneGroup.undoGroup().undo,
@@ -436,6 +440,7 @@ class MainWindow(QMainWindow):
         
         # Selection menu
         selectionMenu = QMenu("&Seletion", self)
+        selectionMenu.addAction(actions["selection-select-all"])
         selectionMenu.addAction(actions["selection-delete"])
         selectionMenu.addSeparator()
         stackMenu = selectionMenu.addMenu("Stack")

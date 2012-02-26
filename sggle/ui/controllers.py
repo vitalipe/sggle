@@ -265,9 +265,10 @@ class FileController(QObject):
 class ItemsController(BaseController):
     
        
-    canMoveSelectionUpChanged    = Signal(bool)
-    canMoveSelectionDownChanged  = Signal(bool)
+    canMoveSelectionUpChanged      = Signal(bool)
+    canMoveSelectionDownChanged    = Signal(bool)
     canDeleteItemSelectionChanged  = Signal(bool) 
+    canSelectAllChanged            = Signal(bool)       
 
     canMoveLayerUpChanged        = Signal(bool)
     canMoveLayerDownChanged      = Signal(bool)
@@ -315,6 +316,14 @@ class ItemsController(BaseController):
             self.canMoveSelectionDownChanged.emit(False)
             self.canMoveSelectionUpChanged.emit(False)
             self.canDeleteItemSelectionChanged.emit(False)
+        
+        if scene:
+            activeLayer = scene.activeLayer()
+            if activeLayer and activeLayer.childItems():
+                self.canSelectAllChanged.emit(len(activeLayer.childItems()) != len(scene.selectedItems()))
+        else:
+            self.canSelectAllChanged.emit(False)
+            
 
             
     def _updateCopyPasteTriggers(self, scene, clipboard):
@@ -594,11 +603,17 @@ class ItemsController(BaseController):
         if batch.childCount() > 1:
             self._pushCommand(batch)
 
- 
+
+    def selectAll(self):
+        scene = self._scene()
+        
+        scene.clearSelection()
+        for item in scene.activeLayer().childItems():
+            item.setSelected(True)
+
         
         
-        
-        
+                
 class ViewController(BaseController):
     
     

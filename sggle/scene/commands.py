@@ -7,8 +7,8 @@ Created on Oct 5, 2011
 from PySide.QtGui import QUndoCommand
 import items as items
 
-def newAddItemCommand(scene, item, xy, select = False, commandBatch = None):  
-    layer   = scene.activeLayer()
+def newAddItemCommand(scene, item, xy, layer = None, select = False, commandBatch = None):  
+    layer   = scene.activeLayer() if not layer else layer
     return newCommand(AddItemCommand(scene, item, layer, xy, select), commandBatch)
 
 
@@ -288,28 +288,36 @@ class AddItemCommand(QUndoCommand):
     def undo(self):
         self._scene.removeItem(self._item)
         
-        
-
-    
+   
+   
+   
 class AddLayerCommand(QUndoCommand):
 
     def __init__(self,scene, layer):
         QUndoCommand.__init__(self)
         
         self._scene = scene
-        self._layer = layer        
+        self._layer = layer
+        self._itemsBatch = newCommandBatch()
         
+        for item in layer.childItems():
+            pos = item.value("position")
+            item.setParentItem(None)
+            newAddItemCommand(scene, item, pos, layer = layer, commandBatch=self._itemsBatch)
+
         
     def redo(self):
         self._scene.addLayer(self._layer)
-
-
+        self._itemsBatch.redo()
+        
+        
     def undo(self):
+        self._itemsBatch.undo()
         self._scene.removeLayer(self._layer)
         
         
-   
-   
+        
+        
 class DeleteLayerCommand(QUndoCommand):
 
     def __init__(self,scene, layer):
@@ -334,8 +342,8 @@ class DeleteLayerCommand(QUndoCommand):
         self._layer.setZValue(self._z)
         self._deleteItemsBatch.undo()
         
-                
 
+        
   
 class ChangeItemLayerCommand(QUndoCommand): # FIXME: Remove
 

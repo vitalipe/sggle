@@ -436,7 +436,7 @@ class ItemsController(BaseController):
         if commandBatch:
             commands.newAddExistingLayerCommand(scene, layer, commandBatch)
         else:
-            self._pushCommand(commands.AddLayerCommand(scene, layer))
+            self._pushCommand(commands.newAddExistingLayerCommand(scene, layer))
         
         return layer
         

@@ -29,11 +29,12 @@ class ItemPropertiesModel(QAbstractItemModel):
     def __init__(self, sceneGroup):
         QAbstractItemModel.__init__(self)
         
-        self._item           = None
-        self._sceneGroup     = sceneGroup
+        self._item            = None
+        self._sceneGroup      = sceneGroup
         self._propertyIcon    = QIcon(":/img/property-builtin") 
         self._subPropertyIcon = QIcon(":/img/property-component")
         self._sepIcon         = QIcon(":/img/property-separator")
+        self._selectionModel  = QItemSelectionModel(self)
 
         
         sceneGroup.activeSceneChanged.connect(self._updateItem)
@@ -43,8 +44,12 @@ class ItemPropertiesModel(QAbstractItemModel):
         sceneGroup.activeItemPoprertyChanged.connect(lambda i,v: self._notifyActiveItemPoprertyChanged(v)
                                                                       if i is self._item else None)   
         self._updateItem()
+    
         
-        
+    def selectionModel(self):
+        return self._selectionModel
+    
+    
     def _notifyActiveItemPoprertyChanged(self, propertyName): 
         row       = self._item.propertyIndex(propertyName)
         indexFrom = self.createIndex(row,ItemPropertiesModel.ValueColumn)

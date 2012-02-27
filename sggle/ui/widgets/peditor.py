@@ -27,6 +27,7 @@ def newPropertiesEditor(model, dock=None):
     editor.setIndentation(30)
     editor.setRootIsDecorated(False)
 
+    editor.setSelectionModel(model.selectionModel())
     if dock is  None:
         return editor
     

@@ -158,7 +158,9 @@ class BaseItem(object):
         elif (not self._directEdit):
             propertyName = self._propertyFromCahngeTypeLookup(changeType)      
             if propertyName is not None: # change we care about
-                self.notifyPropertyChangeRequest(propertyName, newValue)   
+                property = self.property(propertyName)
+                if not property.readOnly():
+                    self.notifyPropertyChangeRequest(propertyName, newValue)   
                 return  self.value(propertyName)
         
         # apply change directly

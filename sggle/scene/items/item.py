@@ -207,7 +207,7 @@ class SceneItem(BaseItem):
                 
         self._xFlipped     = False
         self._yFlipped     = False
-        self._isUnderMouse = False
+        self._highlighted  = False
 
        
     def flipX(self, flip):
@@ -247,7 +247,7 @@ class SceneItem(BaseItem):
         super(SceneItem, self).paint(painter, option, widget)
         
         # hover effect
-        if self._isUnderMouse:
+        if self._highlighted:
             painter.save()
             painter.setOpacity(0.2)
             painter.fillRect(self.boundingRect(), Qt.red)
@@ -255,12 +255,13 @@ class SceneItem(BaseItem):
             
         
     def hoverEnterEvent(self, event):
-        self._isUnderMouse = True
-        self.update()   
+        if self.flags() & self.ItemIsSelectable:
+            self._highlighted = True
+            self.update()   
     
     
     def hoverLeaveEvent(self, event):
-        self._isUnderMouse = False
+        self._highlighted = False
         self.update()   
     
     

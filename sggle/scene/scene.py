@@ -106,6 +106,7 @@ class LayeredGraphicsScene(QGraphicsScene):
         
         item.setParentItem(layer)
         item.setZValue(z)
+        item.setAcceptHoverEvents(True)
         
         if layer is self.activeLayer():
             self._activateItem(item)
@@ -182,13 +183,11 @@ class LayeredGraphicsScene(QGraphicsScene):
     def _activateItem(self, item):
         item.setFlag(QGraphicsItem.ItemIsSelectable         , True)
         item.setFlag(QGraphicsItem.ItemSendsGeometryChanges , True)
-        item.setAcceptHoverEvents(True)
     
     
     def _deactivateItem(self, item):
         item.setFlag(QGraphicsItem.ItemIsSelectable         , False)
         item.setFlag(QGraphicsItem.ItemSendsGeometryChanges , False)
-        item.setAcceptHoverEvents(False)
         
             
     def _updateSelectionMaster(self):

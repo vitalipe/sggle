@@ -94,7 +94,7 @@ class ScaleProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "scale", item, readOnly = False, builtin = True,
+        Property.__init__(self, "scale", item, readOnly = True, builtin = True,
                           validator = FloatValadator(0.1, 10.0, 2, None))
     
     

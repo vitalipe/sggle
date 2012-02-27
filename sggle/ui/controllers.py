@@ -843,5 +843,44 @@ class ViewController(BaseController):
 
         
          
-
+class PropertiesController(BaseController):
+    
+    canLockPropertyChanged       = Signal(bool)
+    lockSelectedPropertyChanged  = Signal(bool)
+    
+    
+    def __init__(self,sceneGroup):
+        BaseController.__init__(self, sceneGroup)
+        
+        selectionModel = sceneGroup.itemPropertiesModel().selectionModel()
+        selectionModel.selectionChanged.connect(self._updateAllSignalTriggers)
+        
+        
+    def _updateAllSignalTriggers(self):
+        selectedProperty = self.selectedProperty()
+        
+        if selectedProperty:
+            self.canLockPropertyChanged.emit(True)
+            self.lockSelectedPropertyChanged.emit(selectedProperty.readOnly())
+        else:
+            self.canLockPropertyChanged.emit(False)
+            self.lockSelectedPropertyChanged.emit(False)
+            
+        
+    def selectedProperty(self):
+        propertiesModel = self.sceneGroup.itemPropertiesModel()
+        selectionModel  = propertiesModel.selectionModel()
+        
+        rows = selectionModel.selectedRows(propertiesModel.NameColumn)
+        if rows:
+            return propertiesModel.data(rows[0], propertiesModel.PropertyRole)        
+        else:
+            return None
+        
+        
+    def lockSelectedProperty(self, lock):
+        property = self.selectedProperty()
+        if property:
+            property.setReadOnly(lock)
+    
     

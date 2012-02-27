@@ -25,6 +25,7 @@ class ItemPropertiesModel(QAbstractItemModel):
     ValueColumn  = 2
     
     ValidatorRole = 128
+    PropertyRole  = 129
     
     def __init__(self, sceneGroup):
         QAbstractItemModel.__init__(self)
@@ -135,7 +136,11 @@ class ItemPropertiesModel(QAbstractItemModel):
             if index.column() == ItemPropertiesModel.SepColumn:
                 return self._sepIcon
                 
-                
+        if role == ItemPropertiesModel.PropertyRole:
+            if index.parent().isValid():
+                return index.internalPointer()
+            else:
+                return self._item.property(index.row())
         
         if role == ItemPropertiesModel.ValidatorRole:
             if index.parent().isValid():

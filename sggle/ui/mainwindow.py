@@ -112,10 +112,7 @@ class MainWindow(QMainWindow):
         self.itemsController =  controllers.ItemsController(self.sceneGroup)
         self.viewController  =  controllers.ViewController(self.sceneGroup, 
                                                            scene.newWelcomeScreenScene())
-
-        
-    def _scene(self):
-        return self.sceneGroup.activeScene()
+        self.propertiesController = controllers.PropertiesController(self.sceneGroup)
     
     
     def addAction(self, name, callback, trigger, displayName = None, 
@@ -152,10 +149,11 @@ class MainWindow(QMainWindow):
         
     def _createActions(self):
        
-        sceneGroup      = self.sceneGroup
-        fileController  = self.fileController
-        itemsController = self.itemsController
-        viewController  = self.viewController
+        sceneGroup            = self.sceneGroup
+        fileController        = self.fileController
+        itemsController       = self.itemsController
+        viewController        = self.viewController
+        propertiesController  = self.propertiesController
 
        
         self.addAction("layer-new", 
@@ -357,6 +355,14 @@ class MainWindow(QMainWindow):
                        None, 
                        "About", 
                        disabled = False)
+        
+         
+        self.addCheckableAction("property-lock",
+                                propertiesController.lockSelectedProperty,
+                                propertiesController.canLockPropertyChanged,
+                                propertiesController.lockSelectedPropertyChanged,
+                                "Lock selected property"
+                                )       
          
         # load icons
         for actionName, action in self.actions.items():
@@ -401,7 +407,11 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, itemsDock)
         
         #Properties Editor 
-        PropertiesDock = widgets.newPropertiesEditor(sceneGroup.itemPropertiesModel(), QDockWidget())
+        propertiesDock = widgets.newToolbarDockWidget((
+                                                    actions["property-lock"],
+                                                    
+                                                     ))
+        PropertiesDock = widgets.newPropertiesEditor(sceneGroup.itemPropertiesModel(), propertiesDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, PropertiesDock)
         
 

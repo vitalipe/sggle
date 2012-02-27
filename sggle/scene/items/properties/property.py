@@ -72,6 +72,10 @@ class Property(object):
         return self._readOnly
     
     
+    def setReadOnly(self, readOnly):
+        self._readOnly = readOnly
+        
+        
     def builtin(self):
         return self._builtin
     

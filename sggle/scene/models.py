@@ -138,7 +138,8 @@ class ItemPropertiesModel(QAbstractItemModel):
                 
         if role == ItemPropertiesModel.PropertyRole:
             if index.parent().isValid():
-                return index.internalPointer()
+                p = index.internalPointer()
+                return p.componentList()[index.row()]
             else:
                 return self._item.property(index.row())
         

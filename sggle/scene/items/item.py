@@ -127,10 +127,13 @@ class BaseItem(object):
         
              
     def setValueDirectly(self, key, value=None, **kv):
-        self._directEdit = True
-        self.setValue(key, value, **kv)
-        self._directEdit = False
-        
+        p = self.property(key)
+        if value:
+            p.setValueDirectly(value)
+        if kv:
+            for k,v in kv.items():
+                p.component(k).setValue(v)         
+
         
     def itemChange(self, changeType, newValue):
         

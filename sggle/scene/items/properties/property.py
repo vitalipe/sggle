@@ -140,13 +140,20 @@ class PropertyComponent(Property):
     
     
     def value(self):
-        return self._getter()
- 
-    
-    def setValue(self,value):
-        return self._setter(value)
-    
-        
+        return self._getter(self._parent.value())
+
+
+    def setValue(self, componentValue):
+        value = self._parent.value()
+        self._setter(value, componentValue)
+        self._parent.setValue(value)
+
+
+    def setComponentInComplexValue(self, complexValue):
+        self._setter(complexValue, self.value())
+        return complexValue
+
+       
     def _syncValidator(self,validator):
         # notify parent
         self._parent._syncValidator(validator, self.name())
@@ -224,25 +231,11 @@ class PointProperty(ComplexProperty):
 
     
     def _createComponents(self):
-        self._addNewComponenet("x", get=self.x, set=self.setX, validator=FloatValadator())
-        self._addNewComponenet("y", get=self.y, set=self.setY, validator=FloatValadator())
+        self._addNewComponenet("x", get=(lambda p: QPointF.x(p)),
+                                    set=(lambda p,c: QPointF.setX(p, c)),
+                                    validator=FloatValadator())
+        self._addNewComponenet("y", get=(lambda p: QPointF.y(p)),
+                                    set=(lambda p,c: QPointF.setY(p, c)),
+                                    validator=FloatValadator())
 
-        
-    def x(self):
-        return self.value().x()
-    
-    
-    def setX(self, value):
-        v =  QPointF(self.value())
-        v.setX(value)
-        self.setValue(v)
-    
-    
-    def y(self):
-        return self.value().y()
-    
-    
-    def setY(self, value):
-        v =  QPointF(self.value())
-        v.setY(value)
-        self.setValue(v)
+

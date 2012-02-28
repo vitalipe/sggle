@@ -22,8 +22,7 @@ def newCustomProperty(name, item): # FIXME: should also pass type info
 
 
 class Property(object):
-    
-
+        
     def __init__(self, name, item, hidden = False , builtin = True, 
                  validator = TypeCheckValidator(), value = None):
                 
@@ -77,8 +76,8 @@ class Property(object):
         return self._locked
     
         
-    def setLocked(self, readOnly):
-        self._locked= readOnly
+    def setLocked(self, locked):
+        self._locked = locked
         
         
     def builtin(self):
@@ -147,7 +146,7 @@ class PropertyComponent(Property):
     def setValue(self,value):
         return self._setter(value)
     
-    
+        
     def _syncValidator(self,validator):
         # notify parent
         self._parent._syncValidator(validator, self.name())
@@ -155,7 +154,6 @@ class PropertyComponent(Property):
         
         
         
-
 class ComplexProperty(Property):
     
     
@@ -204,8 +202,20 @@ class ComplexProperty(Property):
         
         return True
         
-    
-    
+        
+    def locked(self):
+        for component in self.componentList():
+            if component.locked() == False:
+                return False
+        return True
+            
+            
+    def setLocked(self, locked):
+        super(ComplexProperty,self).setLocked(locked)
+        for component in self.componentList():
+            component.setLocked(locked)
+
+        
     
 class PointProperty(ComplexProperty):
     

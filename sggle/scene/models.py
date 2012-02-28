@@ -254,7 +254,7 @@ class ItemPropertiesModel(QAbstractItemModel):
                 p = index.internalPointer()
             else:
                 p = self._item.property(index.row())
-            if p.readOnly() == False:
+            if p.locked() == False:
                 flags |= Qt.ItemIsEditable
         
         return flags 

@@ -162,7 +162,7 @@ class BaseItem(object):
             propertyName = self._propertyFromCahngeTypeLookup(changeType)      
             if propertyName is not None: # change we care about
                 property = self.property(propertyName)
-                if not property.readOnly():
+                if not property.locked():
                     self.notifyPropertyChangeRequest(propertyName, newValue)   
                 return  self.value(propertyName)
         

@@ -861,7 +861,7 @@ class PropertiesController(BaseController):
         
         if selectedProperty:
             self.canLockPropertyChanged.emit(True)
-            self.lockSelectedPropertyChanged.emit(selectedProperty.readOnly())
+            self.lockSelectedPropertyChanged.emit(selectedProperty.locked())
         else:
             self.canLockPropertyChanged.emit(False)
             self.lockSelectedPropertyChanged.emit(False)
@@ -881,6 +881,6 @@ class PropertiesController(BaseController):
     def lockSelectedProperty(self, lock):
         property = self.selectedProperty()
         if property:
-            property.setReadOnly(lock)
+            property.setLocked(lock)
     
     

@@ -50,7 +50,7 @@ def newBuiltinProperty(propertyName, item, value=None):
 class NameProperty(Property):
     
     def __init__(self, item):
-        Property.__init__(self, "name", item, readOnly = False, builtin = True,
+        Property.__init__(self, "name", item, hidden = False, builtin = True,
                           validator = NameValidator())
         
 
@@ -64,7 +64,7 @@ class NameProperty(Property):
 class ContentRootProperty(Property):
     
     def __init__(self, item):
-        Property.__init__(self, "content", item, readOnly = False, builtin = True,
+        Property.__init__(self, "content", item, hidden = False, builtin = True,
                           validator = DirPathValidator())
         
 
@@ -74,7 +74,7 @@ class PositionProperty(PointProperty):
     
         
     def __init__(self, item):
-        PointProperty.__init__(self, "position", item, readOnly = False, builtin = True)
+        PointProperty.__init__(self, "position", item, hidden = False, builtin = True)
     
     
     def _customSetValue(self, value):
@@ -94,7 +94,7 @@ class ScaleProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "scale", item, readOnly = True, builtin = True,
+        Property.__init__(self, "scale", item, hidden = True, builtin = True,
                           validator = FloatValadator(0.1, 10.0, 2, None))
     
     
@@ -112,7 +112,7 @@ class RotationProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "rotation", item, readOnly = False, builtin = True,
+        Property.__init__(self, "rotation", item, hidden = False, builtin = True,
                           validator = IntValadator(0, 359, None))
     
     
@@ -136,7 +136,7 @@ class TextureProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "texture", item, readOnly = True , builtin = True)
+        Property.__init__(self, "texture", item, hidden = True , builtin = True)
     
     
     def setValue(self, value):
@@ -172,7 +172,7 @@ class ParallaxProperty(PointProperty):
     
         
     def __init__(self, item):
-        PointProperty.__init__(self, "parallax", item, readOnly = False, builtin = True)
+        PointProperty.__init__(self, "parallax", item, hidden = False, builtin = True)
         
         
     def _syncValidator(self, validator, key=None):
@@ -197,7 +197,7 @@ class FlipXProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "flip_x", item, readOnly = False, builtin = True,
+        Property.__init__(self, "flip_x", item, hidden = False, builtin = True,
                           validator = TypeCheckValidator(bool))
     
     
@@ -214,7 +214,7 @@ class FlipYProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "flip_y", item, readOnly = False, builtin = True,
+        Property.__init__(self, "flip_y", item, hidden = False, builtin = True,
                           validator = TypeCheckValidator(bool))
     
     
@@ -232,7 +232,7 @@ class OpacityProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "opacity", item, readOnly = False, builtin = True, 
+        Property.__init__(self, "opacity", item, hidden = False, builtin = True, 
                           validator = FloatValadator(0.1, 1.0, 1, None))
     
     
@@ -249,7 +249,7 @@ class cameraPositionProperty(PointProperty):
     
         
     def __init__(self, item):
-        PointProperty.__init__(self, "camera", item, readOnly = False, builtin = True)
+        PointProperty.__init__(self, "camera", item, hidden = False, builtin = True)
         
         
     def _syncValidator(self, validator, name=None):

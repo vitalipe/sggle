@@ -24,15 +24,16 @@ def newCustomProperty(name, item): # FIXME: should also pass type info
 class Property(object):
     
 
-    def __init__(self, name, item, readOnly = False , builtin = True, 
+    def __init__(self, name, item, hidden = False , builtin = True, 
                  validator = TypeCheckValidator(), value = None):
                 
         self._name      = name
         self._item      = item 
         self._validator = validator
-        self._readOnly  = readOnly
+        self._hidden    = hidden
         self._builtin   = builtin
         self._value     = None
+        self._locked    = False
         
         
     def name(self):
@@ -68,12 +69,16 @@ class Property(object):
         self._item._directEdit = False
         
         
-    def readOnly(self):
-        return self._readOnly
+    def hidden(self):
+        return self._hidden
     
     
-    def setReadOnly(self, readOnly):
-        self._readOnly = readOnly
+    def locked(self):
+        return self._locked
+    
+        
+    def setLocked(self, readOnly):
+        self._locked= readOnly
         
         
     def builtin(self):
@@ -128,7 +133,7 @@ class Property(object):
 class PropertyComponent(Property):
     
     def __init__(self,  parent, name, get, set, validator):
-        Property.__init__(self, name, parent.item(),parent.readOnly(), parent.builtin(), validator)
+        Property.__init__(self, name, parent.item(),parent.hidden(), parent.builtin(), validator)
         
         self._setter    = set
         self._getter    = get
@@ -204,8 +209,8 @@ class ComplexProperty(Property):
     
 class PointProperty(ComplexProperty):
     
-    def __init__(self, name, item,  readOnly = False , builtin = True):
-        ComplexProperty.__init__(self, name, item, readOnly, builtin)
+    def __init__(self, name, item,  hidden = False , builtin = True):
+        ComplexProperty.__init__(self, name, item, hidden, builtin)
 
     
     def _createComponents(self):

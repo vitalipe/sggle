@@ -848,15 +848,19 @@ class PropertiesController(BaseController):
     canLockPropertyChanged       = Signal(bool)
     lockSelectedPropertyChanged  = Signal(bool)
     
+    canUnlockAllPropertiesChanged = Signal(bool)
+    
     
     def __init__(self,sceneGroup):
         BaseController.__init__(self, sceneGroup)
         
-        selectionModel = sceneGroup.itemPropertiesModel().selectionModel()
-        selectionModel.selectionChanged.connect(self._updateAllSignalTriggers)
+        itemsModel = sceneGroup.itemPropertiesModel()        
+        itemsModel.selectionModel().selectionChanged.connect(self._updateAllSignalTriggers)
+        itemsModel.editorItemChanged.connect(self._updateAllSignalTriggers)
         
         
     def _updateAllSignalTriggers(self):
+        activeItem       = self.activeItem()
         selectedProperty = self.selectedProperty()
         
         if selectedProperty:
@@ -866,6 +870,11 @@ class PropertiesController(BaseController):
             self.canLockPropertyChanged.emit(False)
             self.lockSelectedPropertyChanged.emit(False)
             
+        if activeItem:
+            self.canUnlockAllPropertiesChanged.emit(True)
+        else:
+            self.canUnlockAllPropertiesChanged.emit(False)
+        
         
     def selectedProperty(self):
         propertiesModel = self.sceneGroup.itemPropertiesModel()
@@ -878,9 +887,26 @@ class PropertiesController(BaseController):
             return None
         
         
+    def activeItem(self):
+        propertiesModel = self.sceneGroup.itemPropertiesModel()
+        return propertiesModel.item()
+          
+          
     def lockSelectedProperty(self, lock):
         property = self.selectedProperty()
         if property:
             property.setLocked(lock)
+            
+            
+    def unlockAllProperties(self):
+        item = self.activeItem()
+        if item:
+            for p in item.properties():
+                p.setLocked(False)
+        self._updateAllSignalTriggers()
+            
+        
+        
+        
     
     

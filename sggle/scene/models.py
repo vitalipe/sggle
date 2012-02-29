@@ -83,6 +83,7 @@ class ItemPropertiesModel(QAbstractItemModel):
             return
         
         self._item = item
+        self.selectionModel().clear()
         self.reset() 
     
     

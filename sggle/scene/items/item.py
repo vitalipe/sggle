@@ -50,11 +50,7 @@ class BaseItem(object):
    
     
     def properties(self):
-        properties = OrderedDict()
-        for key in self._properties.keys():
-            properties[key] = self.value(key)
-        
-        return properties.items()
+        return self._properties.values()
     
     
     def value(self, key):

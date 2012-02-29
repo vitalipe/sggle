@@ -10,8 +10,9 @@ from PySide.QtCore import QAbstractItemModel
 from PySide.QtCore import QAbstractListModel
 from PySide.QtCore import QModelIndex
 from PySide.QtCore import Qt
-from PySide.QtGui import  QIcon
+from PySide.QtCore import Signal
 
+from PySide.QtGui import  QIcon
 from PySide.QtGui import QItemSelectionModel
 from PySide.QtGui import QItemSelection
 
@@ -26,6 +27,9 @@ class ItemPropertiesModel(QAbstractItemModel):
     
     ValidatorRole = 128
     PropertyRole  = 129
+    
+    editorItemChanged = Signal(object, object) # @param newItem @param oldItem 
+    
     
     def __init__(self, sceneGroup):
         QAbstractItemModel.__init__(self)
@@ -85,6 +89,8 @@ class ItemPropertiesModel(QAbstractItemModel):
         self._item = item
         self.selectionModel().clear()
         self.reset() 
+        
+        self.editorItemChanged.emit(item, oldItem)
     
     
     # FIXME:
@@ -98,7 +104,10 @@ class ItemPropertiesModel(QAbstractItemModel):
         return str(data)
 
         
-        
+    def item(self):
+        return self._item
+    
+      
     def index(self, row, col, parentIndex = QModelIndex()):
         if not self.hasIndex(row, col, parentIndex):
             return QModelIndex()

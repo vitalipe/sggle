@@ -128,7 +128,7 @@ class BaseItem(object):
              
     def setValueDirectly(self, key, value=None, **kv):
         p = self.property(key)
-        if value:
+        if value is not None:
             p.setValueDirectly(value)
         if kv:
             for k,v in kv.items():

@@ -14,7 +14,8 @@ from PySide.QtGui  import QGraphicsItem
 from PySide.QtGui  import QStyle
 
 from properties import newCustomProperty
-from properties import newBuiltinProperty    
+from properties import newBuiltinProperty  
+from properties.property import ComplexProperty  
     
 
 class BaseItem(object):
@@ -162,9 +163,14 @@ class BaseItem(object):
             propertyName = self._propertyFromCahngeTypeLookup(changeType)      
             if propertyName is not None: # change we care about
                 property = self.property(propertyName)
-                if not property.readOnly():
-                    self.notifyPropertyChangeRequest(propertyName, newValue)   
-                return  self.value(propertyName)
+                if not property.locked():
+                    if isinstance(property, ComplexProperty):
+                        for component in property.componentList():
+                            if component.locked(): # reset
+                                component.setComponentInComplexValue(newValue)          
+                    self.notifyPropertyChangeRequest(propertyName, newValue)  
+                     
+                return  property.value() # return the old value
         
         # apply change directly
         return newValue

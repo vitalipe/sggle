@@ -261,7 +261,7 @@ class ItemPropertiesModel(QAbstractItemModel):
         
         if col == ItemPropertiesModel.ValueColumn and self.rowCount(index) == 0:
             if index.parent().isValid():
-                p = index.internalPointer()
+                p = index.internalPointer().componentList()[index.row()]
             else:
                 p = self._item.property(index.row())
             if p.locked() == False:

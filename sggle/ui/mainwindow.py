@@ -369,6 +369,12 @@ class MainWindow(QMainWindow):
                                 propertiesController.canUnlockAllPropertiesChanged,
                                 "Unlock all properties"
                                 )
+        
+        self.addAction("property-reset",
+                                propertiesController.resetProperty,
+                                propertiesController.canResetPropertyChanged,
+                                "Reset property"
+                                )
          
         # load icons
         for actionName, action in self.actions.items():
@@ -416,6 +422,7 @@ class MainWindow(QMainWindow):
         propertiesDock = widgets.newToolbarDockWidget((
                                                     actions["property-unlock-all"],
                                                     actions["property-lock"],
+                                                    actions["property-reset"],
                                                     
                                                      ))
         PropertiesDock = widgets.newPropertiesEditor(sceneGroup.itemPropertiesModel(), propertiesDock)

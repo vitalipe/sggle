@@ -125,9 +125,9 @@ class ItemPropertiesModel(QAbstractItemModel):
         if index.internalPointer() is None: # property
             return QModelIndex()
 
-        else:# value component
+        else:# component
             parentProperty = index.internalPointer()
-            row = self._item.propertyIndex(parentProperty.name())
+            row = parentProperty.item().propertyIndex(parentProperty.name())
             return self.createIndex(row, 0)
             
             
@@ -233,10 +233,10 @@ class ItemPropertiesModel(QAbstractItemModel):
             return self._item.propertyCount()
 
         if not index.parent().isValid(): # get number of components
-            p = self._item.property(index.row())
-            if hasattr(p, "componentList"):
+            try:
+                p = self._item.property(index.row())            
                 return len(p.componentList())
-            else:
+            except (AttributeError, IndexError): 
                 return 0
         
         else: # components can't have children

@@ -849,6 +849,7 @@ class PropertiesController(BaseController):
     lockSelectedPropertyChanged  = Signal(bool)
     
     canUnlockAllPropertiesChanged = Signal(bool)
+    canResetPropertyChanged       = Signal(bool)
     
     
     def __init__(self,sceneGroup):
@@ -857,7 +858,7 @@ class PropertiesController(BaseController):
         itemsModel = sceneGroup.itemPropertiesModel()        
         itemsModel.selectionModel().selectionChanged.connect(self._updateAllSignalTriggers)
         itemsModel.editorItemChanged.connect(self._updateAllSignalTriggers)
-        
+        sceneGroup.activeItemPoprertyChanged.connect(self._updateAllSignalTriggers)
         
     def _updateAllSignalTriggers(self):
         activeItem       = self.activeItem()
@@ -866,9 +867,11 @@ class PropertiesController(BaseController):
         if selectedProperty:
             self.canLockPropertyChanged.emit(True)
             self.lockSelectedPropertyChanged.emit(selectedProperty.locked())
+            self.canResetPropertyChanged.emit(selectedProperty.changed())
         else:
             self.canLockPropertyChanged.emit(False)
             self.lockSelectedPropertyChanged.emit(False)
+            self.canResetPropertyChanged.emit(False)
             
         if activeItem:
             self.canUnlockAllPropertiesChanged.emit(True)
@@ -904,7 +907,15 @@ class PropertiesController(BaseController):
             for p in item.properties():
                 p.setLocked(False)
         self._updateAllSignalTriggers()
-            
+        
+        
+    def resetProperty(self):
+        property = self.selectedProperty()
+        item     = self.activeItem()
+        
+        if property and property.changed():
+            self._pushCommand(commands.newItemPropertyResetCommand(property))
+
         
         
         

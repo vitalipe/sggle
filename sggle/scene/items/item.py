@@ -88,7 +88,9 @@ class BaseItem(object):
     
     def copy(self):
         item = type(self)()
-        for key,value in self.properties():
+        for p in self.properties():
+            key   = p.name()
+            value = p.value()
             if not item.hasProperty(key): # assume custom
                 item.addCustomProperty(key)
             item.setValue(key, value)

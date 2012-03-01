@@ -42,7 +42,9 @@ def newBuiltinProperty(propertyName, item, value=None):
     
     p = factory(item)
     if value is not None:
+        p.setBaseValue(value)
         p.setValue(value)
+
     return p
 
 

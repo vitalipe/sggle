@@ -10,8 +10,9 @@ from PySide.QtCore import QAbstractItemModel
 from PySide.QtCore import QAbstractListModel
 from PySide.QtCore import QModelIndex
 from PySide.QtCore import Qt
-from PySide.QtGui import  QIcon
+from PySide.QtCore import Signal
 
+from PySide.QtGui import  QIcon
 from PySide.QtGui import QItemSelectionModel
 from PySide.QtGui import QItemSelection
 
@@ -26,6 +27,9 @@ class ItemPropertiesModel(QAbstractItemModel):
     
     ValidatorRole = 128
     PropertyRole  = 129
+    
+    editorItemChanged = Signal(object, object) # @param newItem @param oldItem 
+    
     
     def __init__(self, sceneGroup):
         QAbstractItemModel.__init__(self)
@@ -85,6 +89,8 @@ class ItemPropertiesModel(QAbstractItemModel):
         self._item = item
         self.selectionModel().clear()
         self.reset() 
+        
+        self.editorItemChanged.emit(item, oldItem)
     
     
     # FIXME:
@@ -98,7 +104,10 @@ class ItemPropertiesModel(QAbstractItemModel):
         return str(data)
 
         
-        
+    def item(self):
+        return self._item
+    
+      
     def index(self, row, col, parentIndex = QModelIndex()):
         if not self.hasIndex(row, col, parentIndex):
             return QModelIndex()
@@ -116,9 +125,9 @@ class ItemPropertiesModel(QAbstractItemModel):
         if index.internalPointer() is None: # property
             return QModelIndex()
 
-        else:# value component
+        else:# component
             parentProperty = index.internalPointer()
-            row = self._item.propertyIndex(parentProperty.name())
+            row = parentProperty.item().propertyIndex(parentProperty.name())
             return self.createIndex(row, 0)
             
             
@@ -224,10 +233,10 @@ class ItemPropertiesModel(QAbstractItemModel):
             return self._item.propertyCount()
 
         if not index.parent().isValid(): # get number of components
-            p = self._item.property(index.row())
-            if hasattr(p, "componentList"):
+            try:
+                p = self._item.property(index.row())            
                 return len(p.componentList())
-            else:
+            except (AttributeError, IndexError): 
                 return 0
         
         else: # components can't have children
@@ -252,7 +261,7 @@ class ItemPropertiesModel(QAbstractItemModel):
         
         if col == ItemPropertiesModel.ValueColumn and self.rowCount(index) == 0:
             if index.parent().isValid():
-                p = index.internalPointer()
+                p = index.internalPointer().componentList()[index.row()]
             else:
                 p = self._item.property(index.row())
             if p.locked() == False:

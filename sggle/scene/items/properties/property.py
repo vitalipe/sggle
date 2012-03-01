@@ -22,9 +22,9 @@ def newCustomProperty(name, item): # FIXME: should also pass type info
 
 
 class Property(object):
-        
+
     def __init__(self, name, item, hidden = False , builtin = True, 
-                 validator = TypeCheckValidator(), value = None):
+                 validator = TypeCheckValidator()):
                 
         self._name      = name
         self._item      = item 
@@ -33,7 +33,8 @@ class Property(object):
         self._builtin   = builtin
         self._value     = None
         self._locked    = False
-        
+        self._initValue = None
+                
         
     def name(self):
         return self._name
@@ -48,6 +49,22 @@ class Property(object):
             return self._customGetValue()
             
         return self._value
+    
+    
+    def reset(self):
+        self.setValueDirectly(self._initValue)
+    
+        
+    def changed(self):
+        return self.value() != self._initValue
+    
+    
+    def setBaseValue(self, value):
+        self._initValue = type(value)(value) # handle mutable objects
+    
+        
+    def baseValue(self):
+        return self._initValue
     
     
     def setValue(self,value):
@@ -143,6 +160,12 @@ class PropertyComponent(Property):
         return self._getter(self._parent.value())
 
 
+    def reset(self):
+        value = self._parent.value()
+        self._setter(value, self._getter(self._parent.baseValue()))
+        self._parent.setValueDirectly(value)
+        
+        
     def setValue(self, componentValue):
         value = self._parent.value()
         self._setter(value, componentValue)
@@ -164,8 +187,8 @@ class PropertyComponent(Property):
 class ComplexProperty(Property):
     
     
-    def __init__(self, *args):
-        Property.__init__(self, *args)
+    def __init__(self, *args, **kargs):
+        Property.__init__(self, *args, **kargs)
         
         self._components = OrderedDict()
         self._createComponents()
@@ -222,12 +245,19 @@ class ComplexProperty(Property):
         for component in self.componentList():
             component.setLocked(locked)
 
+
+    def setBaseValue(self, value):
+        for component in self.componentList():
+            component.setBaseValue(component._getter(value))
+        Property.setBaseValue(self, value)
         
-    
+        
+        
+        
 class PointProperty(ComplexProperty):
     
-    def __init__(self, name, item,  hidden = False , builtin = True):
-        ComplexProperty.__init__(self, name, item, hidden, builtin)
+    def __init__(self, name, item,  value = None, hidden = False , builtin = True):
+        ComplexProperty.__init__(self, name, item, hidden = hidden, builtin = builtin)
 
     
     def _createComponents(self):

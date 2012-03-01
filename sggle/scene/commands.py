@@ -48,6 +48,10 @@ def newChangeItemLayerCommand(scene, item, layer, commandBatch = None): # FIXME:
      return newCommand(ChangeItemLayerCommand(scene, item, layer), commandBatch)
 
 
+def newItemPropertyResetCommand(property, commandBatch = None):
+    return newCommand(ItemPropertyResetCommand(property), commandBatch)
+                      
+    
 def newCommandBatch(ordered = True):
     if ordered:
         return OrderedCommandBatch()
@@ -200,16 +204,35 @@ class ItemChangeZValueCommand(QUndoCommand):
         
         
         
+class ItemPropertyResetCommand(QUndoCommand):
+    
+    
+    def __init__(self, property):
+        QUndoCommand.__init__(self)
+        
+        self._oldValue = property.value()
+        self._property = property
 
+
+    def redo(self):
+        self._property.reset()
+        
+        
+    def undo(self):  
+        self._property.setValueDirectly(self._oldValue)
+        
+        
+        
+        
 class ItemPropertyEditCommand(QUndoCommand):
     
     
-    def __init__(self, item, propertyObject, value):
+    def __init__(self, item, propertyName, value):
         QUndoCommand.__init__(self)
         
         self._item         = item
-        self._propertyName = propertyObject
-        self._oldValue     = item.value(propertyObject)
+        self._propertyName = propertyName
+        self._oldValue     = item.value(propertyName)
         self._newValue     = value
      
         

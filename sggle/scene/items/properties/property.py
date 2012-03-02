@@ -161,13 +161,14 @@ class PropertyComponent(Property):
 
 
     def reset(self):
-        value = self._parent.value()
+        value = self._patentValue()
         self._setter(value, self._getter(self._parent.baseValue()))
         self._parent.setValueDirectly(value)
         
         
     def setValue(self, componentValue):
-        value = self._parent.value()
+        value = self._patentValue()
+        
         self._setter(value, componentValue)
         self._parent.setValue(value)
 
@@ -176,7 +177,12 @@ class PropertyComponent(Property):
         self._setter(complexValue, self.value())
         return complexValue
 
-       
+
+    def _patentValue(self):
+        v = self._parent.value()
+        return type(v)(v) # handle mutable objects 
+        
+        
     def _syncValidator(self,validator):
         # notify parent
         self._parent._syncValidator(validator, self.name())

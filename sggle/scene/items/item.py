@@ -80,10 +80,6 @@ class BaseItem(object):
     def removeCustomProperty(self, key):
         self._properties.pop(key)
         self._cache.pop(key)
-        
-        
-    def propertyCount(self):
-        return len(self._properties.keys())
     
     
     def copy(self):

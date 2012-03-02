@@ -230,7 +230,10 @@ class ItemPropertiesModel(QAbstractItemModel):
             return 0
         
         if not index.isValid():
-            return self._item.propertyCount()
+            propertyCount = 0
+            for p in self._item.properties():
+                propertyCount += 1 if not p.hidden() else 0
+            return propertyCount
 
         if not index.parent().isValid(): # get number of components
             try:

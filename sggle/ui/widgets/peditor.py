@@ -15,6 +15,8 @@ from PySide.QtCore import Qt
 from PySide.QtGui  import QTreeView
 from PySide.QtGui import QItemDelegate
 from PySide.QtGui import QLineEdit
+from PySide.QtGui import QSizePolicy
+
 
 
        
@@ -33,7 +35,12 @@ def newPropertiesEditor(model, dock=None):
     
     dock.setWindowTitle(" Properties ")
     dock.setWidget(editor)
-    dock.setMinimumWidth(250)
+    
+    dock.setMinimumWidth(230)
+    dock.setMinimumHeight(200)
+    dock.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+    
     dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
  
     return dock

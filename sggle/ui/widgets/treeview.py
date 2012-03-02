@@ -10,10 +10,9 @@ from PySide.QtGui  import QListView
 from PySide.QtGui import QTreeView
 
 
-
     
 def newLayerList(model, dock=None):
-    layerList = DeselectableListView()
+    layerList = UnselectableListView()
     layerList.setModel(model)
     layerList.setSelectionModel(model.selectionModel())
 
@@ -22,7 +21,10 @@ def newLayerList(model, dock=None):
     
     dock.setWindowTitle(" Layers ")
     dock.setWidget(layerList)
-    dock.setMinimumWidth(150)
+    
+    dock.setMinimumWidth(230)
+    dock.setMaximumHeight(150)  
+    
     dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
 
     return dock
@@ -43,7 +45,10 @@ def newItemTree(model, dock=None):
     
     dock.setWindowTitle(" Items ")
     dock.setWidget(itemTree)
-    dock.setMinimumWidth(150)
+    
+    dock.setMinimumWidth(230)
+    dock.setMinimumHeight(150)  
+    
     dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
     
     return dock
@@ -53,10 +58,11 @@ def newItemTree(model, dock=None):
     
 
     
-class DeselectableListView(QListView):
+class UnselectableListView(QListView):
     
     def mousePressEvent(self, event):
         self.clearSelection()
         self.setCurrentIndex(self.model().index(-1, -1))
+        
         QListView.mousePressEvent(self, event)
 

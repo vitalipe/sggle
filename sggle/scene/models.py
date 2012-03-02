@@ -201,24 +201,21 @@ class ItemPropertiesModel(QAbstractItemModel):
         return None
     
     
-    def setData(self, index, value, role=Qt.EditRole):
-        """ """    
-        
-        col        = index.column()
-        
-        if col != ItemPropertiesModel.ValueColumn or role != Qt.EditRole:
+    def setData(self, index, value, role=Qt.EditRole):        
+        if index.column() != ItemPropertiesModel.ValueColumn or role != Qt.EditRole:
             return False
         
-        if index.parent().isValid():
-            property = index.internalPointer()
-            component = property.componentList()[index.row()]
-            component.setValue(value)
-        else:
+        if index.parent().isValid(): # component
+            property = index.internalPointer().componentList()[index.row()]
+        else: # property
             property   = self._item.property(index.row())
-            property.setValue(value)
             
+        if property.value() == value:
+            return False
+        
+        property.setValue(value)
         return True
-
+            
 
     def insertRows(self, row, count, parent = QModelIndex() ):
         return False 

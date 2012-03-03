@@ -375,6 +375,12 @@ class MainWindow(QMainWindow):
                                 propertiesController.canResetPropertyChanged,
                                 "Reset property"
                                 )
+        
+        self.addAction("property-replicate",
+                                propertiesController.replicateSelectedProperty,
+                                propertiesController.canReplicateSelectedPropertyChanged,
+                                "Replicate property"
+                                )
          
         # load icons
         for actionName, action in self.actions.items():
@@ -423,7 +429,7 @@ class MainWindow(QMainWindow):
                                                     actions["property-unlock-all"],
                                                     actions["property-lock"],
                                                     actions["property-reset"],
-                                                    
+                                                    actions["property-replicate"],
                                                      ))
         PropertiesDock = widgets.newPropertiesEditor(sceneGroup.itemPropertiesModel(), propertiesDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, PropertiesDock)

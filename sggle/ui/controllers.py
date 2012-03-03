@@ -848,8 +848,9 @@ class PropertiesController(BaseController):
     canLockPropertyChanged       = Signal(bool)
     lockSelectedPropertyChanged  = Signal(bool)
     
-    canUnlockAllPropertiesChanged = Signal(bool)
-    canResetPropertyChanged       = Signal(bool)
+    canUnlockAllPropertiesChanged       = Signal(bool)
+    canResetPropertyChanged             = Signal(bool)
+    canReplicateSelectedPropertyChanged = Signal(bool)
     
     
     def __init__(self,sceneGroup):
@@ -860,6 +861,7 @@ class PropertiesController(BaseController):
         itemsModel.editorItemChanged.connect(self._updateAllSignalTriggers)
         sceneGroup.activeItemPoprertyChanged.connect(self._updateAllSignalTriggers)
         
+        
     def _updateAllSignalTriggers(self):
         activeItem       = self.activeItem()
         selectedProperty = self.selectedProperty()
@@ -868,10 +870,13 @@ class PropertiesController(BaseController):
             self.canLockPropertyChanged.emit(True)
             self.lockSelectedPropertyChanged.emit(selectedProperty.locked())
             self.canResetPropertyChanged.emit(selectedProperty.changed())
+            self.canReplicateSelectedPropertyChanged.emit(len(self._scene().selectedItems()) > 1)
         else:
             self.canLockPropertyChanged.emit(False)
             self.lockSelectedPropertyChanged.emit(False)
             self.canResetPropertyChanged.emit(False)
+            self.canReplicateSelectedPropertyChanged.emit(False)
+
             
         if activeItem:
             self.canUnlockAllPropertiesChanged.emit(True)
@@ -917,7 +922,21 @@ class PropertiesController(BaseController):
             self._pushCommand(commands.newItemPropertyResetCommand(property))
 
         
+    def replicateSelectedProperty(self):
+        selectedProperty = self.selectedProperty()
+        selectedItems    = self._scene().selectedItems()
+        selectionMaster  = self._scene().selectionMaster()
         
+        if selectedProperty is None or len(selectedItems) < 2:
+            return
+        
+        cmdBatch = commands.newCommandBatch()
+        value    = selectedProperty.value()
+        for item in selectedItems:
+            if item.hasProperty(selectedProperty.name()) and item is not selectionMaster:
+                commands.newEditItemPropertyCommand(item, selectedProperty.name(), value, cmdBatch)
+        
+        self._pushCommand(cmdBatch)
         
     
     

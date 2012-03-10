@@ -870,7 +870,7 @@ class PropertiesController(BaseController):
             self.canLockPropertyChanged.emit(True)
             self.lockSelectedPropertyChanged.emit(selectedProperty.locked())
             self.canResetPropertyChanged.emit(selectedProperty.changed())
-            self.canReplicateSelectedPropertyChanged.emit(len(self._scene().selectedItems()) > 1)
+            self.canReplicateSelectedPropertyChanged.emit(self._canReplicateSelectedProperty())
         else:
             self.canLockPropertyChanged.emit(False)
             self.lockSelectedPropertyChanged.emit(False)
@@ -925,18 +925,39 @@ class PropertiesController(BaseController):
     def replicateSelectedProperty(self):
         selectedProperty = self.selectedProperty()
         selectedItems    = self._scene().selectedItems()
-        selectionMaster  = self._scene().selectionMaster()
-        
-        if selectedProperty is None or len(selectedItems) < 2:
+
+        if self._canReplicateSelectedProperty() == False:
             return
+        else:
+            selectedItems.pop(selectedItems.index(selectedProperty.item()))
         
-        cmdBatch = commands.newCommandBatch()
-        value    = selectedProperty.value()
+        propertyName = selectedProperty.name()
+        cmdBatch     = commands.newCommandBatch()
+        value        = selectedProperty.value()
         for item in selectedItems:
-            if item.hasProperty(selectedProperty.name()) and item is not selectionMaster:
-                commands.newEditItemPropertyCommand(item, selectedProperty.name(), value, cmdBatch)
+            if item.hasProperty(propertyName) and value != item.value(propertyName):
+                commands.newEditItemPropertyCommand(item, propertyName, value, cmdBatch)
         
         self._pushCommand(cmdBatch)
         
     
-    
+    def _canReplicateSelectedProperty(self):
+        selectedProperty = self.selectedProperty()
+        selectedItems    = self._scene().selectedItems()
+
+        if selectedProperty is None or len(selectedItems) < 2:
+            return False
+        else:
+            selectedItems.pop(selectedItems.index(selectedProperty.item()))
+        
+        value        = selectedProperty.value()
+        propertyName = selectedProperty.name()
+        dCount       = 0
+        for item in selectedItems:
+            if item.hasProperty(propertyName) and value != item.value(propertyName):
+                dCount += 1
+            
+        return dCount > 0 
+                
+        
+

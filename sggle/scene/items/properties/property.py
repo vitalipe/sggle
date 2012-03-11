@@ -156,6 +156,10 @@ class PropertyComponent(Property):
         self._parent    = parent
     
     
+    def parent(self):
+        return self._parent
+    
+    
     def value(self):
         return self._getter(self._parent.value())
 
@@ -256,6 +260,13 @@ class ComplexProperty(Property):
         for component in self.componentList():
             component.setBaseValue(component._getter(value))
         Property.setBaseValue(self, value)
+        
+        
+    def value(self, componentName = None):
+        if componentName is not None:
+            return self.component(componentName).value()
+        
+        return Property.value(self)
         
         
         

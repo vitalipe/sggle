@@ -37,7 +37,11 @@ def newDeleteLayerCommand(scene, layer):
 
 
 def newEditItemPropertyCommand(item, propertyName, value, commandBatch = None):
-     return newCommand(ItemPropertyEditCommand(item, propertyName, value), commandBatch)
+     return newCommand(ItemPropertyEditCommand(item.property(propertyName), value), commandBatch)
+
+
+def newEditPropertyCommand(property, value, commandBatch = None):
+    return newCommand(ItemPropertyEditCommand(property, value), commandBatch)
 
 
 def newChangeZValueCommand(item, newZValue, batch =  None):
@@ -227,17 +231,16 @@ class ItemPropertyResetCommand(QUndoCommand):
 class ItemPropertyEditCommand(QUndoCommand):
     
     
-    def __init__(self, item, propertyName, value):
+    def __init__(self, property,value):
         QUndoCommand.__init__(self)
         
-        self._item         = item
-        self._propertyName = propertyName
-        self._oldValue     = item.value(propertyName)
-        self._newValue     = value
+        self._property  = property
+        self._oldValue  = property.value()
+        self._newValue  = value
      
         
     def  _setValue(self, value):
-        self._item.setValueDirectly(self._propertyName, value)
+        self._property.setValueDirectly(value)
 
         
     def redo(self):
@@ -256,12 +259,14 @@ class ItemPropertyEditCommand(QUndoCommand):
         if not force:
             return False
         
-        if (self._item is other._item) and self._propertyName == other._propertyName:
+        item      = self._property.item()
+        otherItem = other._property.item()
+        
+        if (item is otherItem) and self._property is other._property:
             self._newValue = other._newValue
             return True
         else:
-            return False
-                
+            return False             
         
         
 

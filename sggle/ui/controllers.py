@@ -934,9 +934,17 @@ class PropertiesController(BaseController):
         propertyName = selectedProperty.name()
         cmdBatch     = commands.newCommandBatch()
         value        = selectedProperty.value()
-        for item in selectedItems:
-            if item.hasProperty(propertyName) and value != item.value(propertyName):
-                commands.newEditItemPropertyCommand(item, propertyName, value, cmdBatch)
+        
+        if hasattr(selectedProperty, "parent"): # component
+            parentName = selectedProperty.parent().name()
+            for item in selectedItems:
+                p = item.property(parentName)
+                if p is not None and value != p.value(propertyName):
+                    commands.newEditPropertyCommand(p.component(propertyName), value, cmdBatch)
+        else: 
+            for item in selectedItems:
+                if item.hasProperty(propertyName) and value != item.value(propertyName):
+                    commands.newEditItemPropertyCommand(item, propertyName, value, cmdBatch)
         
         self._pushCommand(cmdBatch)
         
@@ -953,9 +961,17 @@ class PropertiesController(BaseController):
         value        = selectedProperty.value()
         propertyName = selectedProperty.name()
         dCount       = 0
-        for item in selectedItems:
-            if item.hasProperty(propertyName) and value != item.value(propertyName):
-                dCount += 1
+        
+        if hasattr(selectedProperty, "parent"): # component
+            parentName = selectedProperty.parent().name()
+            for item in selectedItems:
+                p = item.property(parentName)
+                if p is not None and value != p.value(propertyName):
+                        dCount += 1
+        else: # property
+            for item in selectedItems:
+                if item.hasProperty(propertyName) and value != item.value(propertyName):
+                    dCount += 1
             
         return dCount > 0 
                 

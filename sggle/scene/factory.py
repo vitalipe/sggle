@@ -6,6 +6,7 @@ Created on Dec 30, 2011
 
 from scenegroup import SceneGroup
 from scene      import EditableScene 
+import items
 
 from PySide.QtGui   import QGraphicsScene
 from PySide.QtGui   import QUndoGroup
@@ -22,6 +23,7 @@ def newWelcomeScreenScene(): #FIXME: WTF?! this should go to ui/widgets
 
 def newEmptyGraphicsScene():
     scene = EditableScene(QUndoStack())
+    scene.setRootItem(items.newRootItem())
     scene.setSceneRect(-50000,-50000,100000,100000) # Huge hard-coded size until I have good 
                                                     # enough reason to change this.
     return scene

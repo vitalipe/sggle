@@ -38,22 +38,28 @@ class LayeredGraphicsScene(QGraphicsScene):
     listOfItemsChanged          = Signal(object) # @param - parent object
         
         
-    def __init__(self,):
+    def __init__(self):
         super(LayeredGraphicsScene, self).__init__()
         
-        self._rootItem        = items.newRootItem()
+        self._rootItem        = None
         self._activeLayer     = None
         self._selectionMaster = None
-        
-        
-        super(LayeredGraphicsScene, self).addItem(self._rootItem)
+                
         self.selectionChanged.connect(self._updateSelectionMaster)
     
             
     def rootItem(self): 
         return self._rootItem    
     
-               
+    
+    def setRootItem(self, item):
+        if self._rootItem is not None:
+            super(LayeredGraphicsScene, self).removeItem(self._rootItem)
+
+        self._rootItem  = item
+        super(LayeredGraphicsScene, self).addItem(item)
+         
+         
     def layers(self):
         return self._rootItem.childItems()
     
@@ -206,7 +212,7 @@ class LayeredGraphicsScene(QGraphicsScene):
 class DecoratedGraphicsScene(LayeredGraphicsScene):
     
     
-    def __init__(self,):
+    def __init__(self):
         super(DecoratedGraphicsScene,self).__init__()
         
         #FIXME: refactor out and use QSettings
@@ -219,7 +225,7 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
         self._showAxis = False
         
         self._showCamera    = False
-        self._lastCameraPos = self.rootItem().value("camera")
+        self._lastCameraPos = QPointF(0,0)
         self._cameraPixmap  = QPixmap(":img/camera")
         
         self._selectionRect   = QRectF()
@@ -355,7 +361,7 @@ class DecoratedGraphicsScene(LayeredGraphicsScene):
         #       rewrite this, and make use of the BSP Tree... 
         for i in self.selectedItems():  
             boundingRect = i.sceneBoundingRect()
-            
+
             top    = boundingRect.top()
             bottom = boundingRect.bottom()
             left   = boundingRect.left()
@@ -470,13 +476,6 @@ class EditableScene(DecoratedGraphicsScene):
         self._mousePosition    = QPointF()
         self._undoStack        = undoStack
         self._snap2Grid        = False
-
-        self.activeItemPoprertyChanged.connect(lambda i,p: self._updateSelectionRect() if
-                                            p in ["position", "rotation", "scale"] else None)
-        
-        self.activeItemPoprertyChanged.connect(lambda i,p: self._updateCamera() if p == "camera" else None)
-
-        
         
         
     def isSnap2Grid(self):
@@ -568,11 +567,16 @@ class EditableScene(DecoratedGraphicsScene):
             cmd.redo()
         else:
             self._undoStack.push(cmd)
-        
+
             
     def notifyItemPropertyChanged(self, item, propertyName):
         if item is self.selectionMaster() or item in self.layers() or item is self.rootItem():
             self.activeItemPoprertyChanged.emit(item, propertyName)
+
+        if item is self.rootItem() and propertyName == "camera":
+            self._updateCamera()
+
+        self._updateSelectionRect()
         
         
     def undoStack(self):

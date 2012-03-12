@@ -280,7 +280,7 @@ class DeleteItemCommand(QUndoCommand):
         self._item  = item
         self._xy    = item.value("position")
         self._z     = item.zValue()
-        self._layer = scene.activeLayer()
+        self._layer = item.layer()
         
     def redo(self):
         self._scene.removeItem(self._item)

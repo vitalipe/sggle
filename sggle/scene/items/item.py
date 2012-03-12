@@ -214,7 +214,11 @@ class SceneItem(BaseItem):
         self._yFlipped     = False
         self._highlighted  = False
 
-       
+
+    def layer(self):
+        return self.parentItem()
+    
+     
     def flipX(self, flip):
         flip    = self.itemChange(SceneItem.ItemXFlipChange, flip)
         if flip == self.xFlipped():

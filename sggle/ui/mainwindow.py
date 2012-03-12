@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
         
         self.addAction("selection-move-layer-below", 
                        itemsController.moveSelectionToLayerBelow,
-                       itemsController.canMoveSelectionToNewLayerChanged,
+                       itemsController.canMoveSelectionToLayerBelowChanged,
                        "Move Selection To Layer Below")
         
         self.addAction("selection-move-layer-new", 

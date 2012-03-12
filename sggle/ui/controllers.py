@@ -268,7 +268,10 @@ class ItemsController(BaseController):
     canMoveSelectionUpChanged      = Signal(bool)
     canMoveSelectionDownChanged    = Signal(bool)
     canDeleteItemSelectionChanged  = Signal(bool) 
-    canSelectAllChanged            = Signal(bool)       
+    canSelectAllChanged            = Signal(bool)   
+    
+    canMoveSelectionToLayerAboveChanged = Signal(bool) 
+    canMoveSelectionToLayerBelowChanged = Signal(bool) 
 
     canMoveLayerUpChanged        = Signal(bool)
     canMoveLayerDownChanged      = Signal(bool)
@@ -290,6 +293,7 @@ class ItemsController(BaseController):
         self.sceneGroup.activeLayerChanged.connect(self._updateAllSignalTriggers)
         self.sceneGroup.activeSceneChanged.connect(self._updateAllSignalTriggers)
         self.sceneGroup.editModeChanged.connect(self._updateAllSignalTriggers)
+        self.sceneGroup.listOfLayersChanged.connect(self._updateAllSignalTriggers)
         self._clipboard.clipboardDataAvailableChanged.connect(self._updateAllSignalTriggers)
 
 
@@ -306,6 +310,7 @@ class ItemsController(BaseController):
             selection   = scene.selectedItems()
             items       = scene.activeLayer().childItems() if scene.activeLayer() else []  
             editMode    = scene.editMode()
+            activeLayer = scene.activeLayer()
         else:
             selection = []
 
@@ -313,19 +318,22 @@ class ItemsController(BaseController):
             self.canMoveSelectionDownChanged.emit(not items[0].isSelected())
             self.canMoveSelectionUpChanged.emit(not items[-1].isSelected())
             self.canDeleteItemSelectionChanged.emit(True)
+            self.canMoveSelectionToLayerAboveChanged.emit(True if self._layerAbove(activeLayer) else False)
+            self.canMoveSelectionToLayerBelowChanged.emit(True if self._layerBelow(activeLayer) else False)
+
         else:
             self.canMoveSelectionDownChanged.emit(False)
             self.canMoveSelectionUpChanged.emit(False)
             self.canDeleteItemSelectionChanged.emit(False)
+            self.canMoveSelectionToLayerAboveChanged.emit(False)
+            self.canMoveSelectionToLayerBelowChanged.emit(False)
         
         if scene and not editMode:
-            activeLayer = scene.activeLayer()
             if activeLayer and activeLayer.childItems():
                 self.canSelectAllChanged.emit(len(activeLayer.childItems()) != len(scene.selectedItems()))
         else:
             self.canSelectAllChanged.emit(False)
             
-
             
     def _updateCopyPasteTriggers(self, scene, clipboard):
         activeLayer = scene.activeLayer() if scene else None
@@ -484,7 +492,43 @@ class ItemsController(BaseController):
         clipboard.clear() 
         clipboard.append(activeLayer)
     
-     
+    
+    def _moveItemToAnotherLayer(self, items, dstLayer, cmdBatch):
+        scene     = self._scene()
+        clipboard = ItemsClipboard()
+                
+        for item in self._sortByZOrder(items):
+            commands.newDeleteItemCommand(scene, item, commandBatch=cmdBatch)
+            commands.newAddItemCommand(scene, item, item.value("position"), layer = dstLayer,
+                                       select=True, commandBatch=cmdBatch)
+    
+    def _layerAbove(self, layer):
+        layers    =  self._scene().layers()
+        nextIndex = layers.index(self._scene().activeLayer()) + 1
+        
+        if nextIndex < len(layers):
+            return layers[nextIndex]
+        else:
+            return None
+        
+        
+    def _layerBelow(self, layer):
+        layers    =  self._scene().layers()
+        nextIndex = layers.index(self._scene().activeLayer()) - 1
+        
+        if nextIndex >= 0:
+            return layers[nextIndex]
+        else:
+            return None
+        
+        
+        
+    def _deleteSelectedItems(self, cmdBatch):
+        scene = self._scene()              
+        for item in scene.selectedItems():
+            commands.newDeleteItemCommand(scene, item, cmdBatch)
+        
+        
     ## Action callback functions ##
 
     def addNewLayer(self):
@@ -502,15 +546,12 @@ class ItemsController(BaseController):
     
     
     def deleteSelectedItems(self):
-        scene = self._scene()
         batch = commands.newCommandBatch()
-        
-        for item in scene.selectedItems():
-            commands.newDeleteItemCommand(scene, item, batch)
-        
-        if scene.selectedItems():
+
+        self._deleteSelectedItems(batch) 
+        if batch.childCount() > 0:
             self._pushCommand(batch)    
-    
+
     
     def copyToClipboard(self):
         scene         = self._scene()
@@ -625,14 +666,27 @@ class ItemsController(BaseController):
 
 
     def moveSelectionToLayerAbove(self):
-        pass
-        # cut
-        # activate next layer
-        # paste
+        scene       = self._scene()
+        activeLayer =  scene.activeLayer()
+        cmdBatch    = commands.newCommandBatch()
+        layerAbove  = self._layerAbove(activeLayer)
+        items       = scene.selectedItems()
+        
+        scene.setActiveLayer(layerAbove)
+        self._moveItemToAnotherLayer(items, layerAbove, cmdBatch)    
+        self._pushCommand(cmdBatch)
     
     
     def moveSelectionToLayerBelow(self):
-        pass
+        scene       = self._scene()
+        activeLayer =  scene.activeLayer()
+        cmdBatch    = commands.newCommandBatch()
+        layerBelow  = self._layerBelow(activeLayer)
+        items       = scene.selectedItems()
+        
+        scene.setActiveLayer(layerBelow)
+        self._moveItemToAnotherLayer(items, layerBelow, cmdBatch)    
+        self._pushCommand(cmdBatch)
     
     
     def moveSelectionToNewLayer(self):

@@ -23,9 +23,9 @@ def newDeleteItemCommand(scene, item, commandBatch = None):
     return newCommand(DeleteItemCommand(scene, item), commandBatch)
 
 
-def newAddLayerCommand(scene):
+def newAddLayerCommand(scene, commandBatch = None):
     layer = items.newLayerItem()
-    return AddLayerCommand(scene, layer)
+    return newCommand(AddLayerCommand(scene, layer), commandBatch)
 
 
 def newAddExistingLayerCommand(scene, layer, commandBatch = None):

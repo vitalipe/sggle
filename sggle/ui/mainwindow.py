@@ -229,8 +229,13 @@ class MainWindow(QMainWindow):
         
         self.addAction("selection-move-layer-below", 
                        itemsController.moveSelectionToLayerBelow,
-                       itemsController.canMoveSelectionToLayerBelowChanged,
+                       itemsController.canMoveSelectionToNewLayerChanged,
                        "Move Selection To Layer Below")
+        
+        self.addAction("selection-move-layer-new", 
+                       itemsController.moveSelectionToNewLayer,
+                       itemsController.canMoveSelectionToNewLayerChanged,
+                       "Move Selection To New Layer")
         
         
         self.addAction("edit-undo", 
@@ -493,6 +498,7 @@ class MainWindow(QMainWindow):
         selectionMenu.addSeparator()
         selectionMenu.addAction(actions["selection-move-layer-above"])
         selectionMenu.addAction(actions["selection-move-layer-below"])
+        selectionMenu.addAction(actions["selection-move-layer-new"])
         stackMenu = selectionMenu.addMenu("Stack")
         stackMenu.addAction(actions["selection-move-up"])
         stackMenu.addAction(actions["selection-move-down"])

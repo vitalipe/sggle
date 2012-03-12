@@ -272,7 +272,8 @@ class ItemsController(BaseController):
     
     canMoveSelectionToLayerAboveChanged = Signal(bool) 
     canMoveSelectionToLayerBelowChanged = Signal(bool) 
-
+    canMoveSelectionToNewLayerChanged   = Signal(bool) 
+    
     canMoveLayerUpChanged        = Signal(bool)
     canMoveLayerDownChanged      = Signal(bool)
     canDeleteActiveLayerChanged  = Signal(bool) 
@@ -320,13 +321,15 @@ class ItemsController(BaseController):
             self.canDeleteItemSelectionChanged.emit(True)
             self.canMoveSelectionToLayerAboveChanged.emit(True if self._layerAbove(activeLayer) else False)
             self.canMoveSelectionToLayerBelowChanged.emit(True if self._layerBelow(activeLayer) else False)
-
+            self.canMoveSelectionToNewLayerChanged.emit(True)
         else:
             self.canMoveSelectionDownChanged.emit(False)
             self.canMoveSelectionUpChanged.emit(False)
             self.canDeleteItemSelectionChanged.emit(False)
             self.canMoveSelectionToLayerAboveChanged.emit(False)
             self.canMoveSelectionToLayerBelowChanged.emit(False)
+            self.canMoveSelectionToNewLayerChanged.emit(False)
+
         
         if scene and not editMode:
             if activeLayer and activeLayer.childItems():
@@ -690,13 +693,16 @@ class ItemsController(BaseController):
     
     
     def moveSelectionToNewLayer(self):
-        pass
-        # copy selection
-        # delete selection
-        # add new layer
-        # activate new layer
-        # paste
-    
+        cmdBatch    = commands.newCommandBatch()
+        scene       = self._scene()
+        items       = scene.selectedItems()
+        
+        layer = commands.newAddLayerCommand(scene, cmdBatch)._layer
+        self._moveItemToAnotherLayer(items, layer, cmdBatch)
+        
+        self._pushCommand(cmdBatch)
+        scene.setActiveLayer(layer)
+
     
     def alignSelectionVertical(self):
         selection = self._scene().selectedItems()

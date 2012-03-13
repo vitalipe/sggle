@@ -319,8 +319,8 @@ class SceneItem(BaseItem):
         self._addProperty(newBuiltinProperty("position" , self, QPointF(0,0)), QGraphicsItem.ItemPositionChange)
         self._addProperty(newBuiltinProperty("rotation" , self,  0),           QGraphicsItem.ItemRotationChange)
         self._addProperty(newBuiltinProperty("scale"    , self,  1.0),         QGraphicsItem.ItemScaleChange)
-        self._addProperty(newBuiltinProperty("flip_x"   , self,  False),       SceneItem.ItemXFlipChange)
-        self._addProperty(newBuiltinProperty("flip_y"   , self,  False),       SceneItem.ItemYFlipChange)
+        self._addProperty(newBuiltinProperty("flipX"   , self,  False),       SceneItem.ItemXFlipChange)
+        self._addProperty(newBuiltinProperty("flipY"   , self,  False),       SceneItem.ItemYFlipChange)
         self._addProperty(newBuiltinProperty("opacity"  , self,  1.0),         QGraphicsItem.ItemOpacityChange)
 
     

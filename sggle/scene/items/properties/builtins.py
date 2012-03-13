@@ -28,8 +28,8 @@ def newBuiltinProperty(propertyName, item, value=None):
                    "rotation"     : RotationProperty,
                    "texture"      : TextureProperty,
                    "parallax"     : ParallaxProperty,
-                   "flip_x"       : FlipXProperty,
-                   "flip_y"       : FlipYProperty,
+                   "flipX"        : FlipXProperty,
+                   "flipY"        : FlipYProperty,
                    "opacity"      : OpacityProperty,
                    "tint"         : None,
                    "content"      : ContentRootProperty,
@@ -199,7 +199,7 @@ class FlipXProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "flip_x", item, hidden = False, builtin = True,
+        Property.__init__(self, "flipX", item, hidden = False, builtin = True,
                           validator = TypeCheckValidator(bool))
     
     
@@ -216,7 +216,7 @@ class FlipYProperty(Property):
     
         
     def __init__(self, item):
-        Property.__init__(self, "flip_y", item, hidden = False, builtin = True,
+        Property.__init__(self, "flipY", item, hidden = False, builtin = True,
                           validator = TypeCheckValidator(bool))
     
     

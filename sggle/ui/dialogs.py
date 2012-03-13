@@ -79,6 +79,19 @@ def showErrorDialog(title, msg, exception = None):
     QMessageBox.critical(None, title, msg)
 
 
+def showOpenResourceFolderDialog():
+    global _lastResourcesLocation
+
+    path = QFileDialog.getExistingDirectory(None, "Select Directory",_lastResourcesLocation,
+                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+    if path:
+        _lastResourcesLocation = path
+        
+    return path
+
+
+
+
 class Response(object):
     
     Cancel  = QMessageBox.Cancel
@@ -102,6 +115,7 @@ class AboutDialogBox(QMessageBox):
         
 
 
-_lastSaveLocation = expanduser("~")
-_lastLoadLocation = expanduser("~")
+_lastSaveLocation      = expanduser("~")
+_lastLoadLocation      = expanduser("~")
+_lastResourcesLocation = expanduser("~")
 

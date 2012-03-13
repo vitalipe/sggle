@@ -4,14 +4,10 @@ Created on Nov 8, 2011
 @author: vitali
 '''
 
-from os.path import splitext
-from os.path import expanduser
 
 from PySide.QtCore import QObject
 from PySide.QtCore import Signal
 from PySide.QtCore import QPointF
-from PySide.QtGui  import QFileDialog
-from PySide.QtGui  import QMessageBox
 
  
 import sggle.scene.commands as commands
@@ -93,8 +89,6 @@ class FileController(QObject):
         self._sceneList           = []
         self._mainWindow          = mainWindow
         
-        self._recentDir           = expanduser("~")
-
         sceneGroup.activeItemPoprertyChanged.connect(self._forwardActiveSceneNameChanges)
         sceneGroup.undoGroup().cleanChanged.connect(self.cleanStateChanged.emit)
         sceneGroup.activeSceneChanged.connect(lambda s: self.sceneAvailableChanged.emit(s != None))
@@ -215,12 +209,9 @@ class FileController(QObject):
             
     def openResourceFolder(self):
           
-        path =  QFileDialog.getExistingDirectory(None, "Select Directory",self._recentDir,
-                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
-    
+        path =  dialogs.showOpenResourceFolderDialog()
         if path:
             self._mainWindow.addDockedReourceViewer(path) 
-            self._recentDir = path # remember directory       
 
     
     def setActiveScene(self, sceneIndex):

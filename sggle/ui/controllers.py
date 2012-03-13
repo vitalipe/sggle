@@ -13,6 +13,7 @@ from PySide.QtCore import QPointF
 import sggle.scene.commands as commands
 import sggle.scene as scene
 import sggle.saveload.readwrite as saveload
+from   sggle.saveload.error import ParseError
 import dialogs
 
 
@@ -153,7 +154,7 @@ class FileController(QObject):
 
         try:
             newScene = saveload.readScene(fileStream, fileType)
-        except Exception as e: 
+        except ParseError as e: 
             dialogs.showErrorDialog("Parsing Error", "Unable to load Scene.", e)
         else:
             self._addScene(newScene, fileName, fileType)

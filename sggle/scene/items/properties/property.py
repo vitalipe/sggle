@@ -16,8 +16,7 @@ from validators import FloatValadator
 
 
 def newCustomProperty(name, item): # FIXME: should also pass type info
-    return Property(name, item, readOnly = False, builtin = False)
-
+    raise NotImplementedError()
 
 
 

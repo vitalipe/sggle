@@ -6,6 +6,8 @@ Created on Dec 29, 2011
 
 from .. interfaces import INodeAdapter
 from .. interfaces import INodeTreeBuilder
+from .. error      import ParseError
+
 
 import sggle.scene.items  as items 
 import sggle.scene        as scene
@@ -65,10 +67,10 @@ class SceneTreeBuilder(INodeTreeBuilder):
         item  = self._current()
         
         if not item.hasProperty(key): # assume custom
-            item.addCustomProperty(key)
+            raise ParseError("custom properties are not supported yet :( ")
 
         if item.property(key).deserializeValue(value) == False:
-            raise ValueError("""Deserialization Failed. Bad value: %s """ % (str(value))) 
+            raise ParseError("""Deserialization Failed. Bad value: %s """ % (str(value))) 
     
     
     def closeNode(self):

@@ -21,9 +21,9 @@ from PySide.QtGui import QPixmap
 
 import widgets
 import controllers
+import dialogs
 
 import sggle.scene as scene
-from sggle import __version__
 
 # FIXME: Move to config 
 class ActionKeySequences(object):
@@ -367,7 +367,7 @@ class MainWindow(QMainWindow):
                        disabled = False)
         
         self.addAction("help-about", 
-                       self.aboutDialog,
+                       dialogs.showAboutDialog,
                        None, 
                        "About", 
                        disabled = False)
@@ -575,15 +575,6 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, resourcesDock)
         resourcesDock.setFloating(True)
 
-
-    def aboutDialog(self):
-        dialog = QMessageBox(self)
-        dialog.setWindowTitle("About")
-        dialog.setWindowIcon(self.actions["help-about"].icon())
-        dialog.setIconPixmap(QPixmap(":icons/about"))
-        dialog.setText("SGGLE [" +  __version__  + "]")
-        dialog.setStandardButtons(QMessageBox.Close)
-        dialog.exec_()
         
 
 

@@ -540,35 +540,12 @@ class MainWindow(QMainWindow):
         self.statusBar() # empty status bar 
         
 
-    def _unsavedScenes(self):
-        dirtyScenes = []
-        for s in  self.sceneGroup.sceneList():
-            if not s.undoStack().isClean():
-                dirtyScenes.append(s)
-        return dirtyScenes
-        
-    
     def closeEvent(self, event):
-        dirtyCount = len(self._unsavedScenes())  
-        if dirtyCount:
-            msgText = [ 
-                       "There",
-                       "are" if dirtyCount > 1 else "is ",
-                       str(dirtyCount),
-                       "unsaved",
-                       "scenes." if dirtyCount > 1 else "scene.",
-                       "Quit anyway?"
-                       ]
-            
-            result = QMessageBox.question(self, "Quit SGGLE", " ".join(msgText),
-                                            QMessageBox.Discard | QMessageBox.Cancel, 
-                                            QMessageBox.Cancel)
-            
-            if result != QMessageBox.Discard:
-                event.ignore()
-        else:
+        if self.fileController.confirmExit():
             event.accept()
-            
+        else:
+            event.ignore()
+
             
     def addDockedReourceViewer(self, path):        
         resourcesDock = widgets.newResourceFolderViewer(path, QDockWidget())

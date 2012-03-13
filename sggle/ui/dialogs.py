@@ -7,9 +7,37 @@ from PySide.QtGui import QIcon
 from sggle import __version__
 
 
+
+
+
 def showAboutDialog():
         dialog = AboutDialogBox()
         dialog.exec_()
+    
+    
+def showExitDialog(unsavedScenesCount):
+    msgText = [ 
+                "There",
+                "are" if unsavedScenesCount > 1 else "is ",
+                str(unsavedScenesCount),
+                "unsaved",
+                "scenes." if unsavedScenesCount > 1 else "scene.",
+                "Quit anyway?"
+              ]
+    
+    return QMessageBox.question(None, "Quit SGGLE", " ".join(msgText),
+                                QMessageBox.Discard | QMessageBox.Cancel, 
+                                QMessageBox.Cancel)
+
+    
+
+    
+class Response(object):
+    
+    Cancel  = QMessageBox.Cancel
+    Discard = QMessageBox.Discard
+    
+    
     
     
 class AboutDialogBox(QMessageBox):

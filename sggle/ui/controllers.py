@@ -17,6 +17,7 @@ from PySide.QtGui  import QMessageBox
 import sggle.scene.commands as commands
 import sggle.scene as scene
 import sggle.saveload.readwrite as saveload
+import dialogs
 
 
 
@@ -258,8 +259,22 @@ class FileController(QObject):
         sceneList[toIndex]   = sceneList[fromIndex]
         sceneList[fromIndex] = tmp
     
+    
+    def unsavedScenes(self):
+        dirtyScenes = []
+        for s in  self.sceneGroup.sceneList():
+            if not s.undoStack().isClean():
+                dirtyScenes.append(s)
+        return dirtyScenes
+    
+    
+    def confirmExit(self):
+        dirtyCount = len(self.unsavedScenes())
         
-
+        if dirtyCount == 0:
+            return True
+        else:
+            return dialogs.showExitDialog(dirtyCount) == dialogs.Response.Discard
 
 
 class ItemsController(BaseController):

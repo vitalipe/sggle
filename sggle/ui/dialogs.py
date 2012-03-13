@@ -1,11 +1,14 @@
 
+from os.path import expanduser
+from os.path import splitext
+
 from PySide.QtGui import QMessageBox
+from PySide.QtGui import QFileDialog
 from PySide.QtGui import QPixmap
 from PySide.QtGui import QIcon
 
 
 from sggle import __version__
-
 
 
 
@@ -37,6 +40,26 @@ def showCloseSceneDialog(sceneName):
                                     QMessageBox.Cancel)
     
     
+def showSaveSceneAsDialog(fileTypes):
+        global _lastSaveLocation
+        
+        filters   = ";;".join([ f + " (*." + f + ")" for f in fileTypes])
+        result    = QFileDialog.getSaveFileName(None, "Save Scene As", _lastSaveLocation, filters)
+        
+        if not result[0]: # canceled by user
+            return ["",""]
+        else:
+            fileName       = result[0]
+            chosenFileType = (result[1].split())[0]
+          
+        # append extension only if necessary
+        if splitext(fileName)[1].strip(".") not in fileTypes:   
+            fileName += ("." + chosenFileType) 
+        
+        _lastSaveLocation = fileName
+        return [fileName, chosenFileType]
+
+
 class Response(object):
     
     Cancel  = QMessageBox.Cancel
@@ -58,5 +81,7 @@ class AboutDialogBox(QMessageBox):
         self.setStandardButtons(QMessageBox.Close)
         
         
-        
-        
+
+
+_lastSaveLocation = expanduser("~")
+

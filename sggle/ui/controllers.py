@@ -89,7 +89,7 @@ class FileController(QObject):
         QObject.__init__(self)
         
         self.sceneGroup           = sceneGroup
-        self._sceneToFilePathMap  = {}
+        self._sceneFileInfo       = {} # sceneObject : (filePath, fileType)
         self._sceneList           = []
         self._mainWindow          = mainWindow
         
@@ -106,8 +106,8 @@ class FileController(QObject):
             self.activeSceneNameChanged.emit(item.value("name"))
         
         
-    def _addScene(self, scene, filePath):
-        self._sceneToFilePathMap[scene] = filePath
+    def _addScene(self, scene, filePath, fileType):
+        self._sceneFileInfo[scene] = (filePath, fileType)
         self.sceneGroup.addScene(scene)
         self._sceneList.append(scene)
         
@@ -115,7 +115,7 @@ class FileController(QObject):
 
 
     def _removeScene(self, scene):
-        self._sceneToFilePathMap.pop(scene)
+        self._sceneFileInfo.pop(scene)
         self.sceneGroup.removeScene(scene)
         
         index = self._sceneList.index(scene)
@@ -125,8 +125,7 @@ class FileController(QObject):
 
         
    
-    def _writeScene(self, scene, filePath):
-        fileType   = splitext(filePath)[1].strip(".")
+    def _writeScene(self, scene, filePath, fileType):
         
         try:
             fileStream = open(filePath, "w") 
@@ -140,7 +139,7 @@ class FileController(QObject):
                 QMessageBox.critical(None, "Unable to save Scene" + " [" + 
                                  type(e).__name__ + "]", str(e))
         else:
-            self._sceneToFilePathMap[scene] = filePath
+            self._sceneFileInfo[scene] = (filePath, fileType)
             scene.undoStack().setClean()
         finally:
             fileStream.close()
@@ -148,7 +147,7 @@ class FileController(QObject):
     
     def newScene(self):        
         newScene = scene.newEmptyGraphicsScene()
-        self._addScene(newScene, None)
+        self._addScene(newScene, "","")
 
     
     def openScene(self): 
@@ -174,17 +173,17 @@ class FileController(QObject):
             QMessageBox.critical(None, "Unable to load Scene" + " [" + 
                                  type(e).__name__ + "]", str(e))
         else:
-            self._addScene(newScene, fileName)
+            self._addScene(newScene, fileName, fileType)
         finally:
             fileStream.close()        
         
         
     def saveScene(self, scene):
-        filePath = self._sceneToFilePathMap.get(scene)
+        filePath, fileType = self._sceneFileInfo.get(scene, ("",""))
         if not filePath:
             self.saveSceneAs(scene)
         else:
-            self._writeScene(scene, filePath)
+            self._writeScene(scene, filePath, fileType)
         
         
     def saveActiveScene(self):
@@ -197,19 +196,10 @@ class FileController(QObject):
         
     def saveSceneAs(self, scene):
         fileTypes = saveload.formats.knowFileFormats()
-        filters   = ";;".join([ f + " (*." + f + ")" for f in fileTypes])
-        result    = QFileDialog.getSaveFileName(None, "Save Scene As", self._lastLocation, filters)
+        fileName, fileType  = dialogs.showSaveSceneAsDialog(fileTypes)
         
-        if not result[0]: # canceled by user
-            return
-        
-        if splitext(result[0])[1].strip(".") in fileTypes: # append extension only if necessary   
-            fileName = result[0]
-        else:
-            fileName = result[0] + "." + (result[1].split())[0] 
-               
-        self._lastLocation = fileName
-        self._writeScene(scene, fileName)
+        if fileName:
+            self._writeScene(scene, fileName, fileType)
     
     
     def closeActiveScene(self):

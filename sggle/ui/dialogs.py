@@ -30,12 +30,18 @@ def showExitDialog(unsavedScenesCount):
                                 QMessageBox.Cancel)
 
     
-
+def showCloseSceneDialog(sceneName):
+        return QMessageBox.question(None, "Close " + sceneName,
+                                    "Save changes before closing?", 
+                                    QMessageBox.Discard | QMessageBox.Save | QMessageBox.Cancel,
+                                    QMessageBox.Cancel)
+    
     
 class Response(object):
     
     Cancel  = QMessageBox.Cancel
     Discard = QMessageBox.Discard
+    Save    = QMessageBox.Save 
     
     
     

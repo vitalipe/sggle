@@ -221,18 +221,13 @@ class FileController(QObject):
         name  = scene.rootItem().value("name")
         
         if not scene.undoStack().isClean():
-            result = QMessageBox.question(None, "Close " + name,
-                                          "Save changes before closing?", 
-                                            QMessageBox.Discard | 
-                                            QMessageBox.Save    |
-                                            QMessageBox.Cancel,
-                                            QMessageBox.Cancel)
-            if result == QMessageBox.Save:
+            result = dialogs.showCloseSceneDialog(name)
+            if result == dialogs.Response.Save:
                 self.saveScene(scene)
                 self.closeScene(sceneIndex)  
                 return
                   
-            if result == QMessageBox.Discard:
+            if result == dialogs.Response.Discard:
                 self._removeScene(scene) 
                 
         else:

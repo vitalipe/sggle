@@ -148,6 +148,9 @@ class FileController(QObject):
         fileTypes = saveload.formats.knowFileFormats()
         fileName, fileType = dialogs.showOpenSceneDialog(fileTypes)
  
+        if  not fileName:
+            return 
+ 
         try:
             fileStream = open(fileName, "r") 
         except IOError as e: 

@@ -129,19 +129,14 @@ class FileController(QObject):
         try:
             fileStream = open(filePath, "w") 
         except IOError as e:
-            QMessageBox.critical(None, type(e).__name__, str(e))
+            dialogs.showErrorDialog("IO Error", "Unable to open file for writing.", e)
             return
         
-        try:
-            saveload.writeScene(scene, fileStream, fileType)
-        except Exception as e:
-                QMessageBox.critical(None, "Unable to save Scene" + " [" + 
-                                 type(e).__name__ + "]", str(e))
-        else:
-            self._sceneFileInfo[scene] = (filePath, fileType)
-            scene.undoStack().setClean()
-        finally:
-            fileStream.close()
+        saveload.writeScene(scene, fileStream, fileType)
+        fileStream.close()
+
+        self._sceneFileInfo[scene] = (filePath, fileType)
+        scene.undoStack().setClean()
         
     
     def newScene(self):        

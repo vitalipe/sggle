@@ -94,7 +94,6 @@ class FileController(QObject):
         self._mainWindow          = mainWindow
         
         self._recentDir           = expanduser("~")
-        self._lastLocation        = expanduser("~")
 
         sceneGroup.activeItemPoprertyChanged.connect(self._forwardActiveSceneNameChanges)
         sceneGroup.undoGroup().cleanChanged.connect(self.cleanStateChanged.emit)
@@ -151,27 +150,19 @@ class FileController(QObject):
 
     
     def openScene(self): 
-        filters  = " ".join([ "*." + f for f in saveload.formats.knowFileFormats()])
-        result   = QFileDialog.getOpenFileName(None, "Open Scene", self._lastLocation, filters)
-        fileName = result[0]
-        fileType = splitext(fileName)[1].strip(".")
-        
-        if not fileName: # canceled by user
-            return
-        else:
-            self._lastLocation = fileName
-        
+        fileTypes = saveload.formats.knowFileFormats()
+        fileName, fileType = dialogs.showOpenSceneDialog(fileTypes)
+ 
         try:
             fileStream = open(fileName, "r") 
-        except IOError as e:
-            QMessageBox.critical(None, type(e).__name__, str(e))
+        except IOError as e: 
+            dialogs.showErrorDialog("IO Error", " Unable to open file for reading.", e)
             return
 
         try:
             newScene = saveload.readScene(fileStream, fileType)
         except Exception as e: 
-            QMessageBox.critical(None, "Unable to load Scene" + " [" + 
-                                 type(e).__name__ + "]", str(e))
+            dialogs.showErrorDialog("Parsing Error", "Unable to load Scene.", e)
         else:
             self._addScene(newScene, fileName, fileType)
         finally:

@@ -60,6 +60,25 @@ def showSaveSceneAsDialog(fileTypes):
         return [fileName, chosenFileType]
 
 
+def showOpenSceneDialog(fileTypes):
+    global _lastLoadLocation
+
+    filters  = " ".join([ "*." + f for f in fileTypes])
+    result   = QFileDialog.getOpenFileName(None, "Open Scene", _lastLoadLocation, filters)
+    fileName = result[0]
+    fileType = splitext(fileName)[1].strip(".")
+        
+    if not fileName: # canceled by user
+        return ["", ""]
+    else:
+        _lastLoadLocation = fileName
+        return [fileName, fileType]
+
+
+def showErrorDialog(title, msg, exception = None):
+    QMessageBox.critical(None, title, msg)
+
+
 class Response(object):
     
     Cancel  = QMessageBox.Cancel
@@ -84,4 +103,5 @@ class AboutDialogBox(QMessageBox):
 
 
 _lastSaveLocation = expanduser("~")
+_lastLoadLocation = expanduser("~")
 

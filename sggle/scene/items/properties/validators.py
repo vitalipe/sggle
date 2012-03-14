@@ -69,17 +69,19 @@ class DirPathValidator(QValidator, IRawValidator):
         
         if os.path.isdir(input):
             return QValidator.Acceptable
-        if os.path.isdir(input.rsplit(os.path.sep,1)[0]): #  parent looks ok.
+        
+        parent = input.rsplit(os.path.sep,1)[0]
+        if os.path.isdir(parent) or parent == "": #  parent looks ok.
             return QValidator.Intermediate
         
         return QValidator.Invalid
     
     
     def validateRawValue(self, value):
-        if self.validate(value, len(value)) != QValidator.Invalid:
-            return QValidator.Acceptable
-        else:
+        if self.validate(value, len(value)) != QValidator.Acceptable:
             return QValidator.Invalid
+        else:
+            return QValidator.Acceptable
     
     
     def fixupRawValue(self, value):

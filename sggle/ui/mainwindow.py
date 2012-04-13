@@ -111,7 +111,7 @@ class MainWindow(QMainWindow):
         self.fileController  =  controllers.FileController(self.sceneGroup, self)
         self.itemsController =  controllers.ItemsController(self.sceneGroup)
         self.viewController  =  controllers.ViewController(self.sceneGroup, 
-                                                           scene.newWelcomeScreenScene())
+                                                           widgets.newWelcomeScreenScene())
         self.propertiesController = controllers.PropertiesController(self.sceneGroup)
     
     

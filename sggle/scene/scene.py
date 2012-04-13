@@ -19,13 +19,21 @@ from PySide.QtGui  import QGraphicsScene
 from PySide.QtGui  import QGraphicsItem
 from PySide.QtGui  import QTransform
 from PySide.QtGui  import QPixmap
-
+from PySide.QtGui  import QUndoStack
 
 import items.builtin
 import commands
 
 from sggle.resources import loader
 from editmodes       import  *
+
+
+def newEmptyGraphicsScene():
+    scene = EditableScene(QUndoStack())
+    scene.setRootItem(items.newRootItem())
+    scene.setSceneRect(-50000,-50000,100000,100000) # Huge hard-coded size until I have good 
+                                                    # enough reason to change this.
+    return scene
 
 
 

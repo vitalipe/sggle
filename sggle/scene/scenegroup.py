@@ -7,8 +7,16 @@ Created on Dec 30, 2011
 from PySide.QtCore  import QObject
 from PySide.QtCore  import Signal
 from PySide.QtGui   import QUndoStack 
-
+from PySide.QtGui   import QUndoGroup
 import models
+
+
+def newSceneGroup(parent):
+    sceneGroup = SceneGroup(QUndoGroup())
+    sceneGroup.setParent(parent)
+    
+    return sceneGroup
+
 
 
 

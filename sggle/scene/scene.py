@@ -477,6 +477,8 @@ class EditableScene(DecoratedGraphicsScene):
         self._undoStack        = undoStack
         self._snap2Grid        = False
         
+        undoStack.setUndoLimit(300)
+        
         
     def isSnap2Grid(self):
         return self._snap2Grid

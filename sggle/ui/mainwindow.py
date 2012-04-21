@@ -110,8 +110,7 @@ class MainWindow(QMainWindow):
         
         self.fileController  =  controllers.FileController(self.sceneGroup, self)
         self.itemsController =  controllers.ItemsController(self.sceneGroup)
-        self.viewController  =  controllers.ViewController(self.sceneGroup, 
-                                                           widgets.newWelcomeScreenScene())
+        self.viewController  =  controllers.ViewController(self.sceneGroup)
         self.propertiesController = controllers.PropertiesController(self.sceneGroup)
     
     
@@ -450,6 +449,9 @@ class MainWindow(QMainWindow):
         PropertiesDock = widgets.newPropertiesEditor(sceneGroup.itemPropertiesModel(), propertiesDock)
         self.addDockWidget(Qt.LeftDockWidgetArea, PropertiesDock)
         
+        
+        self.viewController.setWelcomeScene(widgets.newWelcomeScreenScene(self.actions))
+         
 
     def _createMenuBars(self):
         assert self.actions

@@ -741,10 +741,10 @@ class ViewController(BaseController):
     zoomChanged                      = Signal(int, int)
     
     
-    def __init__(self, sceneGroup, welcomeScene):
+    def __init__(self, sceneGroup):
         BaseController.__init__(self, sceneGroup)
 
-        self._welcomeScene  = welcomeScene
+        self._welcomeScene  = None
         self._view          = None
         self._zoomByScene   = []
         self._centerByScene = [] 
@@ -813,7 +813,12 @@ class ViewController(BaseController):
             self._view.setZoomPercentage(100)
             self._view.setScene(self._welcomeScene)
            
-    
+           
+    def setWelcomeScene(self, welcomeScene):
+        self._welcomeScene = welcomeScene
+        self._view.setScene(welcomeScene)
+        
+        
     def setView(self, view):
         assert self._view is None
         self._view = view

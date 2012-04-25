@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
 
         viewToolBar = QToolBar("View", self)
         viewToolBar.addAction(self.actions["view-zoom-in"])
-        viewToolBar.addAction(self.actions["view-zoom-reset"])
+        viewToolBar.addWidget(widgets.newZoomWidget(self.viewController))
         viewToolBar.addAction(self.actions["view-zoom-out"])
         viewToolBar.addSeparator()
         viewToolBar.addAction(self.actions["view-center-origin"])

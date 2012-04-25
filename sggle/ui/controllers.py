@@ -738,7 +738,7 @@ class ViewController(BaseController):
     showAxisCanged                   = Signal(bool)
     showCameraCanged                 = Signal(bool)
     
-    zoomChanged                      = Signal(int, int)
+    zoomChanged                      = Signal(int, int) # old, new 
     
     
     def __init__(self, sceneGroup):
@@ -812,7 +812,23 @@ class ViewController(BaseController):
         else:
             self._view.setZoomPercentage(100)
             self._view.setScene(self._welcomeScene)
+    
            
+    def canChangeZoom(self):
+        return self._scene() != None
+    
+    
+    def maxZoom(self):
+        return self._maxZoom
+    
+    
+    def minZoom(self):
+        return self._minZoom
+    
+    
+    def zoomStep(self):
+        return self._zoomStep
+    
            
     def setWelcomeScene(self, welcomeScene):
         self._welcomeScene = welcomeScene

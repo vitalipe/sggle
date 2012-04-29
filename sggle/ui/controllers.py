@@ -739,36 +739,6 @@ class ItemsController(BaseController):
         self._pushCommand(cmdBatch)
         scene.setActiveLayer(layer)
 
-    
-    def alignSelectionVertical(self): # FIXME: remove ?
-        selection = self._scene().selectedItems()
-        master    = self._scene().selectionMaster()
-        batch     = commands.newCommandBatch()
-        x         = master.value("position").x()
-        
-        for item in selection:
-            pos = item.value("position")
-            pos.setX(x)
-            commands.newEditItemPropertyCommand(item, "position", pos, batch)
-            
-        if batch.childCount() > 1:
-            self._pushCommand(batch)
-    
-    
-    def alignSelectionHorizontal(self):
-        selection = self._scene().selectedItems()
-        master    = self._scene().selectionMaster()
-        batch     = commands.newCommandBatch()
-        y         = master.value("position").y()
-
-        for item in selection:
-            pos = item.value("position")
-            pos.setY(y)
-            commands.newEditItemPropertyCommand(item, "position", pos, batch)
-            
-        if batch.childCount() > 1:
-            self._pushCommand(batch)
-
 
     def selectAll(self):
         if self._scene() is None:
@@ -846,7 +816,7 @@ class ViewController(BaseController):
     
     def _handleSceneWasAdded(self, index):
         self._zoomByScene.append(100)
-        self._centerByScene.append(QPointF(0,0)) #FIXME: scene origin
+        self._centerByScene.append(QPointF(0,0)) 
     
     
     def _handleSceneWasRemoved(self, index):

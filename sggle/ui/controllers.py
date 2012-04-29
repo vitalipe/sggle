@@ -324,9 +324,14 @@ class ItemsController(BaseController):
             
             
     def _updateCopyPasteTriggers(self, scene, clipboard):
-        activeLayer = scene.activeLayer() if scene else None
+        if scene:
+            activeLayer = scene.activeLayer()
+            editMode    = scene.editMode() 
+        else:
+            activeLayer  = None
+            editMode     = None
    
-        if activeLayer:
+        if activeLayer and not editMode:
             self.canCopyChanged.emit(True)
             self.canPasteChanged.emit(clipboard.hasData())
         else:
@@ -966,8 +971,10 @@ class PropertiesController(BaseController):
     def _updateAllSignalTriggers(self):
         activeItem       = self.activeItem()
         selectedProperty = self.selectedProperty()
+        editMode         = self._scene().editMode() if self._scene() else None
+
         
-        if selectedProperty:
+        if selectedProperty and not editMode:
             self.canLockPropertyChanged.emit(True)
             self.lockSelectedPropertyChanged.emit(selectedProperty.locked())
             self.canResetPropertyChanged.emit(selectedProperty.changed())

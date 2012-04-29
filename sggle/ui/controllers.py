@@ -13,6 +13,7 @@ from PySide.QtCore import QPointF
 import sggle.scene.commands as commands
 import sggle.scene as scene
 import sggle.saveload.readwrite as saveload
+
 from   sggle.saveload.error import ParseError
 import dialogs
 

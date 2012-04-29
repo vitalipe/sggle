@@ -4,9 +4,9 @@ Created on Dec 29, 2011
 @author: vitali
 '''
 
-from .. interfaces import INodeAdapter
-from .. interfaces import INodeTreeBuilder
-from .. error      import ParseError
+from interfaces import INodeAdapter
+from interfaces import INodeTreeBuilder
+from error      import ParseError
 
 
 import sggle.scene.items  as items 

@@ -3,7 +3,8 @@ Created on Nov 30, 2011
 
 @author: vitali
 '''
-import formats.scene
+import scenetree
+import formats
 
 
 def writeScene(sceneObject, fileStream, formatName):
@@ -15,7 +16,7 @@ def writeScene(sceneObject, fileStream, formatName):
     builder  = fileFormat.builder()
     dumper   = fileFormat.dumper()
     
-    treeRoot = buildTree(formats.scene.ItemNodeAdapter(sceneObject.rootItem()), builder)
+    treeRoot = buildTree(scenetree.ItemNodeAdapter(sceneObject.rootItem()), builder)
     dumper.dump(treeRoot, fileStream)
     
     
@@ -30,7 +31,7 @@ def readScene(fileStream, formatName):
     adapterFactory  = fileFormat.adapter
 
     treeRoot = parser.parse(fileStream)
-    return buildTree(adapterFactory(treeRoot), formats.scene.SceneTreeBuilder())
+    return buildTree(adapterFactory(treeRoot), scenetree.SceneTreeBuilder())
 
 
 

@@ -72,7 +72,7 @@ class BaseController(QObject):
 
 
     
-class FileController(QObject):  
+class FileController(BaseController):  
     
     cleanStateChanged     = Signal(bool)
     sceneAvailableChanged = Signal(bool)
@@ -83,9 +83,8 @@ class FileController(QObject):
 
     
     def __init__(self, sceneGroup, mainWindow):
-        QObject.__init__(self)
+        super(FileController, self).__init__(sceneGroup)
         
-        self.sceneGroup           = sceneGroup
         self._sceneFileInfo       = {} # sceneObject : (filePath, fileType)
         self._sceneList           = []
         self._mainWindow          = mainWindow
@@ -171,11 +170,13 @@ class FileController(QObject):
         
         
     def saveActiveScene(self):
-        self.saveScene(self.sceneGroup.activeScene())
+        if self._scene():
+            self.saveScene(self.sceneGroup.activeScene())
     
     
     def saveActiveSceneAs(self):
-        self.saveSceneAs(self.sceneGroup.activeScene())
+        if self._scene():
+            self.saveSceneAs(self.sceneGroup.activeScene())
         
         
     def saveSceneAs(self, scene):
@@ -187,7 +188,8 @@ class FileController(QObject):
     
     
     def closeActiveScene(self):
-        self.closeScene(self.sceneGroup.index(self.sceneGroup.activeScene()))
+        if self._scene():
+            self.closeScene(self.sceneGroup.index(self.sceneGroup.activeScene()))
     
  
     def closeScene(self, sceneIndex):
@@ -241,6 +243,8 @@ class FileController(QObject):
             return True
         else:
             return dialogs.showExitDialog(dirtyCount) == dialogs.Response.Discard
+
+
 
 
 class ItemsController(BaseController):
@@ -506,7 +510,6 @@ class ItemsController(BaseController):
             return None
         
         
-        
     def _deleteSelectedItems(self, cmdBatch):
         scene = self._scene()              
         for item in scene.selectedItems():
@@ -516,12 +519,13 @@ class ItemsController(BaseController):
     ## Action callback functions ##
 
     def addNewLayer(self):
-        cmd = commands.newAddLayerCommand(self._scene())
-        self._pushCommand(cmd)
+        if self._scene():
+            cmd = commands.newAddLayerCommand(self._scene())
+            self._pushCommand(cmd)
         
     
     def deleteActiveLayer(self):
-        if self._scene().editMode(): 
+        if self._scene() is None or self._scene().activeLayer() is None:
             return
         
         scene = self._scene()
@@ -530,6 +534,9 @@ class ItemsController(BaseController):
     
     
     def deleteSelectedItems(self):
+        if self._scene() is None or not self._scene().selectedItems():
+            return
+
         batch = commands.newCommandBatch()
 
         self._deleteSelectedItems(batch) 
@@ -538,6 +545,9 @@ class ItemsController(BaseController):
 
     
     def copyToClipboard(self):
+        if self._scene() is None or self._scene().activeLayer() is None:
+            return
+
         scene         = self._scene()
         clipboard     = self._clipboard
         
@@ -548,6 +558,9 @@ class ItemsController(BaseController):
                     
         
     def cutToClipboard(self):
+        if self._scene() or self._scene().activeLayer() is None:
+            return
+
         self.copyToClipboard()
         
         if self._scene().selectedItems():
@@ -557,7 +570,8 @@ class ItemsController(BaseController):
     
         
     def pasteFromClipboard(self):
-        assert self._clipboard.hasData()
+        if self._scene() is None or self._clipboard.hasData() == False:
+            return
 
         clipboard = self._clipboard
         if self._clipboard.hasLayer():
@@ -567,6 +581,9 @@ class ItemsController(BaseController):
         
     
     def moveItemSelectionUp(self):
+        if self._scene() is None or not self._scene().selectedItems():
+            return
+
         cmdBatch = commands.newCommandBatch()
         self._moveItemSelectionZOrder(self._scene().activeLayer(), 
                                       self._scene().selectedItems(), +1, cmdBatch)
@@ -575,6 +592,9 @@ class ItemsController(BaseController):
 
        
     def moveItemSelectionDown(self): 
+        if self._scene() is None or not self._scene().selectedItems():
+            return
+
         cmdBatch = commands.newCommandBatch() 
         self._moveItemSelectionZOrder(self._scene().activeLayer(), 
                                       self._scene().selectedItems(), -1, cmdBatch)
@@ -583,6 +603,9 @@ class ItemsController(BaseController):
 
     
     def moveItemSelectionToTop(self):
+        if self._scene() is None or not self._scene().selectedItems():
+            return
+        
         cmdBatch      = commands.newCommandBatch()
         items         = self._scene().activeLayer().childItems()
         selectedItems = self._sortByZOrder(self._scene().selectedItems())
@@ -593,6 +616,9 @@ class ItemsController(BaseController):
 
         
     def moveItemSelectionToBottom(self):
+        if self._scene() is None or not self._scene().selectedItems():
+            return
+        
         cmdBatch      = commands.newCommandBatch()
         items         = self._scene().activeLayer().childItems()
         selectedItems = self._sortByZOrder(self._scene().selectedItems())
@@ -602,6 +628,9 @@ class ItemsController(BaseController):
 
     
     def moveLayerUp(self):
+        if self._scene() is None or self._scene().activeLayer() is None:
+            return
+        
         cmdBatch = commands.newCommandBatch()
         scene    = self._scene()
         self._moveItemSelectionZOrder(scene.rootItem(), [scene.activeLayer()], +1, cmdBatch)
@@ -610,6 +639,9 @@ class ItemsController(BaseController):
     
     
     def moveLayerDown(self):
+        if self._scene() is None or self._scene().activeLayer() is None:
+            return
+        
         cmdBatch = commands.newCommandBatch()
         scene    = self._scene()
         
@@ -619,6 +651,9 @@ class ItemsController(BaseController):
 
     
     def moveLayerToTop(self):
+        if self._scene() is None or self._scene().activeLayer() is None:
+            return
+        
         cmdBatch = commands.newCommandBatch()
         scene = self._scene()
         
@@ -627,6 +662,9 @@ class ItemsController(BaseController):
 
     
     def moveLayerToBottom(self):
+        if self._scene() is None or self._scene().activeLayer() is None:
+            return
+        
         scene    = self._scene()
         cmdBatch = commands.newCommandBatch()
 
@@ -635,7 +673,7 @@ class ItemsController(BaseController):
 
 
     def duplicateActiveLayer(self):
-        if not self._scene().activeLayer():
+        if self._scene() is None or self._scene().activeLayer() is None:
             return
         
         cmdBatch    = commands.newCommandBatch()
@@ -650,6 +688,13 @@ class ItemsController(BaseController):
 
 
     def moveSelectionToLayerAbove(self):
+        if self._scene() is None:
+            return 
+        if not self._scene().selectedItems():
+            return
+        if self._layerAbove(self._scene().activeLayer()) is None:
+            return
+       
         scene       = self._scene()
         activeLayer =  scene.activeLayer()
         cmdBatch    = commands.newCommandBatch()
@@ -662,6 +707,13 @@ class ItemsController(BaseController):
     
     
     def moveSelectionToLayerBelow(self):
+        if self._scene() is None:
+            return 
+        if not self._scene().selectedItems():
+            return
+        if self._layerBelow(self._scene().activeLayer()) is None:
+            return
+        
         scene       = self._scene()
         activeLayer =  scene.activeLayer()
         cmdBatch    = commands.newCommandBatch()
@@ -674,6 +726,9 @@ class ItemsController(BaseController):
     
     
     def moveSelectionToNewLayer(self):
+        if self._scene() is None:
+             return 
+        
         cmdBatch    = commands.newCommandBatch()
         scene       = self._scene()
         items       = scene.selectedItems()
@@ -685,7 +740,7 @@ class ItemsController(BaseController):
         scene.setActiveLayer(layer)
 
     
-    def alignSelectionVertical(self):
+    def alignSelectionVertical(self): # FIXME: remove ?
         selection = self._scene().selectedItems()
         master    = self._scene().selectionMaster()
         batch     = commands.newCommandBatch()
@@ -716,6 +771,9 @@ class ItemsController(BaseController):
 
 
     def selectAll(self):
+        if self._scene() is None:
+            return 
+        
         scene = self._scene()
         
         scene.clearSelection()
@@ -858,8 +916,8 @@ class ViewController(BaseController):
     
     
     def setZoomPercentage(self, percentage):
-        assert self._view
-        assert self._scene()
+        if not self._scene():
+            return
         
         if percentage > self._maxZoom:
             percentage = self._maxZoom
@@ -874,33 +932,44 @@ class ViewController(BaseController):
     
     
     def centerOnOrigin(self):
-        self._view.centerOn(0,0)
+        if self._scene():
+            self._view.centerOn(0,0)
     
     
     def centerOnSelectionMaster(self):
+        if self._scene() is None or self._scene().selectionMaster() is None:
+            return 
+        
         master = self.sceneGroup.activeScene().selectionMaster()
         self._view.centerOn(master)
     
     
     def centerOnCamera(self):
+        if not self._scene():
+            return
+        
         point = self._view.scene().rootItem().value("camera")
         self._view.centerOn(point)
         
         
     def setShowAxis(self, show):
-        self._scene().setShowAxis(show)
+        if self._scene():
+            self._scene().setShowAxis(show)
     
     
     def setShowGrid(self, show):
-        self._scene().setShowGrid(show)
+        if self._scene():
+            self._scene().setShowGrid(show)
         
         
     def setSnap2Grid(self, snap):
-        self._scene().setSnap2Grid(snap)
+        if self._scene():
+            self._scene().setSnap2Grid(snap)
         
         
     def setShowCamera(self, show):
-        self._scene().setShowCamera(show)
+        if self._scene():
+            self._scene().setShowCamera(show)
         
 
         

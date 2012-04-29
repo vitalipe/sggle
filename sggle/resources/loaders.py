@@ -13,16 +13,12 @@ from weakref import WeakValueDictionary
 from resource import PixmapResource
 
 
-class PixmapLoader(object):
+class CachedPixmapLoader(object):
     
     def __init__(self):
         object.__init__(self)
         
         self._cache  = WeakValueDictionary()
-    
-        
-    def notFoundPixmap(self): #FIXME: use builtin assets.py
-        return PixmapResource(QFileInfo(getcwd() + "/assets/" + "missing_texture.png"))
     
     
     def _loadFromCache(self, key):
@@ -34,16 +30,19 @@ class PixmapLoader(object):
         
         
     def load(self, path):
+        # cache hit
         pixmap = self._loadFromCache(path)
         if pixmap is not None:
             return pixmap
-
+        
+        # cache miss
         pixmap =  PixmapResource(QFileInfo(path))
         if pixmap.isNull():
-            return self.notFoundPixmap()
+            pixmap.load(":/missing_texture")
         else:
             self._addToCache(path, pixmap)
-            return pixmap
+            
+        return pixmap
     
 
 
@@ -70,7 +69,7 @@ class ResourceLoader(object):
     @staticmethod
     def instance():
         if ResourceLoader._instance is None:
-            pixmapLoader  = PixmapLoader()
+            pixmapLoader  = CachedPixmapLoader()
             previewLoader = PreviewIconLoader(pixmapLoader)
             ResourceLoader._instance = ResourceLoader(pixmap      = pixmapLoader, 
                                                       previewIcon = previewLoader)

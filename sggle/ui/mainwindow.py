@@ -60,6 +60,7 @@ class MainWindow(QMainWindow):
            
         self.sceneGroup  = scene.newSceneGroup(self)
         self.actions     = {}
+        self.resourceDockWidgets = []
         
         self.setWindowTitle("SGGLE")
         self.setWindowState(Qt.WindowMaximized)
@@ -549,11 +550,23 @@ class MainWindow(QMainWindow):
             event.ignore()
 
             
-    def addDockedReourceViewer(self, path):        
+    def addDockedReourceViewer(self, path):   
         resourcesDock = widgets.newResourceFolderViewer(path, QDockWidget())
         self.addDockWidget(Qt.RightDockWidgetArea, resourcesDock)
         resourcesDock.setFloating(True)
+        self.resourceDockWidgets.append(resourcesDock)
 
+        resourcesDock.visibilityChanged.connect(self.cleanupHiddenDocks)
+
+                
+    def cleanupHiddenDocks(self):
+        hiddenDocks = [ dock for dock in self.resourceDockWidgets if dock.isVisible() == False ]
+        for dock in hiddenDocks[:-3]: # leave the last 3 docks alone
+            self.resourceDockWidgets.remove(dock)
+            self.removeDockWidget(dock)
+            
+        
+        
         
 
 

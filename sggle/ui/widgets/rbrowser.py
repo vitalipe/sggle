@@ -29,13 +29,14 @@ import sggle.resources as resources
 def newResourceFolderViewer(path, dock=None):
     view = TextureFolderViewer(path)
     
-    if dock is None:
+    if dock:
+        dock.setWindowTitle(path)
+        dock.setWidget(view)
+        return dock
+    else:
         return view
-    
-    dock.setWindowTitle(path)
-    dock.setWidget(view)
-    
-    return dock
+
+
 
 
 
@@ -56,6 +57,7 @@ class TextureFolderViewer(QListView):
         self.setLayoutMode(QListView.Batched)
         self.setViewMode(QListView.IconMode)
         self.setIconSize(QSize(64,64))
+        self.setGridSize(QSize(64,64))
         self.setDragDropMode(QListView.DragOnly)
         
         

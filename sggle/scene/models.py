@@ -514,6 +514,10 @@ class ItemSelectionModel(QItemSelectionModel):
             
         scene.blockSignals(False)
         scene.selectionChanged.emit()
+        
+        if selectedIndexes: # set new selection master
+            item = selectedIndexes[-1].data(role=ItemTreeModel.ItemRole)
+            scene.setSelectionMaster(item)
             
 
 

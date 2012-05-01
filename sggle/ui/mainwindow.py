@@ -553,7 +553,7 @@ class MainWindow(QMainWindow):
     def addDockedReourceViewer(self, path):   
         resourcesDock = widgets.newResourceFolderViewer(path, QDockWidget())
         self.addDockWidget(Qt.RightDockWidgetArea, resourcesDock)
-        resourcesDock.setFloating(True)
+        resourcesDock.setFloating(False)
         self.resourceDockWidgets.append(resourcesDock)
 
         resourcesDock.visibilityChanged.connect(self.cleanupHiddenDocks)

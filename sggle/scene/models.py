@@ -36,10 +36,24 @@ class ItemPropertiesModel(QAbstractItemModel):
         
         self._item            = None
         self._sceneGroup      = sceneGroup
-        self._propertyIcon    = QIcon(":/img/property-builtin") 
-        self._subPropertyIcon = QIcon(":/img/property-component")
-        self._sepIcon         = QIcon(":/img/property-separator")
-        self._selectionModel  = QItemSelectionModel(self)
+        
+        self._propertyIcons   = {
+                                 "name"       : QIcon(":/img/property-name"),
+                                 "content"    : QIcon(":/img/property-content"),
+                                 "camera"     : QIcon(":/img/property-camera"),
+                                 "parallax"   : QIcon(":/img/property-parallax"),
+                                 "position"   : QIcon(":/img/property-position"),
+                                 "rotation"   : QIcon(":/img/property-rotation"),
+                                 "scale"      : QIcon(":/img/property-scale"),
+                                 "flipX"      : QIcon(":/img/property-flipX"),
+                                 "flipY"      : QIcon(":/img/property-flipY"),
+                                 
+                                 } 
+        
+        self._defaultPropertyIcon = QIcon(":/img/property-builtin") 
+        self._subPropertyIcon     = QIcon(":/img/property-component")
+        self._sepIcon             = QIcon(":/img/property-separator")
+        self._selectionModel      = QItemSelectionModel(self)
 
         
         sceneGroup.activeSceneChanged.connect(self._updateItem)
@@ -142,7 +156,9 @@ class ItemPropertiesModel(QAbstractItemModel):
                 if index.parent().isValid():
                     return self._subPropertyIcon
                 else:
-                    return self._propertyIcon
+                    propertyName =  self._item.property(index.row()).name()
+                    return self._propertyIcons.get(propertyName, self._defaultPropertyIcon)
+                
             if index.column() == ItemPropertiesModel.SepColumn:
                 return self._sepIcon
                 

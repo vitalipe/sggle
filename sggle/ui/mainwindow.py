@@ -16,6 +16,8 @@ from PySide.QtGui import QMessageBox
 from PySide.QtGui import QToolBar
 from PySide.QtGui import QIcon
 from PySide.QtGui import QPixmap
+from PySide.QtGui import QWidget
+from PySide.QtGui import QSizePolicy
 
 
 
@@ -77,34 +79,43 @@ class MainWindow(QMainWindow):
  
  
     def _createToolBars(self):
-        
-        fileToolBar = QToolBar("File", self)
-        fileToolBar.addAction(self.actions["resource-folder-add"])
-        fileToolBar.addSeparator()
-        fileToolBar.addAction(self.actions["scene-new"])
-        fileToolBar.addAction(self.actions["scene-open"])
-        fileToolBar.addAction(self.actions["scene-save"])
+        mainToolBar = QToolBar("Main Menu", self)
 
+        resourceSpacer = QWidget(mainToolBar)
+        resourceSpacer.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred))
         
-        editToolBar = QToolBar("Edit", self)
-        editToolBar.addAction(self.actions["edit-undo"])
-        editToolBar.addAction(self.actions["edit-redo"])
-        editToolBar.addSeparator()
-        editToolBar.addAction(self.actions["edit-cut"])
-        editToolBar.addAction(self.actions["edit-copy"])
-        editToolBar.addAction(self.actions["edit-paste"])
+        mainToolBar.addAction(self.actions["resource-folder-add"])
+        mainToolBar.addSeparator()
+        mainToolBar.addAction(self.actions["scene-new"])
+        mainToolBar.addAction(self.actions["scene-open"])
+        mainToolBar.addAction(self.actions["scene-save"])
+        mainToolBar.addSeparator()
+        mainToolBar.addAction(self.actions["edit-undo"])
+        mainToolBar.addAction(self.actions["edit-redo"])
+        mainToolBar.addSeparator()
+        mainToolBar.addAction(self.actions["edit-cut"])
+        mainToolBar.addAction(self.actions["edit-copy"])
+        mainToolBar.addAction(self.actions["edit-paste"])
+        mainToolBar.addSeparator()
+        mainToolBar.addAction(self.actions["view-zoom-in"])
+        mainToolBar.addWidget(widgets.newZoomWidget(self.viewController))
+        mainToolBar.addAction(self.actions["view-zoom-out"])
+        mainToolBar.addSeparator()
+        mainToolBar.addAction(self.actions["view-center-origin"])
+        mainToolBar.addAction(self.actions["view-center-selection-master"])
+        mainToolBar.addAction(self.actions["view-center-camera"])
+        mainToolBar.addSeparator()
+        
+        mainToolBar.addWidget(resourceSpacer)
 
-        viewToolBar = QToolBar("View", self)
-        viewToolBar.addAction(self.actions["view-zoom-in"])
-        viewToolBar.addWidget(widgets.newZoomWidget(self.viewController))
-        viewToolBar.addAction(self.actions["view-zoom-out"])
-        viewToolBar.addSeparator()
-        viewToolBar.addAction(self.actions["view-center-origin"])
-        viewToolBar.addAction(self.actions["view-center-selection-master"])
-        
-        self.addToolBar(fileToolBar)
-        self.addToolBar(editToolBar)
-        self.addToolBar(viewToolBar)
+        mainToolBar.addSeparator()
+        mainToolBar.addAction(self.actions["view-grid-snap"])
+        mainToolBar.addAction(self.actions["view-grid-show"])
+        mainToolBar.addAction(self.actions["view-axis-show"])
+        mainToolBar.addAction(self.actions["view-camera-show"])
+        mainToolBar.addSeparator()
+
+        self.addToolBar(mainToolBar)
 
  
     def _createControllers(self):

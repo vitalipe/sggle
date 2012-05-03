@@ -424,6 +424,13 @@ class LayerListModel(QAbstractListModel):
         
         self._sceneGroup     = sceneGroup
         self._selectionModel = LayerSelectionModel(sceneGroup, self)
+        self._layerIcons     = [
+                                QIcon(":/img/layer0"),
+                                QIcon(":/img/layer1"),
+                                QIcon(":/img/layer2"),
+                                QIcon(":/img/layer3"),
+                                QIcon(":/img/layer4"),
+                                ]
         
         
         sceneGroup.activeSceneChanged.connect(self.reset)
@@ -457,6 +464,9 @@ class LayerListModel(QAbstractListModel):
         
         if not index.isValid():
             return None
+        
+        if role == Qt.DecorationRole:
+            return self._layerIcons[index.row() % len(self._layerIcons)]
         
         layer  = self._layers()[index.row()]         
         

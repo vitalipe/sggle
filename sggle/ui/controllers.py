@@ -564,7 +564,7 @@ class ItemsController(BaseController):
                     
         
     def cutToClipboard(self):
-        if self._scene() or self._scene().activeLayer() is None:
+        if self._scene() is None or self._scene().activeLayer() is None:
             return
 
         self.copyToClipboard()

@@ -6,7 +6,7 @@ Created on Jan 5, 2012
 
 from PySide.QtGui  import QGraphicsView
 from PySide.QtGui  import QPainter
-
+from PySide.QtOpenGL import QGLWidget
 
 
 

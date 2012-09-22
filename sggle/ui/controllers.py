@@ -481,7 +481,7 @@ class ItemsController(BaseController):
             
     
     def _copyActiveLayerToClipboard(self, clipboard): 
-        activeLayer = self._scene().activeLayer()
+        activeLayer = self._scene().activeLayer().copy()
         
         clipboard.clear() 
         clipboard.append(activeLayer)

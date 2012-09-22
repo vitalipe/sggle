@@ -27,30 +27,6 @@ import dialogs
 
 import sggle.scene as scene
 
-# FIXME: Move to config 
-class ActionKeySequences(object):
-    
-    newSequence   = QKeySequence("Ctrl+n")
-    saveSequence  = QKeySequence("Ctrl+s")
-    openSequence  = QKeySequence("Ctrl+o")
-    closeSequence = QKeySequence("Ctrl+w")
-    copySequence  = QKeySequence("Ctrl+c")
-    cutSequence   = QKeySequence("Ctrl+x")
-    pasteSequence = QKeySequence("Ctrl+v")
-    
-    zoomInSequence            = QKeySequence("ctrl++")
-    zoomOutSequence           = QKeySequence("ctrl+-")
-    centerSelecetionSequence  = QKeySequence("Ctrl+i")
-
-
-    
-    deleteSelectedItemsSeqence = QKeySequence("Delete")
-    deleteActiveLayerSeqence   = QKeySequence("Shift+Delete")
-    addNewLayerSeqence         = QKeySequence("Insert")
-
-    
-    
-
 
 class MainWindow(QMainWindow):
   
@@ -426,43 +402,20 @@ class MainWindow(QMainWindow):
         actions["scene-new"].setShortcut(QKeySequence("Ctrl+n"))
         actions["scene-open"].setShortcut(QKeySequence("Ctrl+o"))
         actions["scene-save"].setShortcut(QKeySequence("Ctrl+s"))
+        actions["scene-save-as"].setShortcut(QKeySequence("Ctrl+Shift+s"))
+
         actions["scene-close"].setShortcut(QKeySequence("Ctrl+w"))
+        actions["resource-folder-add"].setShortcut(QKeySequence("Ctrl+Shift+o"))
         
         actions["view-zoom-in"].setShortcut(QKeySequence("Ctrl++"))
         actions["view-zoom-out"].setShortcut(QKeySequence("Ctrl+-"))
         actions["view-zoom-reset"].setShortcut(QKeySequence("Ctrl+0"))
-                
-#        actions["view-center-origin"].setShortcut(QKeySequence("Ctrl+0"))
-#        actions["view-center-selection-master"].setShortcut(QKeySequence("Ctrl+0"))
-#        actions["view-center-camera"].setShortcut(QKeySequence("Ctrl+0"))
-
-
-#        actions["view-grid-snap"].setShortcut(QKeySequence("Ctrl+0"))
-#        actions["view-grid-show"].setShortcut(QKeySequence("Ctrl+0"))
-#        actions["view-axis-show"].setShortcut(QKeySequence("Ctrl+0"))
-#        actions["view-camera-show"].setShortcut(QKeySequence("Ctrl+0"))
-
+ 
 
         actions["layer-new"].setShortcut(QKeySequence("Ctrl+insert"))
-        actions["layer-delete"].setShortcut(QKeySequence("Ctrl+delete"))
-        #actions["layer-duplicate"].setShortcut(QKeySequence("Ctrl+0"))
-        actions["layer-move-up"].setShortcut(QKeySequence("Ctrl+up"))
-        actions["layer-move-down"].setShortcut(QKeySequence("Ctrl+down"))
-        actions["layer-move-top"].setShortcut(QKeySequence("Ctrl+home"))
-        actions["layer-move-bottom"].setShortcut(QKeySequence("Ctrl+end"))
-        
+   
         actions["selection-delete"].setShortcut(QKeySequence("Alt+delete"))
-        #actions["layer-duplicate"].setShortcut(QKeySequence("Ctrl+0"))
-        actions["selection-move-up"].setShortcut(QKeySequence("Alt+up"))
-        actions["selection-move-down"].setShortcut(QKeySequence("Alt+down"))
-        actions["selection-move-top"].setShortcut(QKeySequence("Alt+home"))
-        actions["selection-move-bottom"].setShortcut(QKeySequence("Alt+end"))
-        
-        
-
-
-
-
+        actions["selection-select-all"].setShortcut(QKeySequence("Ctrl+a"))
         
 
         

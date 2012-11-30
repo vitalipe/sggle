@@ -6,7 +6,7 @@ from PySide.QtGui import QMessageBox
 from PySide.QtGui import QFileDialog
 from PySide.QtGui import QPixmap
 from PySide.QtGui import QIcon
-
+from PySide.QtCore import Qt
 
 from sggle import __version__
 
@@ -109,9 +109,15 @@ class AboutDialogBox(QMessageBox):
         self.setWindowTitle("About")
         self.setWindowIcon(QIcon(":icons/about"))
         self.setIconPixmap(QPixmap(":icons/about"))
-        self.setText("SGGLE [" +  __version__  + "]")
         self.setStandardButtons(QMessageBox.Close)
-        
+        self.setTextFormat(Qt.RichText)
+
+        self.setText("SGGLE [" +  __version__  + "] \n" + """
+        <br>
+        <br>
+        <a href="https://bitbucket.org/vitalipe/sggle"> https://bitbucket.org/vitalipe/sggle</a>
+        <br>
+         """)
         
 
 
